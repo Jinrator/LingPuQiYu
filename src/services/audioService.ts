@@ -1,10 +1,13 @@
 
 import { Note, DrumType } from '../types';
+import * as Tone from 'tone';
 
 class AudioService {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+  private piano: Tone.Sampler | null = null;
+  private pianoReady: boolean = false;
 
   constructor() {
     // Initialize on first user interaction
@@ -20,6 +23,37 @@ class AudioService {
     }
   }
 
+  private initPiano() {
+    if (this.piano) return;
+    
+    // 使用 Tone.js Sampler 加载真实钢琴采样
+    // 使用 tonejs-instruments 的轻量级钢琴采样（只加载关键音符）
+    this.piano = new Tone.Sampler({
+      urls: {
+        C3: "C3.mp3",
+        "D#3": "Ds3.mp3",
+        "F#3": "Fs3.mp3",
+        A3: "A3.mp3",
+        C4: "C4.mp3",
+        "D#4": "Ds4.mp3",
+        "F#4": "Fs4.mp3",
+        A4: "A4.mp3",
+        C5: "C5.mp3",
+        "D#5": "Ds5.mp3",
+        "F#5": "Fs5.mp3",
+        A5: "A5.mp3",
+      },
+      release: 1,
+      baseUrl: "https://tonejs.github.io/audio/salamander/",
+      onload: () => {
+        this.pianoReady = true;
+        console.log('✅ Piano samples loaded successfully');
+      }
+    }).toDestination();
+    
+    console.log('🎹 Piano sampler initializing...');
+  }
+
   private createNoiseBuffer(): AudioBuffer {
     if (!this.audioContext) throw new Error("AudioContext not initialized");
     const bufferSize = this.audioContext.sampleRate * 2; // 2 seconds of noise
@@ -31,10 +65,65 @@ class AudioService {
     return buffer;
   }
 
-  public resume() {
+  public async resume() {
     this.init();
     if (this.audioContext?.state === 'suspended') {
-      this.audioContext.resume();
+      await this.audioContext.resume();
+    }
+    // 启动 Tone.js
+    if (Tone.context.state !== 'running') {
+      await Tone.start();
+    }
+    // 初始化钢琴合成器
+    if (!this.piano) {
+      this.initPiano();
+    }
+  }
+
+  // 播放钢琴音色
+  public async playPianoNote(note: Note, duration: number = 0.5, velocity: number = 0.8) {
+    await this.resume();
+    
+    // 等待采样加载完成
+    if (this.piano && !this.pianoReady) {
+      console.log('⏳ Waiting for piano samples to load...');
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (this.pianoReady) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+    
+    if (this.piano && this.pianoReady) {
+      // 使用 Tone.js 播放真实钢琴采样
+      this.piano.triggerAttackRelease(note.full, duration, undefined, velocity);
+    }
+  }
+
+  // 播放钢琴和弦
+  public async playPianoChord(notes: Note[], duration: number = 1.0, velocity: number = 0.7) {
+    await this.resume();
+    
+    // 等待采样加载完成
+    if (this.piano && !this.pianoReady) {
+      console.log('⏳ Waiting for piano samples to load...');
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (this.pianoReady) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+    
+    if (this.piano && this.pianoReady) {
+      notes.forEach(note => {
+        this.piano!.triggerAttackRelease(note.full, duration, undefined, velocity);
+      });
     }
   }
 

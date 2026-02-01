@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Note } from '../../types';
 import { ALL_NOTES } from '../../constants';
 
@@ -12,17 +12,27 @@ interface PianoProps {
 const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, showLabels = true }) => {
   const isBlackKey = (name: string) => name.includes('#');
   const isDark = theme_type;
+  
+  // 本地状态用于立即响应按下事件
+  const [pressedNote, setPressedNote] = useState<string | null>(null);
 
-  // Logic: 3 octaves + C6 = 37 keys approx (22 white keys)
-  // To fit in ~800px-1000px, keys should be ~36px-40px. 
-  // Let's use a slightly more compact design.
+  const handleNoteDown = (note: Note) => {
+    setPressedNote(note.full); // 立即设置本地状态
+    onNotePlay(note); // 调用父组件回调
+  };
+
+  const handleNoteUp = () => {
+    setPressedNote(null); // 释放时清除本地状态
+  };
 
   return (
-    <div className={`relative h-48 md:h-60 flex justify-center rounded-b-xl shadow-2xl overflow-hidden p-2 ${
+    <div 
+      className={`relative h-48 md:h-60 flex justify-center rounded-b-xl overflow-hidden p-2 ${
         isDark 
             ? 'bg-slate-800' 
             : 'bg-slate-100 border border-slate-200'
-    }`}>
+      }`}
+    >
       <div className="relative flex justify-center items-start pt-2">
          <div className="flex relative h-full">
             {ALL_NOTES.map((note, i) => {
@@ -32,25 +42,27 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                // Look ahead to see if next is black
                const nextNote = ALL_NOTES[i+1];
                const hasBlackAfter = nextNote && isBlackKey(nextNote.name);
-               const isActive = activeNotes.includes(note.full);
+               const isActive = activeNotes.includes(note.full) || pressedNote === note.full;
                const isMiddleC = note.full === 'C4';
 
                return (
                  <div key={note.full} className="relative h-full">
                     {/* White Key */}
                     <button
-                      onMouseDown={() => onNotePlay(note)}
+                      onMouseDown={() => handleNoteDown(note)}
+                      onMouseUp={handleNoteUp}
+                      onMouseLeave={handleNoteUp}
+                      style={{
+                        backgroundColor: isActive ? '#f9a8d4' : isMiddleC ? '#fefce8' : '#ffffff'
+                      }}
                       className={`
                         w-8 md:w-10 h-40 md:h-52 rounded-b-md 
-                        flex flex-col justify-end items-center pb-2 z-10 transition-all shadow-sm
-                        hover:bg-slate-50 active:scale-[0.98] origin-top
+                        flex flex-col justify-end items-center pb-2 z-10 transition-none shadow-sm
+                        active:scale-[0.98] origin-top
                         ${isActive 
-                            ? 'bg-pink-300 shadow-[0_0_15px_rgba(244,114,182,0.6)]' 
-                            : isDark 
-                                ? 'bg-white border border-slate-200' 
-                                : 'bg-white border border-slate-300'
+                            ? 'shadow-[0_0_15px_rgba(244,114,182,0.6)]' 
+                            : ''
                         }
-                        ${isMiddleC ? 'bg-yellow-50' : ''}
                       `}
                     >
                       {showLabels && (
@@ -70,19 +82,22 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                     {/* Black Key */}
                     {hasBlackAfter && (
                       <button
-                        onMouseDown={(e) => {
+                        onMouseDown={(e: React.MouseEvent) => {
                            e.stopPropagation();
-                           onNotePlay(nextNote);
+                           handleNoteDown(nextNote);
+                        }}
+                        onMouseUp={handleNoteUp}
+                        onMouseLeave={handleNoteUp}
+                        style={{
+                          backgroundColor: (activeNotes.includes(nextNote.full) || pressedNote === nextNote.full) ? '#db2777' : isDark ? '#0f172a' : '#334155'
                         }}
                         className={`
                           absolute -right-2.5 md:-right-3 top-0 w-5 md:w-6 h-24 md:h-32 
-                          rounded-b-md z-20 transition-all border-x border-b
-                          active:scale-[0.98] origin-top shadow-lg
-                          ${activeNotes.includes(nextNote.full) 
-                            ? 'bg-pink-600 shadow-[0_0_15px_rgba(219,39,119,0.8)]' 
-                            : isDark 
-                                ? 'bg-slate-900 border-slate-900 bg-gradient-to-b from-slate-800 to-black' 
-                                : 'bg-slate-700 border-slate-700 bg-gradient-to-b from-slate-600 to-slate-800'
+                          rounded-b-md z-20 transition-none
+                          active:scale-[0.98] origin-top
+                          ${(activeNotes.includes(nextNote.full) || pressedNote === nextNote.full)
+                            ? 'shadow-[0_0_15px_rgba(219,39,119,0.8)]' 
+                            : ''
                           }
                         `}
                       >

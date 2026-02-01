@@ -137,7 +137,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -150,7 +150,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
            <button onClick={() => setShowExplanation(!showExplanation)} className={`p-4 rounded-2xl transition-all ${showExplanation ? 'bg-blue-600 text-white' : isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-slate-400'}`}>
              <HelpCircle size={24} />
            </button>
-           <button onClick={onComplete} className="px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all">
+           <button onClick={onComplete} className="px-10 py-4 rounded-2xl font-black text-sm text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all">
              保存魔法旋律 <Check size={18} className="ml-2 inline" />
            </button>
         </div>
@@ -159,9 +159,9 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-8">
         
         {showExplanation && (
-          <div className={`max-w-4xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5 shadow-2xl' : 'bg-white border-blue-100 shadow-xl'}`}>
+          <div className={`max-w-4xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="flex gap-8 items-start">
-              <div className="w-24 h-24 rounded-3xl bg-blue-600 flex flex-col items-center justify-center text-4xl shadow-xl border-4 border-white/10 flex-shrink-0 animate-bounce-subtle">🐰</div>
+              <div className="w-24 h-24 rounded-3xl bg-blue-600 flex flex-col items-center justify-center text-4xl border-4 border-white/10 flex-shrink-0 animate-bounce-subtle">🐰</div>
               <div>
                 <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>旋律的“镜像”与“重力”</h3>
                 <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -175,10 +175,10 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
 
         <div className="flex flex-col lg:flex-row items-stretch gap-6 w-full max-w-7xl relative">
            
-           <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50 shadow-lg'}`}>
+           <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center justify-between relative z-10">
                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-2xl shadow-lg ring-4 ring-blue-500/10">?</div>
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-2xl ring-4 ring-blue-500/10">?</div>
                     <div>
                       <span className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>问句 (Question)</span>
                     </div>
@@ -204,7 +204,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
                           <button
                             key={pitchIdx}
                             onClick={() => toggleNote('question', stepIdx, pitch)}
-                            className={`flex-1 rounded-xl transition-all relative z-10 border-2 ${isActive ? 'bg-blue-600 border-white shadow-xl scale-110' : isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-slate-50 border-slate-100 hover:bg-blue-50'}`}
+                            className={`flex-1 rounded-xl transition-all relative z-10 border-2 ${isActive ? 'bg-blue-600 border-white scale-110' : isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-slate-50 border-slate-100 hover:bg-blue-50'}`}
                           >
                             {isActive && <span className="text-[10px] font-black text-white">{NOTE_LABELS[pitch]}</span>}
                             {!isActive && pitch === 0 && <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20 mx-auto" />}
@@ -217,11 +217,11 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
            </div>
 
            <div className="flex flex-col items-center justify-center gap-4 px-4 min-w-[140px]">
-              <div className="flex flex-col gap-3 bg-white/5 p-4 rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-md">
+              <div className="flex flex-col gap-3 bg-white/5 p-4 rounded-[2.5rem] border border-white/5 backdrop-blur-md">
                  
                  <button 
                    onClick={() => applyMagic('up')}
-                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'up' ? 'bg-orange-500 border-white scale-110 shadow-[0_0_20px_orange] text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
+                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'up' ? 'bg-orange-500 border-white scale-110 text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
                  >
                     <ArrowUp className="group-hover:-translate-y-1 transition-transform" size={28} />
                     <span className="text-[8px] font-black uppercase tracking-tighter">向上走</span>
@@ -229,7 +229,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
 
                  <button 
                    onClick={() => applyMagic('down')}
-                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'down' ? 'bg-blue-500 border-white scale-110 shadow-[0_0_20px_rgba(59,130,246,0.5)] text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
+                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'down' ? 'bg-blue-500 border-white scale-110 text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
                  >
                     <ArrowDown className="group-hover:translate-y-1 transition-transform" size={28} />
                     <span className="text-[8px] font-black uppercase tracking-tighter">向下走</span>
@@ -237,7 +237,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
 
                  <button 
                    onClick={() => applyMagic('mirror')}
-                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'mirror' ? 'bg-purple-600 border-white scale-110 shadow-[0_0_20px_purple] text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
+                   className={`group w-20 h-20 rounded-3xl flex flex-col items-center justify-center gap-1 transition-all border-2 ${activeMagic === 'mirror' ? 'bg-purple-600 border-white scale-110 text-white' : 'bg-white/10 border-white/10 hover:bg-white/20 text-blue-500'}`}
                  >
                     <ArrowRightLeft className="group-hover:rotate-180 transition-transform duration-700" size={28} />
                     <span className="text-[8px] font-black uppercase tracking-tighter">倒着走</span>
@@ -249,10 +249,10 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
               </div>
            </div>
 
-           <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50 shadow-lg'}`}>
+           <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center justify-between relative z-10">
                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-2xl shadow-lg ring-4 ring-emerald-500/10">!</div>
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-2xl ring-4 ring-emerald-500/10">!</div>
                     <div>
                       <span className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>答句 (Answer)</span>
                     </div>
@@ -278,7 +278,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
                           <button
                             key={pitchIdx}
                             onClick={() => toggleNote('answer', stepIdx, pitch)}
-                            className={`flex-1 rounded-xl transition-all relative z-10 border-2 ${isActive ? 'bg-emerald-500 border-white shadow-xl scale-110' : isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-slate-50 border-slate-100 hover:bg-emerald-50'}`}
+                            className={`flex-1 rounded-xl transition-all relative z-10 border-2 ${isActive ? 'bg-emerald-500 border-white scale-110' : isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-slate-50 border-slate-100 hover:bg-emerald-50'}`}
                           >
                             {isActive && <span className="text-[10px] font-black text-white">{NOTE_LABELS[pitch]}</span>}
                             {!isActive && pitch === 0 && <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20 mx-auto" />}

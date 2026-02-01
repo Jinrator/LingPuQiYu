@@ -72,8 +72,8 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
            ))}
         </div>
 
-        <div className={`w-full max-w-4xl rounded-[5rem] p-16 flex flex-col items-center gap-12 text-center animate-in zoom-in-95 duration-1000 border shadow-2xl relative z-10 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
-           <div className="w-32 h-32 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_0_60px_rgba(16,185,129,0.4)] animate-bounce">
+        <div className={`w-full max-w-4xl rounded-[5rem] p-16 flex flex-col items-center gap-12 text-center animate-in zoom-in-95 duration-1000 border relative z-10 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+           <div className="w-32 h-32 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-white animate-bounce">
               <Trophy size={64} />
            </div>
            
@@ -85,7 +85,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full">
               <div className="flex flex-col items-center gap-6">
                  <div className={`w-64 h-64 rounded-full border-8 p-4 ${isDark ? 'border-white/10' : 'border-blue-50'} animate-spin-slow`}>
-                    <div className="w-full h-full rounded-full overflow-hidden shadow-2xl">
+                    <div className="w-full h-full rounded-full overflow-hidden">
                        <img src={coverUrl!} alt="Album Cover" className="w-full h-full object-cover" />
                     </div>
                  </div>
@@ -96,7 +96,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
               </div>
 
               <div className={`p-10 rounded-[3.5rem] border flex flex-col items-center justify-center gap-8 ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-blue-50'}`}>
-                 <div className="w-40 h-40 bg-white p-4 rounded-3xl shadow-xl flex items-center justify-center border-4 border-blue-500">
+                 <div className="w-40 h-40 bg-white p-4 rounded-3xl flex items-center justify-center border-4 border-blue-500">
                     <QrCode size={120} className="text-slate-900" />
                  </div>
                  <div className="space-y-2">
@@ -111,7 +111,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
 
            <button 
              onClick={onComplete}
-             className="px-20 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[2.5rem] font-black text-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all"
+             className="px-20 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[2.5rem] font-black text-2xl hover:scale-105 active:scale-95 transition-all"
            >
              返回主地图
            </button>
@@ -125,7 +125,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
       
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -137,7 +137,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
         <button 
           disabled={!songTitle || !producerName || !coverUrl || isPublishing}
           onClick={publishSong}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${songTitle && coverUrl ? 'bg-blue-600 scale-105 hover:bg-blue-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${songTitle && coverUrl ? 'bg-blue-600 scale-105 hover:bg-blue-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           {isPublishing ? <Loader2 size={18} className="animate-spin" /> : <><Send size={18} className="mr-2 inline" /> 全球发布</>}
         </button>
@@ -146,11 +146,11 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
       <main className="flex-1 flex flex-col lg:flex-row items-stretch p-8 relative z-10 gap-8 overflow-y-auto scrollbar-hide">
         
         {/* 左侧：黑胶唱片预览 */}
-        <div className={`flex-1 rounded-[4rem] border p-12 flex flex-col items-center justify-center gap-12 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5 shadow-2xl' : 'bg-white border-blue-100 shadow-xl'}`}>
+        <div className={`flex-1 rounded-[4rem] border p-12 flex flex-col items-center justify-center gap-12 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-100'}`}>
            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2)_0%,transparent_70%)]" />
            
            <div className="relative group">
-              <div className={`w-80 h-80 rounded-full bg-slate-900 flex items-center justify-center shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-[12px] border-black/20 ${isPlaying ? 'animate-spin-slow' : ''}`}>
+              <div className={`w-80 h-80 rounded-full bg-slate-900 flex items-center justify-center border-[12px] border-black/20 ${isPlaying ? 'animate-spin-slow' : ''}`}>
                  <div className="w-full h-full rounded-full border-8 border-white/5 flex items-center justify-center overflow-hidden">
                     {coverUrl ? (
                       <img src={coverUrl} alt="Album Art" className="w-full h-full object-cover" />
@@ -178,7 +178,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
         {/* 右侧：发布控制台 */}
         <div className="w-full lg:w-[500px] flex flex-col gap-8">
            
-           <div className={`p-10 rounded-[3.5rem] border space-y-8 ${isDark ? 'bg-slate-900/60 border-white/5 shadow-lg' : 'bg-white border-blue-50 shadow-md'}`}>
+           <div className={`p-10 rounded-[3.5rem] border space-y-8 ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center gap-4">
                  <PenTool className="text-blue-500" size={24} />
                  <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>作品基本信息</h4>
@@ -207,7 +207,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
               </div>
            </div>
 
-           <div className={`flex-1 p-10 rounded-[3.5rem] border flex flex-col gap-6 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5 shadow-lg' : 'bg-white border-blue-50 shadow-md'}`}>
+           <div className={`flex-1 p-10 rounded-[3.5rem] border flex flex-col gap-6 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center gap-4">
                  <Wand2 className="text-indigo-500" size={24} />
                  <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>AI 封面绘图引擎</h4>
@@ -227,7 +227,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
               <button 
                 onClick={generateCover}
                 disabled={!prompt.trim() || isGenerating}
-                className={`w-full py-5 rounded-3xl font-black text-white shadow-xl flex items-center justify-center gap-3 transition-all ${!prompt.trim() || isGenerating ? 'bg-slate-400 opacity-50' : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:scale-[1.02]'}`}
+                className={`w-full py-5 rounded-3xl font-black text-white flex items-center justify-center gap-3 transition-all ${!prompt.trim() || isGenerating ? 'bg-slate-400 opacity-50' : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:scale-[1.02]'}`}
               >
                 {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <><Sparkles size={20} /> 生成封面艺术</>}
               </button>
@@ -246,7 +246,7 @@ const PersonalDebutProject: React.FC<PersonalDebutProjectProps> = ({ onComplete,
         <div className="fixed inset-0 z-[300] backdrop-blur-xl bg-blue-950/40 flex flex-col items-center justify-center gap-12 animate-in fade-in duration-500 text-white">
            <div className="relative">
               <div className="w-40 h-40 bg-white/10 rounded-full animate-ping absolute inset-0" />
-              <div className="w-40 h-40 bg-blue-600 rounded-[3rem] flex items-center justify-center shadow-[0_0_80px_rgba(59,130,246,0.5)] border-4 border-white/20 animate-bounce relative z-10">
+              <div className="w-40 h-40 bg-blue-600 rounded-[3rem] flex items-center justify-center border-4 border-white/20 animate-bounce relative z-10">
                  <Send size={64} />
               </div>
            </div>

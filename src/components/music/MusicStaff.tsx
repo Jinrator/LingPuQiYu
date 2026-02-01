@@ -132,7 +132,7 @@ const renderNote = (note: Note, index: number, totalNotes: number) => {
 const sortedNotes = [...activeNotes].sort((a, b) => a.frequency - b.frequency);
 
 return (
-  <div className={`w-full overflow-hidden rounded-xl shadow-inner flex items-center justify-center ${className} ${
+  <div className={`w-full overflow-hidden rounded-xl flex items-center justify-center ${className} ${
     isDark ? 'bg-slate-900' : 'bg-white'
   }`}>
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full max-w-4xl select-none">

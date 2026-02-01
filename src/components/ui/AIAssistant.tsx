@@ -57,8 +57,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
   return (
     <div className="fixed bottom-12 right-12 z-[150]">
       {isOpen ? (
-        <div className={`w-[450px] h-[650px] rounded-[3.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom-20 slide-in-from-right-20 duration-500 shadow-[0_50px_100px_rgba(0,0,0,0.5)] border ${isDark ? 'bg-[#001a33]/95 border-white/10 backdrop-blur-2xl' : 'bg-white/95 border-blue-100 backdrop-blur-2xl'}`}>
-          <div className="p-10 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between shadow-xl">
+        <div className={`w-[450px] h-[650px] rounded-[3.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom-20 slide-in-from-right-20 duration-500 shadow-lg border ${isDark ? 'bg-[#001a33]/95 border-white/10 backdrop-blur-2xl' : 'bg-white/95 border-blue-100 backdrop-blur-2xl'}`}>
+          <div className="p-10 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center animate-pulse border border-white/20">
                 <Cpu className="text-white" size={32} />
@@ -77,7 +77,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`
-                  max-w-[85%] p-6 rounded-[2.5rem] text-sm leading-relaxed shadow-lg border
+                  max-w-[85%] p-6 rounded-[2.5rem] text-sm leading-relaxed border
                   ${m.role === 'user' 
                     ? 'bg-blue-600 border-blue-400 text-white rounded-br-none' 
                     : isDark ? 'bg-white/5 border-white/10 text-slate-200 rounded-bl-none' : 'bg-blue-50/50 border-blue-100 text-blue-900 rounded-bl-none'}
@@ -101,7 +101,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
                 <button 
                   key={q}
                   onClick={() => handleSend(q)}
-                  className={`text-[10px] font-black px-4 py-2 rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-blue-300 hover:bg-white/10' : 'bg-white border-blue-100 text-blue-600 hover:bg-blue-50 shadow-sm'}`}
+                  className={`text-[10px] font-black px-4 py-2 rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-blue-300 hover:bg-white/10' : 'bg-white border-blue-100 text-blue-600 hover:bg-blue-50'}`}
                 >
                   {q}
                 </button>
@@ -113,11 +113,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="在此输入指令..."
-                className={`flex-1 border rounded-[1.8rem] px-8 py-5 text-sm outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500 placeholder:text-slate-600' : 'bg-white border-blue-100 text-blue-950 focus:ring-2 ring-blue-500 placeholder:text-slate-300 shadow-inner'}`}
+                className={`flex-1 border rounded-[1.8rem] px-8 py-5 text-sm outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500 placeholder:text-slate-600' : 'bg-white border-blue-100 text-blue-950 focus:ring-2 ring-blue-500 placeholder:text-slate-300'}`}
               />
               <button 
                 onClick={() => handleSend()}
-                className="w-16 h-16 bg-blue-600 rounded-[1.5rem] flex items-center justify-center hover:bg-blue-500 transition-all shadow-xl shadow-blue-900/40 active:scale-90"
+                className="w-16 h-16 bg-blue-600 rounded-[1.5rem] flex items-center justify-center hover:bg-blue-500 transition-all active:scale-90"
               >
                 <Send size={28} className="text-white" />
               </button>
@@ -128,7 +128,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
         <button 
           onClick={() => setIsOpen(true)}
           className={`
-            w-28 h-28 rounded-[3rem] flex items-center justify-center shadow-[0_30px_60px_rgba(37,99,235,0.4)] hover:scale-110 active:scale-95 transition-all group relative border-4
+            w-28 h-28 rounded-[3rem] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group relative border-4
             ${isDark ? 'bg-gradient-to-br from-blue-500 to-indigo-800 border-white/20' : 'bg-white border-blue-100'}
           `}
         >
@@ -136,9 +136,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ theme = 'dark' }) => {
              <Cpu className={`${isDark ? 'text-white' : 'text-blue-600'} group-hover:rotate-12 transition-transform duration-500 animate-bounce-subtle`} size={48} />
              {/* 浮动装饰件 */}
              <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-400 rounded-full animate-ping opacity-20" />
-             <div className="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full animate-bounce delay-300 shadow-lg" />
+             <div className="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full animate-bounce delay-300" />
           </div>
-          <div className="absolute -top-1 -right-1 bg-rose-500 text-white w-10 h-10 rounded-full border-4 border-white flex items-center justify-center shadow-lg font-black text-[10px]">
+          <div className="absolute -top-1 -right-1 bg-rose-500 text-white w-10 h-10 rounded-full border-4 border-white flex items-center justify-center font-black text-[10px]">
             AI
           </div>
         </button>

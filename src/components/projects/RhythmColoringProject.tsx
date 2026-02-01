@@ -73,7 +73,7 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
     <div className={`fixed inset-0 z-[200] flex flex-col transition-colors duration-500 animate-in fade-in zoom-in-95 ${isDark ? 'bg-slate-950' : 'bg-[#fcfdff]'}`}>
       <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-slate-900/50 border-white/5' : 'bg-blue-50/50 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-blue-600 shadow-sm border border-blue-100'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-blue-600 border border-blue-100'}`}>
             <X size={24} />
           </button>
           <div>
@@ -83,7 +83,7 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
         </div>
         
         <div className="flex items-center gap-8">
-           <div className={`flex items-center gap-6 px-6 py-3 rounded-2xl border ${isDark ? 'bg-black/30 border-white/5' : 'bg-white border-blue-100 shadow-sm'}`}>
+           <div className={`flex items-center gap-6 px-6 py-3 rounded-2xl border ${isDark ? 'bg-black/30 border-white/5' : 'bg-white border-blue-100'}`}>
              <span className="text-[10px] font-black text-blue-500 uppercase">速度控制</span>
              <input type="range" min="60" max="180" value={bpm} onChange={(e) => setBpm(parseInt(e.target.value))} className="w-32 accent-blue-600" />
              <span className={`font-fredoka text-xl w-10 ${isDark ? 'text-white' : 'text-blue-900'}`}>{bpm}</span>
@@ -91,7 +91,7 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
 
            <button 
              onClick={onComplete}
-             className={`px-10 py-4 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center gap-3 bg-emerald-600 text-white hover:scale-105 active:scale-95`}
+             className={`px-10 py-4 rounded-2xl font-black text-lg transition-all flex items-center gap-3 bg-emerald-600 text-white hover:scale-105 active:scale-95`}
            >
              完成挑战 <Check size={20} />
            </button>
@@ -107,17 +107,17 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
             </p>
           </div>
 
-          <div className={`p-16 rounded-[4.5rem] border shadow-2xl relative transition-all ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
+          <div className={`p-16 rounded-[4.5rem] border relative transition-all ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex gap-4">
               <button 
                 onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-                className={`w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}
+                className={`w-24 h-24 rounded-[2rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}
               >
                 {isPlaying ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
               </button>
               <button 
                 onClick={() => setGrid(new Array(16).fill(false))}
-                className={`w-20 h-20 rounded-[1.8rem] flex items-center justify-center shadow-xl border-2 transition-all ${isDark ? 'bg-slate-800 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-400'} hover:text-rose-500 active:scale-90`}
+                className={`w-20 h-20 rounded-[1.8rem] flex items-center justify-center border-2 transition-all ${isDark ? 'bg-slate-800 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-400'} hover:text-rose-500 active:scale-90`}
               >
                 <Trash2 size={30} />
               </button>
@@ -135,14 +135,14 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
                         relative transition-all duration-300 transform rounded-[1.8rem]
                         ${isQuarter ? 'w-24 h-24' : 'w-20 h-20'}
                         ${active 
-                          ? 'bg-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.8)] border-4 border-blue-400 scale-110' 
+                          ? 'bg-blue-600 border-4 border-blue-400 scale-110' 
                           : isDark ? 'bg-white/5 border-2 border-white/5 hover:bg-white/10' : 'bg-slate-50 border-2 border-slate-100 hover:bg-blue-50'}
                         ${isCurrent ? 'ring-8 ring-blue-500/20' : ''}
                       `}
                     >
                       {active && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className={`w-3 h-3 rounded-full bg-white shadow-[0_0_15px_white] animate-pulse`} />
+                          <div className={`w-3 h-3 rounded-full bg-white animate-pulse`} />
                         </div>
                       )}
                       {isCurrent && active && (

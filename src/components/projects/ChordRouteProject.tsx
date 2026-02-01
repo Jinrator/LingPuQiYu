@@ -152,7 +152,7 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
       
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -164,7 +164,7 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         <button 
           disabled={!selectedRoute}
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${selectedRoute ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${selectedRoute ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           铺设歌曲骨架 <Check size={18} className="ml-2 inline" />
         </button>
@@ -173,8 +173,8 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-12">
         
         {/* AI 助教提示层 */}
-        <div className={`max-w-4xl w-full p-8 rounded-[3.5rem] border transition-all duration-500 relative overflow-hidden flex gap-8 items-start ${isDark ? 'bg-slate-900 border-white/5 shadow-2xl' : 'bg-white border-blue-100 shadow-xl'}`}>
-           <div className="w-20 h-20 rounded-3xl bg-blue-600 flex items-center justify-center text-4xl shadow-xl flex-shrink-0 animate-bounce-subtle">🤖</div>
+        <div className={`max-w-4xl w-full p-8 rounded-[3.5rem] border transition-all duration-500 relative overflow-hidden flex gap-8 items-start ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+           <div className="w-20 h-20 rounded-3xl bg-blue-600 flex items-center justify-center text-4xl flex-shrink-0 animate-bounce-subtle">🤖</div>
            <div className="flex-1">
               <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>AI 助教：离家去远航</h3>
               <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -190,9 +190,9 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
              <button 
                key={route.id}
                onClick={() => handleSelectRoute(route)}
-               className={`group relative p-8 rounded-[3rem] border-4 transition-all duration-500 flex flex-col items-center gap-6 overflow-hidden ${selectedRoute?.id === route.id ? `${route.color} border-white shadow-2xl scale-105 text-white` : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-blue-100 text-blue-900'}`}
+               className={`group relative p-8 rounded-[3rem] border-4 transition-all duration-500 flex flex-col items-center gap-6 overflow-hidden ${selectedRoute?.id === route.id ? `${route.color} border-white scale-105 text-white` : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-blue-100 text-blue-900'}`}
              >
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-transform duration-500 ${selectedRoute?.id === route.id ? 'bg-white/20' : 'bg-blue-100 text-blue-600 group-hover:rotate-12'}`}>
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-transform duration-500 ${selectedRoute?.id === route.id ? 'bg-white/20' : 'bg-blue-100 text-blue-600 group-hover:rotate-12'}`}>
                    {route.icon}
                 </div>
                 <div className="text-center">
@@ -212,7 +212,7 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         <div className="w-full max-w-5xl flex items-center gap-4 px-10">
            {[0, 1, 2, 3].map((s) => (
              <div key={s} className="flex-1 flex flex-col items-center gap-3">
-                <div className={`w-full h-24 rounded-3xl border-2 transition-all duration-500 flex flex-col items-center justify-center ${currentStep === s ? 'bg-white shadow-[0_0_30px_white] scale-110 border-blue-400' : isDark ? 'bg-white/5 border-white/5 opacity-30' : 'bg-slate-200 border-slate-300 opacity-30'}`}>
+                <div className={`w-full h-24 rounded-3xl border-2 transition-all duration-500 flex flex-col items-center justify-center ${currentStep === s ? 'bg-white scale-110 border-blue-400' : isDark ? 'bg-white/5 border-white/5 opacity-30' : 'bg-slate-200 border-slate-300 opacity-30'}`}>
                    {selectedRoute && (
                      <>
                         <span className={`text-xl font-black ${currentStep === s ? 'text-blue-600' : ''}`}>{selectedRoute.progression[s].name}</span>
@@ -228,7 +228,7 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         {/* AI 悬念测试弹窗 */}
         {showAIQuestion && (
            <div className="fixed inset-0 z-[150] backdrop-blur-md bg-black/40 flex items-center justify-center p-6 animate-in zoom-in duration-300">
-              <div className="bg-white rounded-[3.5rem] p-12 max-w-xl w-full shadow-2xl border-4 border-blue-500 flex flex-col items-center gap-8 text-center">
+              <div className="bg-white rounded-[3.5rem] p-12 max-w-xl w-full border-4 border-blue-500 flex flex-col items-center gap-8 text-center">
                  <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-5xl">🤔</div>
                  <div className="space-y-4">
                     <h3 className="text-3xl font-black text-blue-950">AI：听出这种“悬念”了吗？</h3>
@@ -238,7 +238,7 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                  </div>
                  <button 
                    onClick={handleGoHome}
-                   className="px-12 py-5 bg-blue-600 text-white rounded-3xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                   className="px-12 py-5 bg-blue-600 text-white rounded-3xl font-black text-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                  >
                     让它回“家”！ <ArrowRight size={24} />
                  </button>

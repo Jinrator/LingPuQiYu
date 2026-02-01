@@ -25,15 +25,15 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
   
   const timerRef = useRef<number | null>(null);
 
-  const toggleCell = (row: number, col: number) => {
+  const toggleCell = async (row: number, col: number) => {
     const newGrid = [...grid];
     newGrid[row] = [...newGrid[row]];
     newGrid[row][col] = !newGrid[row][col];
     setGrid(newGrid);
     
-    // Preview note
+    // Preview note - 立即播放，不等待
     if (newGrid[row][col]) {
-        onPlay([ROLL_NOTES[row]]);
+        audioService.playPianoNote(ROLL_NOTES[row], 0.3, 0.7);
     }
   };
 
@@ -78,8 +78,8 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
             });
 
             if (notesToPlay.length > 0) {
-                // Play chord
-                notesToPlay.forEach(n => audioService.playNote(n.frequency, 0.2, 'triangle'));
+                // Play chord - 不等待，立即播放
+                audioService.playPianoChord(notesToPlay, 0.2, 0.7);
             }
 
         }, interval);
@@ -93,7 +93,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
     
    <div className={`flex flex-col space-y-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
   {/* Controls */}
-  <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl shadow-lg border ${
+  <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border ${
     isDark 
       ? 'bg-gray-800 border-gray-700' 
       : 'bg-white border-gray-200'
@@ -103,8 +103,8 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
         onClick={startSequencer}
         className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${
           isPlaying 
-          ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30' 
-          : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+          ? 'bg-rose-500 hover:bg-rose-600 text-white' 
+          : 'bg-emerald-500 hover:bg-emerald-600 text-white'
         }`}
       >
         {isPlaying ? <><Square size={18} fill="currentColor" /> 停止 (Stop)</> : <><Play size={18} fill="currentColor" /> 播放 (Play)</>}
@@ -138,7 +138,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
   </div>
 
   {/* Piano Roll Grid Area */}
-  <div className={`relative h-[600px] overflow-hidden rounded-xl border shadow-inner flex flex-col ${
+  <div className={`relative h-[600px] overflow-hidden rounded-xl border flex flex-col ${
     isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-300'
   }`}>
     {/* Step Header */}
@@ -167,7 +167,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
     <div className="flex-1 overflow-y-scroll overflow-x-hidden custom-scrollbar relative">
       <div className="flex">
         {/* Vertical Piano Keys (Left Axis) */}
-        <div className="sticky left-0 w-[80px] z-20 shadow-xl">
+        <div className="sticky left-0 w-[80px] z-20">
           {ROLL_NOTES.map((note) => {
             const isBlack = note.name.includes('#');
             return (
@@ -214,7 +214,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
                       className={`
                         flex-1 border-r border-b cursor-pointer transition-none
                         ${isActive 
-                          ? 'bg-indigo-500 border-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.5)]' 
+                          ? 'bg-indigo-500 border-indigo-400' 
                           : isDark 
                             ? 'hover:bg-white/5 border-gray-800/50 border-b-gray-800/30' 
                             : 'hover:bg-black/5 border-gray-400/50 border-b-gray-400/30'

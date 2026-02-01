@@ -93,10 +93,10 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
     <div className={`h-full flex flex-col items-center px-8 pb-32 overflow-y-auto animate-in zoom-in duration-700 scrollbar-hide transition-colors duration-500 ${isDark ? 'bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,1)_0%,rgba(2,6,23,1)_100%)]' : 'bg-white'}`}>
       <div className="max-w-6xl w-full py-20 relative">
         <header className="text-center mb-28 relative z-10">
-          <div className={`inline-block px-6 py-2 border rounded-full mb-6 shadow-xl backdrop-blur-md transition-colors ${isDark ? 'bg-blue-500/10 border-blue-500/30' : 'bg-blue-50 border-blue-200'}`}>
+          <div className={`inline-block px-6 py-2 border rounded-full mb-6 backdrop-blur-md transition-colors ${isDark ? 'bg-blue-500/10 border-blue-500/30' : 'bg-blue-50 border-blue-200'}`}>
              <span className={`text-sm font-black tracking-[0.3em] uppercase ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>ADVENTURE MAP</span>
           </div>
-          <h2 className={`text-7xl font-fredoka mb-6 drop-shadow-xl tracking-tight transition-all duration-500 ${isDark ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-sky-300 to-blue-400' : 'text-blue-900'}`}>
+          <h2 className={`text-7xl font-fredoka mb-6 tracking-tight transition-all duration-500 ${isDark ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-sky-300 to-blue-400' : 'text-blue-900'}`}>
             生音探险地图
           </h2>
           <p className={`text-xl font-medium max-w-2xl mx-auto leading-relaxed transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -111,10 +111,10 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
             const isSectionLocked = cat !== '初级';
 
             return (
-              <div key={cat} className={`relative rounded-[4rem] p-12 border-4 transition-all duration-700 ${isSectionLocked ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'} ${isDark ? 'border-white/5 bg-slate-900/40 shadow-2xl' : 'border-blue-50 bg-slate-50/50 shadow-xl'}`}>
+              <div key={cat} className={`relative rounded-[4rem] p-12 border-4 shadow-sm transition-all duration-700 ${isSectionLocked ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'} ${isDark ? 'border-white/5 bg-slate-900/40' : 'border-blue-50 bg-slate-50/50'}`}>
                 <div className="flex items-center justify-between mb-16 px-4">
                   <div className="flex items-center gap-6">
-                    <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${catTheme.color} flex items-center justify-center text-4xl shadow-2xl border border-white/20 transform rotate-[-5deg]`}>
+                    <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${catTheme.color} flex items-center justify-center text-4xl border border-white/20 transform rotate-[-5deg]`}>
                       {catTheme.icon}
                     </div>
                     <div>
@@ -142,9 +142,9 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
                         onClick={() => level.unlocked && setSelectedLevel(level)}
                         className={`relative group flex flex-col items-center transition-all duration-500 ${!level.unlocked ? 'cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}
                       >
-                        <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center shadow-2xl relative border-4 transition-all duration-500 ${level.completed ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300/40 shadow-emerald-500/20' : level.unlocked ? `bg-gradient-to-br ${catTheme.color} border-white/20 shadow-blue-500/20` : isDark ? 'bg-slate-800 border-slate-700 opacity-40' : 'bg-slate-100 border-slate-200 opacity-50'}`}>
-                          {level.unlocked ? <span className="text-5xl filter drop-shadow-lg group-hover:rotate-12 transition-transform duration-500">{level.icon}</span> : <Lock className={isDark ? 'text-slate-600' : 'text-slate-400'} size={36} />}
-                          {level.completed && <div className="absolute -top-3 -right-3 bg-emerald-500 text-white rounded-2xl p-2 shadow-2xl ring-4 ring-white z-20"><CheckCircle2 size={20} /></div>}
+                        <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center relative border-4 transition-all duration-500 ${level.completed ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300/40' : level.unlocked ? `bg-gradient-to-br ${catTheme.color} border-white/20` : isDark ? 'bg-slate-800 border-slate-700 opacity-40' : 'bg-slate-100 border-slate-200 opacity-50'}`}>
+                          {level.unlocked ? <span className="text-5xl group-hover:rotate-12 transition-transform duration-500">{level.icon}</span> : <Lock className={isDark ? 'text-slate-600' : 'text-slate-400'} size={36} />}
+                          {level.completed && <div className="absolute -top-3 -right-3 bg-emerald-500 text-white rounded-2xl p-2 ring-4 ring-white z-20"><CheckCircle2 size={20} /></div>}
                           {level.unlocked && !level.completed && <div className="absolute inset-[-4px] border-4 border-blue-400 rounded-[2.5rem] animate-ping opacity-20 pointer-events-none" />}
                         </div>
                         <div className="mt-4 flex flex-col items-center gap-1">
@@ -161,7 +161,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
 
         {selectedLevel && (
           <div className="fixed inset-0 z-[120] backdrop-blur-3xl flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300 bg-slate-950/70">
-             <div className={`w-full max-w-xl rounded-[4rem] overflow-hidden shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+             <div className={`w-full max-w-xl rounded-[4rem] overflow-hidden shadow-lg border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
                 <div className={`relative p-12 bg-gradient-to-br ${getCategoryTheme(selectedLevel.category).color} text-white overflow-hidden`}>
                   <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-[100px]" />
                   <button onClick={() => setSelectedLevel(null)} className="absolute top-10 right-10 p-3 bg-black/20 hover:bg-black/40 rounded-full transition-all hover:rotate-90"><X size={24} /></button>
@@ -174,7 +174,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
                   </div>
                 </div>
                 <div className="p-12 flex flex-col gap-10">
-                   <div className={`rounded-[3rem] p-8 border shadow-inner transition-colors ${isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-blue-50/50 border-blue-100'}`}>
+                   <div className={`rounded-[3rem] p-8 border transition-colors ${isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-blue-50/50 border-blue-100'}`}>
                       <p className={`text-2xl font-bold leading-relaxed transition-colors ${isDark ? 'text-slate-100' : 'text-blue-950'}`}>“ {selectedLevel.homework} ”</p>
                    </div>
                    <div className="flex items-center justify-between">
@@ -187,7 +187,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
                       </div>
                       <button 
                         onClick={() => setActiveLevelId(selectedLevel.id)} 
-                        className="px-12 py-5 bg-blue-600 rounded-[2rem] font-black text-xl text-white shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                        className="px-12 py-5 bg-blue-600 rounded-[2rem] font-black text-xl text-white hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                       >
                         开启课程 <ArrowRightCircle size={24} />
                       </button>

@@ -88,7 +88,7 @@ const DrumSequencer: React.FC = ({theme_type}) => {
     return (
         <div className="flex flex-col space-y-4">
   {/* Controls */}
-  <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl shadow-lg border ${
+  <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border ${
     isDark 
       ? "bg-slate-800 border-slate-700"  // 黑夜：深灰背景，更深灰边框
       : "bg-white border-slate-200"     // 白天：纯白背景，浅灰边框
@@ -99,8 +99,8 @@ const DrumSequencer: React.FC = ({theme_type}) => {
         onClick={play}
         className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${
           isPlaying 
-          ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30' 
-          : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+          ? 'bg-rose-500 hover:bg-rose-600 text-white' 
+          : 'bg-emerald-500 hover:bg-emerald-600 text-white'
         }`}
       >
         {isPlaying ? <><Square size={18} fill="currentColor" /> 停止 (Stop)</> : <><Play size={18} fill="currentColor" /> 播放 (Play)</>}
@@ -137,7 +137,7 @@ const DrumSequencer: React.FC = ({theme_type}) => {
 
   {/* Drum Grid */}
   {/* 修正鼓网格容器背景和边框色 */}
-  <div className={`rounded-xl border p-4 shadow-inner overflow-x-auto custom-scrollbar ${
+  <div className={`rounded-xl border p-4 overflow-x-auto custom-scrollbar ${
     isDark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"
   }`}>
     <div className="min-w-[800px]">

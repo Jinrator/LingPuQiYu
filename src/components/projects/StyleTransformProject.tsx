@@ -95,18 +95,18 @@ const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => vo
     <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-1000 overflow-hidden ${activeStyle.bgGradient}`}>
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <h2 className={`text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-blue-950'}`}>L10 · 风格大变身</h2>
         </div>
-        <button onClick={onComplete} className="px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl bg-emerald-600">
+        <button onClick={onComplete} className="px-10 py-4 rounded-2xl font-black text-sm text-white bg-emerald-600">
           掌握风格徽章 <Check size={18} className="ml-2 inline" />
         </button>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-16">
-        <div className={`relative w-64 h-64 rounded-[5rem] flex items-center justify-center text-[10rem] shadow-2xl ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
+        <div className={`relative w-64 h-64 rounded-[5rem] flex items-center justify-center text-[10rem] ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
               {activeStyle.icon}
         </div>
 
@@ -119,7 +119,7 @@ const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => vo
            ))}
         </div>
 
-        <button onClick={handleTogglePlay} className={`w-28 h-28 rounded-[3rem] flex items-center justify-center shadow-2xl transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}>
+        <button onClick={handleTogglePlay} className={`w-28 h-28 rounded-[3rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}>
            {isPlaying ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" className="ml-2" />}
         </button>
       </main>

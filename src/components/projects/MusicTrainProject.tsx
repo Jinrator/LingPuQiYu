@@ -159,7 +159,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -171,7 +171,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         <button 
           disabled={track.includes('EMPTY')}
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${!track.includes('EMPTY') ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${!track.includes('EMPTY') ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           发车！我的大作 <Check size={18} className="ml-2 inline" />
         </button>
@@ -189,7 +189,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                 <button 
                   key={type}
                   onClick={() => placeModule(type)}
-                  className={`group px-6 py-4 rounded-[2rem] border-4 flex items-center gap-4 transition-all hover:scale-105 active:scale-95 ${CAR_CONFIGS[type].color} border-white shadow-xl text-white`}
+                  className={`group px-6 py-4 rounded-[2rem] border-4 flex items-center gap-4 transition-all hover:scale-105 active:scale-95 ${CAR_CONFIGS[type].color} border-white text-white`}
                 >
                    <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-12 transition-transform">
                       {CAR_CONFIGS[type].icon}
@@ -213,7 +213,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                   className="absolute bottom-0 transition-all duration-1200 ease-linear flex flex-col items-center w-40"
                   style={{ left: `calc(${currentCarIdx} * (10rem + 2.5rem) + 4rem)` }}
                 >
-                   <div className="bg-blue-500 text-white p-2 rounded-xl shadow-lg animate-bounce mb-2 border-2 border-white">
+                   <div className="bg-blue-500 text-white p-2 rounded-xl animate-bounce mb-2 border-2 border-white">
                       <Bot size={24} />
                    </div>
                    <div className="w-1 h-8 bg-gradient-to-t from-transparent to-blue-500/50" />
@@ -253,7 +253,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                             onClick={() => clearCar(idx)}
                             className={`
                               relative w-40 h-44 transition-all duration-500 flex flex-col items-center justify-center gap-4 border-4
-                              ${car.type === 'EMPTY' ? 'bg-white/5 border-dashed border-slate-500/40 rounded-[2rem]' : `${car.color} border-white shadow-2xl scale-100`}
+                              ${car.type === 'EMPTY' ? 'bg-white/5 border-dashed border-slate-500/40 rounded-[2rem]' : `${car.color} border-white scale-100`}
                               ${isFirst ? 'rounded-l-[4rem] rounded-r-[1.5rem] w-48 bg-indigo-700' : ''}
                               ${isLast ? 'rounded-r-[4rem] rounded-l-[1.5rem] w-48 bg-slate-800' : ''}
                               ${!isFirst && !isLast && car.type !== 'EMPTY' ? 'rounded-[1.5rem]' : ''}
@@ -270,10 +270,10 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
 
                              {/* 车轮：离子推进器造型 */}
                              <div className={`absolute -bottom-3 left-8 w-6 h-6 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center`}>
-                                <div className={`w-2 h-2 rounded-full transition-all ${isActive ? 'bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-pulse' : 'bg-slate-700'}`} />
+                                <div className={`w-2 h-2 rounded-full transition-all ${isActive ? 'bg-blue-400 animate-pulse' : 'bg-slate-700'}`} />
                              </div>
                              <div className={`absolute -bottom-3 right-8 w-6 h-6 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center`}>
-                                <div className={`w-2 h-2 rounded-full transition-all ${isActive ? 'bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-pulse' : 'bg-slate-700'}`} />
+                                <div className={`w-2 h-2 rounded-full transition-all ${isActive ? 'bg-blue-400 animate-pulse' : 'bg-slate-700'}`} />
                              </div>
                              
                              {/* 尾部喷火 */}
@@ -285,7 +285,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
 
                              {!isFirst && !isLast && type !== 'EMPTY' && (
                                <div className="absolute -top-3 -right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <div className="bg-rose-500 text-white p-2 rounded-full shadow-lg border-2 border-white"><Trash2 size={14} /></div>
+                                  <div className="bg-rose-500 text-white p-2 rounded-full border-2 border-white"><Trash2 size={14} /></div>
                                </div>
                              )}
                           </button>
@@ -306,7 +306,7 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                                 initAudio();
                               }}
                               className={`
-                                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all border-2
+                                absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl flex items-center justify-center transition-all border-2
                                 ${fills[idx] ? 'bg-yellow-400 text-white border-white rotate-[-12deg] scale-110' : 'bg-slate-200 border-slate-300 text-slate-400 hover:bg-slate-300'}
                               `}
                             >
@@ -324,14 +324,14 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         {/* 播放/暂停控制 */}
         <button 
           onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-          className={`w-24 h-24 rounded-[3rem] flex items-center justify-center shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white ring-8 ring-blue-500/10 z-20 active:scale-95`}
+          className={`w-24 h-24 rounded-[3rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white ring-8 ring-blue-500/10 z-20 active:scale-95`}
         >
            {isPlaying ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
         </button>
 
         {/* 底部信息提示 */}
         <div className={`p-8 rounded-[3rem] border-4 border-dashed transition-all flex items-center gap-6 max-w-2xl ${isTunnelActive ? 'bg-purple-900/40 border-purple-400/40' : 'bg-white/5 border-white/10'}`}>
-           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg ${isTunnelActive ? 'bg-purple-600' : 'bg-indigo-600'}`}>
+           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${isTunnelActive ? 'bg-purple-600' : 'bg-indigo-600'}`}>
               <Radio size={24} />
            </div>
            <div className="flex-1">

@@ -162,7 +162,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
       <div className="max-w-7xl mx-auto py-12">
         <header className="mb-12 text-center relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] -z-10" />
-          <h2 className={`text-7xl font-fredoka mb-4 tracking-tighter transition-colors ${isDark ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-sky-400' : 'text-blue-900'} drop-shadow-lg`}>
+          <h2 className={`text-7xl font-fredoka mb-4 tracking-tighter transition-colors ${isDark ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-sky-400' : 'text-blue-900'}`}>
             作品发布会
           </h2>
           <p className={`text-xl mb-10 font-medium transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>沉浸在小小音乐制作人的灵感世界，发现属于未来的旋律！💿</p>
@@ -170,7 +170,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
           {/* 搜索栏 */}
           <div className="max-w-xl mx-auto relative group">
             <div className={`absolute inset-0 bg-blue-500 rounded-3xl blur transition-opacity ${isDark ? 'opacity-20 group-hover:opacity-30' : 'opacity-10 group-hover:opacity-20'}`}></div>
-            <div className={`relative flex items-center border rounded-3xl px-6 py-4 transition-all shadow-2xl ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-blue-100'}`}>
+            <div className={`relative flex items-center border rounded-3xl px-6 py-4 transition-all ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-blue-100'}`}>
               <Search className="text-slate-400 mr-4" size={24} />
               <input 
                 type="text" 
@@ -188,14 +188,14 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
             {filteredSongs.map((song) => (
               <div 
                 key={song.id}
-                className={`group relative rounded-[4rem] p-10 border transition-all duration-500 hover:-translate-y-4 backdrop-blur-xl shadow-2xl ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-blue-100 shadow-blue-900/5'} ${activeSong?.id === song.id ? 'ring-2 ring-blue-500' : ''}`}
+                className={`group relative rounded-[4rem] p-10 border shadow-sm transition-all duration-500 hover:-translate-y-4 backdrop-blur-xl ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-blue-100'} ${activeSong?.id === song.id ? 'ring-2 ring-blue-500' : ''}`}
               >
                 {/* 唱片外盒 */}
                 <div className="relative mb-10 group" onClick={() => handlePlay(song)}>
-                  <div className={`aspect-square w-full ${song.color} ${song.coverStyle} relative overflow-hidden flex items-center justify-center shadow-2xl transition-all duration-700 group-hover:scale-105 z-10 cursor-pointer`}>
+                  <div className={`aspect-square w-full ${song.color} ${song.coverStyle} relative overflow-hidden flex items-center justify-center transition-all duration-700 group-hover:scale-105 z-10 cursor-pointer`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20"></div>
                     <div className={`w-48 h-48 rounded-full border-[12px] border-black/10 flex items-center justify-center ${isPlaying && activeSong?.id === song.id ? 'animate-spin-slow' : ''}`}>
-                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-4xl shadow-inner">
+                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-4xl">
                         {song.icon}
                       </div>
                     </div>
@@ -207,7 +207,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className={`text-3xl font-black mb-2 tracking-tight transition-colors ${isDark ? 'text-white' : 'text-blue-900'}`}>{song.title}</h3>
-                      <div className={`flex items-center gap-2 text-xs font-black w-fit px-4 py-1.5 rounded-full mb-4 shadow-sm transition-colors ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-blue-50 text-blue-600'}`}>
+                      <div className={`flex items-center gap-2 text-xs font-black w-fit px-4 py-1.5 rounded-full mb-4 transition-colors ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-blue-50 text-blue-600'}`}>
                         <User size={12} className="text-blue-500" />
                         <span>制作人: {song.author}</span>
                       </div>
@@ -247,7 +247,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
       {/* 底部播放器 */}
       {activeSong && (
         <div className="fixed bottom-0 left-0 right-0 z-[110] p-6 animate-in slide-in-from-bottom-full duration-700 ease-out">
-          <div className={`max-w-5xl mx-auto rounded-[3rem] border shadow-[0_-30px_100px_rgba(0,0,0,0.4)] overflow-hidden transition-colors duration-500 ${isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white border-blue-100 shadow-blue-900/10'}`}>
+          <div className={`max-w-5xl mx-auto rounded-[3rem] border shadow-lg overflow-hidden transition-colors duration-500 ${isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white border-blue-100'}`}>
             
             {showLyrics && (
               <div className={`px-10 py-4 flex flex-col items-center justify-center border-b h-20 transition-colors ${isDark ? 'bg-black/20 border-white/5' : 'bg-blue-50/30 border-blue-50'}`}>
@@ -266,7 +266,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
             
             <div className="px-10 py-6 flex items-center justify-between">
               <div className="flex items-center gap-6 w-1/3">
-                <div className={`w-16 h-16 ${activeSong.color} rounded-3xl flex items-center justify-center text-3xl shadow-xl`}>
+                <div className={`w-16 h-16 ${activeSong.color} rounded-3xl flex items-center justify-center text-3xl`}>
                   {activeSong.icon}
                 </div>
                 <div className="overflow-hidden">
@@ -278,7 +278,7 @@ const StageMode: React.FC<StageModeProps> = ({ theme = 'dark' }) => {
               <div className="flex items-center gap-10">
                 <button 
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform ${isDark ? 'bg-white text-slate-900' : 'bg-blue-600 text-white'}`}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center hover:scale-110 transition-transform ${isDark ? 'bg-white text-slate-900' : 'bg-blue-600 text-white'}`}
                 >
                   {isPlaying ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
                 </button>

@@ -79,7 +79,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
       {/* 顶部导航 */}
       <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-slate-900/50 border-white/5' : 'bg-blue-50/50 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-blue-600 shadow-sm border border-blue-100'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-blue-600 border border-blue-100'}`}>
             <X size={24} />
           </button>
           <div>
@@ -98,7 +98,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
           <button 
             disabled={sounds.length < 3}
             onClick={onComplete}
-            className={`px-10 py-4 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center gap-3 ${sounds.length >= 3 ? 'bg-emerald-600 text-white hover:scale-105 active:scale-95' : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-50'}`}
+            className={`px-10 py-4 rounded-2xl font-black text-lg transition-all flex items-center gap-3 ${sounds.length >= 3 ? 'bg-emerald-600 text-white hover:scale-105 active:scale-95' : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-50'}`}
           >
             完成狩猎 <Check size={20} />
           </button>
@@ -119,7 +119,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {sounds.map(sound => (
-              <div key={sound.id} className={`group relative rounded-[3.5rem] overflow-hidden border transition-all duration-500 hover:-translate-y-2 shadow-2xl ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-50'}`}>
+              <div key={sound.id} className={`group relative rounded-[3.5rem] overflow-hidden border transition-all duration-500 hover:-translate-y-2 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-50'}`}>
                 <div className="aspect-square relative overflow-hidden">
                   <img src={sound.photoUrl} alt={sound.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
@@ -164,7 +164,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
       {/* 添加新声音的表单 (浮层) */}
       {isAdding && (
         <div className="fixed inset-0 z-[250] backdrop-blur-3xl flex items-center justify-center p-6 bg-slate-950/80 animate-in fade-in duration-300">
-          <div className={`w-full max-w-2xl rounded-[4rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.6)] border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+          <div className={`w-full max-w-2xl rounded-[4rem] overflow-hidden border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="p-10 border-b flex items-center justify-between transition-colors border-white/5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
               <h3 className="text-3xl font-fredoka">声音上传中心</h3>
               <button onClick={resetForm} className="p-2 hover:bg-white/10 rounded-full transition-all"><X size={28} /></button>
@@ -209,7 +209,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
                   <div className={`relative aspect-square rounded-[3rem] border-2 border-dashed flex flex-col items-center justify-center transition-all ${newAudio ? 'border-blue-500 bg-blue-500/5' : isDark ? 'border-white/10 bg-white/5' : 'border-blue-100 bg-blue-50/50'}`}>
                     {newAudio ? (
                       <div className="flex flex-col items-center gap-6">
-                        <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-xl animate-bounce-subtle">
+                        <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white animate-bounce-subtle">
                           <Music size={32} />
                         </div>
                         <span className="text-sm font-black text-blue-500">音频已就绪</span>
@@ -229,7 +229,7 @@ const SoundHuntingProject: React.FC<SoundHuntingProjectProps> = ({ onComplete, o
               <button 
                 onClick={saveSound}
                 disabled={!newName || !newPhoto || !newAudio}
-                className={`w-full py-8 rounded-[2.5rem] font-black text-2xl transition-all shadow-2xl flex items-center justify-center gap-4 ${newName && newPhoto && newAudio ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:scale-[1.02] active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                className={`w-full py-8 rounded-[2.5rem] font-black text-2xl transition-all flex items-center justify-center gap-4 ${newName && newPhoto && newAudio ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:scale-[1.02] active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
               >
                 保存到狩猎背包 <Check size={28} />
               </button>

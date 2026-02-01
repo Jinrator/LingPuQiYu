@@ -17,9 +17,6 @@ export default {
     },
   },
   plugins: [],
-  safelist: [
-    {
-      pattern: /bg-\[#[0-9a-fA-F]{6}\]/,
-    },
-  ],
+  // 移除 safelist，因为我们已经在 theme.extend.colors 中定义了颜色
+  // 动态类名如 bg-[#000b1a] 会在运行时生成
 }

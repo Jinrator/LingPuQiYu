@@ -99,9 +99,9 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
   return (
     <div className={`fixed inset-0 z-[200] flex flex-col transition-colors duration-500 animate-in fade-in ${isDark ? 'bg-slate-950 text-white' : 'bg-[#f0f9ff] text-blue-950'}`}>
       
-      <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-slate-900/80 border-white/5 backdrop-blur-md' : 'bg-white border-blue-100 shadow-sm'}`}>
+      <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-slate-900/80 border-white/5 backdrop-blur-md' : 'bg-white border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white text-slate-500 hover:text-blue-600 border shadow-sm'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white text-slate-500 hover:text-blue-600 border'}`}>
             <X size={24} />
           </button>
           <div>
@@ -112,7 +112,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
         
         <button 
           onClick={onComplete}
-          className="px-8 py-3 bg-blue-600 rounded-xl font-black text-sm text-white shadow-xl hover:bg-blue-500 active:scale-95 transition-all flex items-center gap-2"
+          className="px-8 py-3 bg-blue-600 rounded-xl font-black text-sm text-white hover:bg-blue-500 active:scale-95 transition-all flex items-center gap-2"
         >
           完成挑战 <Check size={18} />
         </button>
@@ -145,13 +145,13 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
 
              {/* 当前音区指示点 */}
              <div 
-               className="absolute right-3.5 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+               className="absolute right-3.5 w-2 h-2 rounded-full bg-blue-500 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                style={{ bottom: `calc((${currentIndex} / 10) * 100%)` }}
              />
           </div>
 
           <div className="flex-1 relative flex flex-col justify-between">
-            <div className={`absolute left-1/2 -translate-x-1/2 w-4 top-0 bottom-0 rounded-full transition-colors ${isDark ? 'bg-white/5' : 'bg-blue-100 shadow-inner'}`} />
+            <div className={`absolute left-1/2 -translate-x-1/2 w-4 top-0 bottom-0 rounded-full transition-colors ${isDark ? 'bg-white/5' : 'bg-blue-100'}`} />
 
             {[...NOTES].reverse().map((note) => (
               <button
@@ -163,7 +163,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
                   {note.sol}
                 </div>
 
-                <div className={`w-9 h-9 rounded-full border-4 transition-all duration-500 ${currentIndex === note.id ? `${note.color} border-white shadow-[0_0_25px_rgba(255,255,255,0.5)] scale-110` : isDark ? 'bg-slate-800 border-white/10' : 'bg-white border-blue-100'}`} />
+                <div className={`w-9 h-9 rounded-full border-4 transition-all duration-500 ${currentIndex === note.id ? `${note.color} border-white scale-110` : isDark ? 'bg-slate-800 border-white/10' : 'bg-white border-blue-100'}`} />
 
                 <div className={`flex-1 text-left flex items-center gap-2 transition-all ${currentIndex === note.id ? 'text-blue-500 scale-125' : 'opacity-20 hover:opacity-100'}`}>
                   <div className="relative flex flex-col items-center">
@@ -176,7 +176,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
             ))}
 
             <div 
-              className="absolute left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-white via-blue-100 to-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.6)] z-20 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center"
+              className="absolute left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-white via-blue-100 to-blue-500 z-20 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center"
               style={{ bottom: `calc((100% / 10) * ${currentIndex} - 2rem)` }}
             >
                <div className="w-8 h-8 rounded-full bg-white/30 blur-sm absolute top-2 left-2" />
@@ -186,9 +186,9 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
         </div>
 
         <div className="flex flex-col gap-6 max-w-md w-full overflow-y-auto max-h-full pr-4 scrollbar-hide pb-20 lg:pb-0">
-           <div className={`p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-100 shadow-xl'}`}>
+           <div className={`p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-100'}`}>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white">
                   <ArrowUp size={20} />
                 </div>
                 <h3 className="text-xl font-black">音区大不同</h3>
@@ -201,9 +201,9 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
               </p>
            </div>
            
-           <div className={`p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-100 shadow-xl'}`}>
+           <div className={`p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-100'}`}>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
+                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
                   <Music size={20} />
                 </div>
                 <h4 className="text-xl font-black">完整曲谱：两只老虎</h4>
@@ -221,10 +221,10 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
                            key={noteIdx}
                            onClick={() => handleJump(note.id)}
                            className={`
-                            relative w-12 h-12 rounded-xl font-black text-lg flex flex-col items-center justify-center transition-all shadow-sm border-2
+                            relative w-12 h-12 rounded-xl font-black text-lg flex flex-col items-center justify-center transition-all border-2
                             ${isDark 
                               ? 'bg-slate-800 border-white/5 text-blue-400 hover:bg-white/10 hover:border-blue-500/30' 
-                              : 'bg-blue-50 border-blue-100 text-blue-600 hover:bg-white hover:border-blue-400 hover:shadow-md'}
+                              : 'bg-blue-50 border-blue-100 text-blue-600 hover:bg-white hover:border-blue-400'}
                             active:scale-90
                            `}
                          >

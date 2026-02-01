@@ -60,7 +60,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-4">
                 <div className="relative group cursor-pointer" onClick={() => setView(ViewMode.FREE_LAB)}>
                   <div className={`absolute inset-0 bg-blue-400 blur-md opacity-20 group-hover:opacity-40 transition-opacity`}></div>
-                  <div className="relative w-14 h-14 bg-gradient-to-br from-[#00b4ff] to-[#0052cc] rounded-2xl flex items-center justify-center shadow-2xl border border-white/20 transform rotate-[-5deg]">
+                  <div className="relative w-14 h-14 bg-gradient-to-br from-[#00b4ff] to-[#0052cc] rounded-2xl flex items-center justify-center border border-white/20 transform rotate-[-5deg]">
                     <svg viewBox="0 0 100 100" className="w-10 h-10 text-white fill-current">
                       <path d="M20,40 Q20,20 50,20 Q80,20 80,40 L80,50 Q80,60 70,60 L40,60 L40,45 L65,45 L65,50 L35,50 L35,70 Q35,85 65,85 Q95,85 95,60" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
                     </svg>
@@ -85,7 +85,7 @@ const App: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => setView(ViewMode.USER_PROFILE)}
-                  className={`flex items-center gap-3 px-1.5 py-1.5 rounded-full border transition-all shadow-sm ${view === ViewMode.USER_PROFILE ? 'bg-blue-600 border-blue-400 text-white' : theme === 'dark' ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-white border-blue-100 text-blue-600'}`}
+                  className={`flex items-center gap-3 px-1.5 py-1.5 rounded-full border transition-all ${view === ViewMode.USER_PROFILE ? 'bg-blue-600 border-blue-400 text-white' : theme === 'dark' ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-white border-blue-100 text-blue-600'}`}
                 >
                   <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden border-2 border-white/20">
                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" />
@@ -114,14 +114,14 @@ const App: React.FC = () => {
           
           {!isAudioInitialized && (
             <div className={`fixed inset-0 z-[100] backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#000b1a]/90' : 'bg-white/90'}`}>
-               <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] animate-bounce-subtle flex items-center justify-center mb-8 shadow-[0_0_60px_rgba(59,130,246,0.5)] border border-white/20">
+               <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] animate-bounce-subtle flex items-center justify-center mb-8 border border-white/20">
                  <span className="text-5xl">🎧</span>
                </div>
                <h2 className={`text-4xl font-fredoka mb-4 transition-colors ${theme === 'dark' ? 'text-white' : 'text-blue-900'}`}>生音科技 · 灵谱奇域</h2>
                <p className="text-blue-400 max-w-lg mb-10 font-medium text-lg">每一个孩子都可以在音乐中快乐成长，<br/>成为自己人生的的建筑师。</p>
                <button 
                  onClick={initAudio}
-                 className={`px-16 py-5 rounded-full font-black text-xl transition-all shadow-xl active:scale-95 ${theme === 'dark' ? 'bg-white text-blue-900 hover:bg-blue-50' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                 className={`px-16 py-5 rounded-full font-black text-xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white text-blue-900 hover:bg-blue-50' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                >
                  立即进入
                </button>

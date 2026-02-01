@@ -109,7 +109,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
     <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-1000 overflow-hidden ${isDark ? 'bg-slate-950' : 'bg-blue-50'}`}>
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -120,7 +120,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
         <button 
           disabled={hookSlots.every(s => s === null)}
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${!hookSlots.every(s => s === null) ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${!hookSlots.every(s => s === null) ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           这就是我的 Hook! <Check size={18} className="ml-2 inline" />
         </button>
@@ -135,7 +135,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
               <button 
                 onClick={duplicateHook}
                 disabled={!hookSlots.some(s => s !== null)}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest transition-all ${hookSlots.some(s => s !== null) ? 'bg-blue-600 text-white shadow-lg hover:scale-105' : 'bg-slate-400 opacity-30 cursor-not-allowed'}`}
+                className={`flex items-center gap-2 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest transition-all ${hookSlots.some(s => s !== null) ? 'bg-blue-600 text-white hover:scale-105' : 'bg-slate-400 opacity-30 cursor-not-allowed'}`}
               >
                  <Repeat size={14} /> 一键洗脑 (重复填充)
               </button>
@@ -145,7 +145,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
               {hookSlots.map((slot, idx) => (
                 <div 
                   key={idx}
-                  className={`relative rounded-[3rem] border-4 border-dashed transition-all duration-500 flex flex-col items-center justify-center gap-4 overflow-hidden ${slot ? `${slot.color} border-white shadow-2xl scale-105` : isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100'}`}
+                  className={`relative rounded-[3rem] border-4 border-dashed transition-all duration-500 flex flex-col items-center justify-center gap-4 overflow-hidden ${slot ? `${slot.color} border-white scale-105` : isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100'}`}
                 >
                    {slot ? (
                      <>
@@ -174,14 +174,14 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
            <div className="flex justify-center">
               <button 
                 onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-                className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-all ${isPlaying ? 'bg-rose-500' : 'bg-blue-600'} text-white`}
+                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-rose-500' : 'bg-blue-600'} text-white`}
               >
                  {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
               </button>
            </div>
         </div>
 
-        <div className={`w-full max-w-5xl p-10 rounded-[4rem] border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100 shadow-2xl'}`}>
+        <div className={`w-full max-w-5xl p-10 rounded-[4rem] border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
            <div className="absolute inset-0 pointer-events-none">
               <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
               <Waves className="absolute bottom-4 right-4 text-blue-500/10" size={120} />
@@ -189,7 +189,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
 
            <div className="relative z-10 flex flex-col gap-8">
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg"><Fish size={24} /></div>
+                 <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center"><Fish size={24} /></div>
                  <div>
                     <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>灵感池</h4>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Your Inspiration Pool</p>
@@ -203,7 +203,7 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                      onClick={() => addToSlot(frag)}
                      className={`group p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 hover:scale-105 active:scale-95 ${isDark ? 'bg-white/5 border-white/5 hover:border-blue-500/50' : 'bg-slate-50 border-slate-100 hover:border-blue-400'}`}
                    >
-                      <div className={`w-20 h-20 rounded-full ${frag.color} flex items-center justify-center text-4xl shadow-xl transition-transform group-hover:rotate-12`}>
+                      <div className={`w-20 h-20 rounded-full ${frag.color} flex items-center justify-center text-4xl transition-transform group-hover:rotate-12`}>
                          {frag.emoji}
                       </div>
                       <span className={`font-black text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{frag.name}</span>

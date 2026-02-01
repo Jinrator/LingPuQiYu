@@ -104,7 +104,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -120,7 +120,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
            <button 
              disabled={!isComplete}
              onClick={onComplete} 
-             className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${isComplete ? 'bg-emerald-600 scale-105 active:scale-95' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+             className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${isComplete ? 'bg-emerald-600 scale-105 active:scale-95' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
            >
              提交和弦汉堡 <Check size={18} className="ml-2 inline" />
            </button>
@@ -130,9 +130,9 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-12">
         
         {showExplanation && (
-          <div className={`max-w-3xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5 shadow-2xl' : 'bg-white border-blue-100 shadow-xl'}`}>
+          <div className={`max-w-3xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="flex gap-8 items-start">
-              <div className="w-20 h-20 rounded-3xl bg-amber-500 flex flex-col items-center justify-center text-4xl shadow-xl border-4 border-white/10 flex-shrink-0">🍔</div>
+              <div className="w-20 h-20 rounded-3xl bg-amber-500 flex flex-col items-center justify-center text-4xl border-4 border-white/10 flex-shrink-0">🍔</div>
               <div>
                 <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>声音的“叠罗汉”</h3>
                 <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -157,7 +157,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                       <button 
                         key={i} 
                         onClick={() => { setBottomNote(i); initAudio(); }}
-                        className={`h-12 rounded-xl font-black border-2 transition-all ${bottomNote === i ? 'bg-orange-600 text-white border-orange-400 shadow-lg' : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-slate-100 text-slate-600'}`}
+                        className={`h-12 rounded-xl font-black border-2 transition-all ${bottomNote === i ? 'bg-orange-600 text-white border-orange-400' : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-slate-100 text-slate-600'}`}
                       >
                         {n.label}
                       </button>
@@ -171,14 +171,14 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                  <div className="flex gap-4">
                     <button 
                       onClick={() => { setIsMajor(true); setMiddleNote(1); initAudio(); }}
-                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && isMajor ? 'bg-amber-400 border-white shadow-xl scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
+                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && isMajor ? 'bg-amber-400 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                     >
                        <span className="text-2xl">🧀</span>
                        <span className="text-[9px] font-black uppercase tracking-tighter mt-1">金黄芝士</span>
                     </button>
                     <button 
                       onClick={() => { setIsMajor(false); setMiddleNote(1); initAudio(); }}
-                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && !isMajor ? 'bg-blue-500 border-white shadow-xl scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
+                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && !isMajor ? 'bg-blue-500 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                     >
                        <span className="text-2xl">🫐</span>
                        <span className="text-[9px] font-black uppercase tracking-tighter mt-1">忧郁蓝莓</span>
@@ -191,7 +191,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">顶层：生菜盖 (5th)</span>
                  <button 
                    onClick={() => { setTopNote(1); initAudio(); }}
-                   className={`w-full h-16 rounded-2xl flex items-center justify-center gap-3 border-4 transition-all ${topNote !== null ? 'bg-emerald-500 border-white shadow-xl' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
+                   className={`w-full h-16 rounded-2xl flex items-center justify-center gap-3 border-4 transition-all ${topNote !== null ? 'bg-emerald-500 border-white' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                  >
                     <span className="text-2xl">🥬</span>
                     <span className="text-sm font-black text-white">新鲜生菜</span>
@@ -221,25 +221,25 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
               {/* 汉堡层 (叠加层) */}
               <div className="flex flex-col items-center gap-1 z-10">
                  {/* Top Bun */}
-                 <div className={`w-48 h-12 bg-orange-200 rounded-t-full border-b-4 border-orange-800/10 shadow-lg transition-all duration-500 ${topNote !== null ? 'translate-y-0 opacity-100' : '-translate-y-40 opacity-0'}`} />
+                 <div className={`w-48 h-12 bg-orange-200 rounded-t-full border-b-4 border-orange-800/10 transition-all duration-500 ${topNote !== null ? 'translate-y-0 opacity-100' : '-translate-y-40 opacity-0'}`} />
                  
                  {/* Lettuce */}
                  <div className={`w-52 h-4 bg-emerald-400 rounded-full transition-all duration-500 delay-75 ${topNote !== null ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`} />
 
                  {/* Middle Ingredient */}
-                 <div className={`w-44 h-8 rounded-lg shadow-inner transition-all duration-500 ${middleNote !== null ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} ${isMajor ? 'bg-amber-300' : 'bg-blue-600'}`}>
+                 <div className={`w-44 h-8 rounded-lg transition-all duration-500 ${middleNote !== null ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} ${isMajor ? 'bg-amber-300' : 'bg-blue-600'}`}>
                     {middleNote !== null && isMajor && <div className="absolute inset-0 bg-white/20 animate-pulse rounded-lg" />}
                  </div>
 
                  {/* Bottom Bun */}
-                 <div className={`w-48 h-16 bg-orange-300 rounded-b-3xl shadow-xl transition-all duration-500 ${bottomNote !== null ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                 <div className={`w-48 h-16 bg-orange-300 rounded-b-3xl transition-all duration-500 ${bottomNote !== null ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     {bottomNote !== null && <div className="absolute inset-0 flex items-center justify-center font-black text-orange-900/40 text-2xl">{SCALE[bottomNote].label}</div>}
                  </div>
               </div>
 
               {isComplete && (
                 <div className="absolute -top-12 animate-bounce">
-                  <div className={`px-6 py-2 rounded-2xl font-black text-sm shadow-xl border-2 ${isMajor ? 'bg-amber-400 text-amber-900 border-white' : 'bg-blue-600 text-white border-blue-400'}`}>
+                  <div className={`px-6 py-2 rounded-2xl font-black text-sm border-2 ${isMajor ? 'bg-amber-400 text-amber-900 border-white' : 'bg-blue-600 text-white border-blue-400'}`}>
                     {isMajor ? '快乐大三和弦！✨' : '忧郁小三和弦... 🌧️'}
                   </div>
                 </div>
@@ -247,7 +247,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
            </div>
 
            {/* 右侧：知识卡片 */}
-           <div className={`w-80 p-8 rounded-[2.5rem] border shadow-2xl transition-all ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+           <div className={`w-80 p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
               <div className="flex items-center gap-4 mb-6">
                  <Layers className="text-blue-500" size={24} />
                  <h4 className="font-black text-lg">和弦公式</h4>

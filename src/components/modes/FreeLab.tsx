@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { GRID_COLS, TIMELINE_SECTIONS, RAINBOW_COLORS } from '../../constants';
 import { Play, Pause, Trash2, Library, Music4, Mic, BookOpen, Drum, PenTool, Waves, Zap, TrainFront } from 'lucide-react';
 import { AppStage, Note } from '../../types';
@@ -73,6 +74,8 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
 
   useEffect(() => {
     synthRef.current = createSynth();
+    // 预加载钢琴音色，避免第一次按键延迟
+    audioService.resume();
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
@@ -134,22 +137,26 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
     }
   };
 
-  const toggleNote = (note: Note) => {
-    audioService.resume();
-    
+  const toggleNote = useCallback((note: Note) => {
     // Check if note is already active
     const isActive = activeNotes.some(n => n.full === note.full);
     
     if (isActive) {
-        // Toggle OFF
-        setActiveNotes(prev => prev.filter(n => n.full !== note.full));
+        // Toggle OFF - 使用 flushSync 强制同步更新
+        flushSync(() => {
+            setActiveNotes(prev => prev.filter(n => n.full !== note.full));
+        });
     } else {
-        // Toggle ON
-        audioService.playNote(note.frequency);
-        setActiveNotes(prev => [...prev, note]);
-        setLastPlayedNote(note);
+        // Toggle ON - 使用 flushSync 强制同步更新，立即显示高亮
+        flushSync(() => {
+            setActiveNotes(prev => [...prev, note]);
+            setLastPlayedNote(note);
+        });
+        
+        // 异步播放声音（不阻塞 UI）
+        audioService.playPianoNote(note, 0.5, 0.8);
     }
-  };
+  }, [activeNotes]);
 
   const clearActiveNotes = () => {
     setActiveNotes([]);
@@ -174,8 +181,7 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
     );
   };
 
-  const playChord = (rootNote: Note, intervals: number[]) => {
-    audioService.resume();
+  const playChord = useCallback((rootNote: Note, intervals: number[]) => {
     const notesToPlay: Note[] = [];
     const rootIndex = ALL_NOTES.findIndex(n => n.full === rootNote.full);
     
@@ -187,10 +193,15 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
         }
     });
 
-    audioService.playChord(notesToPlay);
-    setActiveNotes(notesToPlay);
-    setLastPlayedNote(rootNote);
-  };
+    // 使用 flushSync 强制同步更新
+    flushSync(() => {
+        setActiveNotes(notesToPlay);
+        setLastPlayedNote(rootNote);
+    });
+    
+    // 异步播放声音
+    audioService.playPianoChord(notesToPlay, 1.0, 0.7);
+  }, []);
 
   // 
   const Header = ({ title, desc }: { title: string, desc: string }) => (
@@ -201,10 +212,10 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
   );
 
   const Card = ({ title, icon, children }: { title: string, icon: React.ReactNode, children?: React.ReactNode }) => (
-      <div className={`p-5 rounded-2xl border shadow-lg hover:shadow-xl transition-all duration-300
+      <div className={`p-5 rounded-2xl border shadow-sm transition-all duration-300
       ${isDark
-        ? 'bg-slate-800 border-slate-700 hover:shadow-slate-900/20'
-        : 'bg-white border-slate-200 hover:shadow-slate-400/30'}
+        ? 'bg-slate-800 border-slate-700'
+        : 'bg-white border-slate-200'}
         `}>
           <div className={`flex items-center gap-3 mb-4 pb-4 border-b ${isDark ? 'border-slate-700/50' : 'border-slate-200/60'}`}>
               <div className={`p-2 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>{icon}</div>
@@ -245,15 +256,21 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
                          <div className="flex flex-col gap-4 items-center">
                             <p className={`text-slate-400 ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>声音有高低之分，就像楼梯一样。</p>
                             <div className="flex gap-4">
-                                <button onClick={() => toggleNote(ALL_NOTES.find(n => n.full === 'C3')!)} 
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'C3');
+                                    if (note) await audioService.playPianoNote(note, 0.5, 0.8);
+                                }} 
                                         className={`px-4 py-2 rounded-lg transition ${
                                           isDark 
                                           ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>低音</button>
-                                <button onClick={() => toggleNote(ALL_NOTES.find(n => n.full === 'C5')!)} 
-                                className={`px-4 py-2 rounded-lg transition shadow-lg ${
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'C5');
+                                    if (note) await audioService.playPianoNote(note, 0.5, 0.8);
+                                }} 
+                                className={`px-4 py-2 rounded-lg transition ${
                                   isDark 
-                                   ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/30 text-white' 
-                                    : 'bg-indigo-500 hover:bg-indigo-400 shadow-indigo-400/30 text-white'}`}>高音</button>
+                                   ? 'bg-indigo-600 hover:bg-indigo-500 text-white' 
+                                    : 'bg-indigo-500 hover:bg-indigo-400 text-white'}`}>高音</button>
                             </div>
                          </div>
                     </Card>
@@ -262,12 +279,18 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
                          <div className="flex flex-col gap-4 items-center">
                             <p className={`text-slate-400 ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>声音有长有短，组成了节奏。</p>
                             <div className="flex gap-4">
-                                <button onClick={() => audioService.playNote(440, 0.1, 'sine')} className={`px-4 py-2 rounded-lg transition ${isDark 
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'A4');
+                                    if (note) await audioService.playPianoNote(note, 0.1, 0.8);
+                                }} className={`px-4 py-2 rounded-lg transition ${isDark 
                                   ? 'bg-slate-700 hover:bg-slate-600 text-white' 
                                   : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>短</button>
-                                <button onClick={() => audioService.playNote(440, 1.5, 'sine')} className={`px-4 py-2 rounded-lg transition shadow-lg ${isDark 
-                                  ? 'bg-pink-600 hover:bg-pink-500 shadow-pink-500/30 text-white' 
-                                  : 'bg-pink-400 hover:bg-pink-300 shadow-pink-400/30 text-slate-800'}`}>长</button>
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'A4');
+                                    if (note) await audioService.playPianoNote(note, 1.5, 0.8);
+                                }} className={`px-4 py-2 rounded-lg transition ${isDark 
+                                  ? 'bg-pink-600 hover:bg-pink-500 text-white' 
+                                  : 'bg-pink-400 hover:bg-pink-300 text-slate-800'}`}>长</button>
                             </div>
                          </div>
                     </Card>
@@ -276,22 +299,28 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
                          <div className="flex flex-col gap-4 items-center">
                             <p className={`text-slate-400 ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>声音的力量可以很强，也可以很温柔。</p>
                             <div className="flex gap-4">
-                                <button onClick={() => { audioService.resume(); const osc = audioService['audioContext']!.createOscillator(); const gain = audioService['audioContext']!.createGain(); gain.connect(audioService['audioContext']!.destination); osc.connect(gain); gain.gain.value = 0.05; osc.start(); osc.stop(audioService['audioContext']!.currentTime + 0.5); }} 
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'A4');
+                                    if (note) await audioService.playPianoNote(note, 0.5, 0.2);
+                                }} 
                                   className={`px-4 py-2 rounded-lg transition ${isDark 
                                               ? 'bg-slate-700 hover:bg-slate-600 text-white' 
                                               : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
                                   }`}>弱</button>
-                                <button onClick={() => { audioService.resume(); const osc = audioService['audioContext']!.createOscillator(); const gain = audioService['audioContext']!.createGain(); gain.connect(audioService['audioContext']!.destination); osc.connect(gain); gain.gain.value = 0.5; osc.start(); osc.stop(audioService['audioContext']!.currentTime + 0.5); }} 
-                                className={`px-4 py-2 rounded-lg transition shadow-lg ${isDark 
-                                            ? 'bg-amber-500 hover:bg-amber-400 shadow-amber-500/30 text-white' 
-                                            : 'bg-amber-400 hover:bg-amber-300 shadow-amber-400/30 text-slate-800'
+                                <button onClick={async () => {
+                                    const note = ALL_NOTES.find(n => n.full === 'A4');
+                                    if (note) await audioService.playPianoNote(note, 0.5, 1.0);
+                                }} 
+                                className={`px-4 py-2 rounded-lg transition ${isDark 
+                                            ? 'bg-amber-500 hover:bg-amber-400 text-white' 
+                                            : 'bg-amber-400 hover:bg-amber-300 text-slate-800'
                                   }`}>强</button>
                             </div>
                          </div>
                     </Card>
                 </div>
                 
-                <div className={`p-6 rounded-2xl shadow-xl border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-slate-400/20'}`}>
+                <div className={`p-6 rounded-2xl border shadow-sm ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                   <div className="flex justify-between items-end mb-4">
                     <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>试一试</h3>
                       <div className="flex gap-4">
@@ -301,6 +330,7 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
                           </button>
                       </div>
                   </div>
+                  
                   <Piano theme_type={isDark} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
                 </div>
             </div>
@@ -310,17 +340,17 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
             <div className="space-y-3 space-x-2 animate-fade-in max-w-full overflow-x-hidden">
                  <Header title="乐理知识——认识五线谱、简谱与唱名" desc="" />
                  
-                 <div className={`p-6 rounded-2xl shadow-xl border flex flex-col items-center gap-6 ${
+                 <div className={`p-6 rounded-2xl border shadow-sm flex flex-col items-center gap-6 ${
   isDark 
     ? 'bg-slate-800 border-slate-700' 
-    : 'bg-white border-slate-200 shadow-slate-400/20'
+    : 'bg-white border-slate-200'
 }`}>
                     <MusicStaff theme_type={isDark} activeNotes={activeNotes} className="h-[400px] w-full" />
                     
                     <div className={`w-full grid grid-cols-2 md:grid-cols-4 gap-4 px-4 py-4 rounded-xl border ${
   isDark 
     ? 'bg-slate-900/50 border-slate-700' 
-    : 'bg-slate-100/50 border-slate-200 shadow-slate-400/10'
+    : 'bg-slate-100/50 border-slate-200'
 }`}>
   <div className="text-center p-2">
     <span className={`text-xs uppercase tracking-widest block mb-1 ${
@@ -376,10 +406,10 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
             <div className="space-y-3 space-x-2 animate-fade-in max-w-full overflow-x-hidden">
                 <Header title="和弦与音阶——探索声音的组合魔法" desc="" />
 
-                <div className={`p-6 rounded-2xl shadow-xl border flex flex-col items-center gap-6 ${
+                <div className={`p-6 rounded-2xl border shadow-sm flex flex-col items-center gap-6 ${
   isDark 
     ? 'bg-slate-800 border-slate-700' 
-    : 'bg-white border-slate-200 shadow-slate-400/20'
+    : 'bg-white border-slate-200'
 }`}>
                      <MusicStaff theme_type={isDark} activeNotes={activeNotes} className="h-[400px] w-full" />
                      
@@ -455,8 +485,7 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
              <div className="space-y-3 space-x-2 animate-fade-in max-w-full overflow-x-hidden">
                 <Header title="旋律创作" desc="在钢琴卷帘上编写你的乐章" />
                 <PianoRoll theme_type={isDark} onPlay={(notes) => {
-                    audioService.resume();
-                    audioService.playChord(notes, 0.2);
+                    audioService.playPianoChord(notes, 0.2, 0.7);
                 }} />
              </div>
         );
@@ -467,8 +496,8 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
 
   return (
     <div className={`flex h-full overflow-hidden font-sans transition-colors duration-500 ${isDark ? 'bg-[#000b1a] text-slate-200' : 'bg-[#f8fafc] text-slate-900'}`}>
-      <aside className={`w-24 border-r flex flex-col items-center py-10 gap-10 shadow-2xl z-20 backdrop-blur-xl transition-colors duration-500 ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100'}`}>
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl border border-white/20">
+      <aside className={`w-24 border-r flex flex-col items-center py-10 gap-10 z-20 backdrop-blur-xl transition-colors duration-500 ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100'}`}>
+        <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mb-4 border border-white/20">
            <Music4 className="text-white" size={28} />
         </div>
         <div className="flex flex-col gap-5 w-full px-3">
@@ -482,7 +511,7 @@ const FreeLab: React.FC<FreeLabProps> = ({ theme = 'dark' }) => {
             <button
               key={item.id}
               onClick={() => setActiveModule(item.id as SubModule)}
-              className={`flex flex-col items-center gap-2 py-4 rounded-2xl transition-all duration-300 ${activeModule === item.id ? 'bg-blue-600 text-white shadow-xl border border-blue-400/50' : isDark ? 'text-slate-500 hover:text-blue-300 hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
+              className={`flex flex-col items-center gap-2 py-4 rounded-2xl transition-all duration-300 ${activeModule === item.id ? 'bg-blue-600 text-white border border-blue-400/50' : isDark ? 'text-slate-500 hover:text-blue-300 hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
             >
               <item.icon size={22} />
               <span className="text-[10px] font-black tracking-tight">{item.label}</span>

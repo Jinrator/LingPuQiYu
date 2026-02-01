@@ -120,7 +120,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -131,7 +131,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
         
         <button 
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all bg-emerald-600 hover:bg-emerald-500 active:scale-95`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all bg-emerald-600 hover:bg-emerald-500 active:scale-95`}
         >
           绘制完成 <Check size={18} className="ml-2 inline" />
         </button>
@@ -140,10 +140,10 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-12">
         
         {/* 顶部段落切换器 */}
-        <div className={`p-3 rounded-[3rem] flex gap-3 shadow-2xl transition-all duration-500 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-blue-100'}`}>
+        <div className={`p-3 rounded-[3rem] flex gap-3 transition-all duration-500 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-blue-100'}`}>
            <button 
              onClick={() => handleSwitch('A')}
-             className={`px-12 py-5 rounded-[2.5rem] flex items-center gap-4 transition-all duration-500 ${activeSection === 'A' ? 'bg-blue-600 text-white shadow-lg scale-105' : 'text-slate-400 hover:bg-white/5'}`}
+             className={`px-12 py-5 rounded-[2.5rem] flex items-center gap-4 transition-all duration-500 ${activeSection === 'A' ? 'bg-blue-600 text-white scale-105' : 'text-slate-400 hover:bg-white/5'}`}
            >
               <Wind size={24} />
               <div className="text-left">
@@ -153,7 +153,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
            </button>
            <button 
              onClick={() => handleSwitch('B')}
-             className={`px-12 py-5 rounded-[2.5rem] flex items-center gap-4 transition-all duration-500 ${activeSection === 'B' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'text-slate-400 hover:bg-white/5'}`}
+             className={`px-12 py-5 rounded-[2.5rem] flex items-center gap-4 transition-all duration-500 ${activeSection === 'B' ? 'bg-orange-500 text-white scale-105' : 'text-slate-400 hover:bg-white/5'}`}
            >
               <Zap size={24} />
               <div className="text-left">
@@ -167,7 +167,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
         <div className="flex flex-col lg:flex-row items-center justify-center gap-16 w-full max-w-7xl">
            
            {/* 地图视觉容器 */}
-           <div className={`relative flex-1 aspect-square max-w-[500px] rounded-[4rem] border-4 transition-all duration-1000 flex flex-col items-center justify-center overflow-hidden ${activeSection === 'A' ? 'bg-blue-400/10 border-blue-400/20' : 'bg-orange-500/10 border-orange-500/20 shadow-[0_0_100px_rgba(249,115,22,0.2)]'}`}>
+           <div className={`relative flex-1 aspect-square max-w-[500px] rounded-[4rem] border-4 transition-all duration-1000 flex flex-col items-center justify-center overflow-hidden ${activeSection === 'A' ? 'bg-blue-400/10 border-blue-400/20' : 'bg-orange-500/10 border-orange-500/20'}`}>
               
               {/* 地图元素 A: 安静的小径 */}
               <div className={`absolute inset-0 transition-opacity duration-1000 ${activeSection === 'A' ? 'opacity-100' : 'opacity-0'}`}>
@@ -209,9 +209,9 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
            </div>
 
            {/* 右侧：结构升级器面板 */}
-           <div className={`w-96 p-10 rounded-[3.5rem] border shadow-2xl transition-all duration-700 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
+           <div className={`w-96 p-10 rounded-[3.5rem] border transition-all duration-700 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
               <div className="flex items-center gap-4 mb-8">
-                 <div className={`p-3 rounded-2xl ${activeSection === 'A' ? 'bg-blue-600' : 'bg-orange-500'} text-white shadow-lg transition-colors`}>
+                 <div className={`p-3 rounded-2xl ${activeSection === 'A' ? 'bg-blue-600' : 'bg-orange-500'} text-white transition-colors`}>
                     <Volume2 size={24} />
                  </div>
                  <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>能量拉杆</h4>
@@ -249,7 +249,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
 
                  <button 
                    onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-                   className={`w-full py-6 rounded-3xl font-black text-xl text-white shadow-2xl transition-all active:scale-95 ${isPlaying ? 'bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'}`}
+                   className={`w-full py-6 rounded-3xl font-black text-xl text-white transition-all active:scale-95 ${isPlaying ? 'bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                  >
                    {isPlaying ? '停止预览' : '开启航行'}
                  </button>
@@ -260,8 +260,8 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
         {/* AI 助教悬浮提示 */}
         {showAITip && (
           <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[300] animate-in slide-in-from-bottom-20 duration-500">
-             <div className={`px-10 py-6 rounded-[2.5rem] bg-slate-900 border-4 border-orange-500 shadow-2xl flex items-center gap-6 max-w-2xl`}>
-                <div className="w-16 h-16 rounded-2xl bg-orange-500 flex items-center justify-center text-4xl shadow-xl flex-shrink-0">🤖</div>
+             <div className={`px-10 py-6 rounded-[2.5rem] bg-slate-900 border-4 border-orange-500 flex items-center gap-6 max-w-2xl`}>
+                <div className="w-16 h-16 rounded-2xl bg-orange-500 flex items-center justify-center text-4xl flex-shrink-0">🤖</div>
                 <div className="flex-1">
                    <h5 className="text-white font-black text-lg mb-1">AI 助教：发现高潮！</h5>
                    <p className="text-slate-400 text-sm font-medium">副歌部分能量爆棚！我已经自动帮你把<b>底鼓加密</b>了，听听看，是不是更有那种“大声喊出来”的感觉？</p>

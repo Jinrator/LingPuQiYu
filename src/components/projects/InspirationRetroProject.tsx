@@ -127,7 +127,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -139,7 +139,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
         <button 
           disabled={convertedGrid.every(n => n === -1)}
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${!convertedGrid.every(n => n === -1) ? 'bg-emerald-600 hover:bg-emerald-500 scale-105' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${!convertedGrid.every(n => n === -1) ? 'bg-emerald-600 hover:bg-emerald-500 scale-105' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           保存灵感音符 <Check size={18} className="ml-2 inline" />
         </button>
@@ -150,8 +150,8 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
         {/* 上传区域 */}
         {!audioFile ? (
           <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl">
-             <div className={`w-full aspect-[21/9] rounded-[4rem] border-4 border-dashed flex flex-col items-center justify-center gap-6 transition-all group relative overflow-hidden ${isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/50' : 'bg-white border-blue-100 hover:border-blue-300 shadow-xl'}`}>
-                <div className="w-24 h-24 rounded-3xl bg-blue-600 flex items-center justify-center text-white shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all">
+             <div className={`w-full aspect-[21/9] rounded-[4rem] border-4 border-dashed flex flex-col items-center justify-center gap-6 transition-all group relative overflow-hidden ${isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/50' : 'bg-white border-blue-100 hover:border-blue-300'}`}>
+                <div className="w-24 h-24 rounded-3xl bg-blue-600 flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-6 transition-all">
                    <Upload size={40} />
                 </div>
                 <div className="text-center">
@@ -165,9 +165,9 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
           <div className="w-full max-w-7xl flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
              
              {/* 音频状态卡片 */}
-             <div className={`p-8 rounded-[3rem] border flex items-center justify-between ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50 shadow-lg'}`}>
+             <div className={`p-8 rounded-[3rem] border flex items-center justify-between ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50'}`}>
                 <div className="flex items-center gap-6">
-                   <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg">
+                   <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center text-white">
                       <FileAudio size={32} />
                    </div>
                    <div>
@@ -180,7 +180,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
                    {convertedGrid.every(n => n === -1) && !isConverting && (
                      <button 
                        onClick={startConversion}
-                       className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-black flex items-center gap-3 hover:bg-blue-500 shadow-xl active:scale-95 transition-all"
+                       className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-black flex items-center gap-3 hover:bg-blue-500 active:scale-95 transition-all"
                      >
                        <Wand2 size={20} />
                        开始 AI 灵感转换
@@ -199,7 +199,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
                      <span className="text-xs font-black text-blue-500 uppercase tracking-[0.2em] animate-pulse">正在解析音频波形...</span>
                      <span className="font-fredoka text-blue-500">{conversionProgress}%</span>
                   </div>
-                  <div className="w-full h-4 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-1 shadow-inner">
+                  <div className="w-full h-4 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-1">
                      <div className="h-full bg-blue-600 rounded-full transition-all duration-300" style={{ width: `${conversionProgress}%` }} />
                   </div>
                </div>
@@ -207,7 +207,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
 
              {/* 正式音符网格 */}
              {!isConverting && !convertedGrid.every(n => n === -1) && (
-               <div className={`p-10 rounded-[4rem] border flex flex-col gap-10 animate-in zoom-in-95 duration-700 ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50 shadow-2xl'}`}>
+               <div className={`p-10 rounded-[4rem] border flex flex-col gap-10 animate-in zoom-in-95 duration-700 ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
                   
                   <div className="flex items-center justify-between">
                      <div className="flex items-center gap-4">
@@ -216,7 +216,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
                      </div>
                      <button 
                        onClick={() => setIsPlaying(!isPlaying)}
-                       className={`px-8 py-3 rounded-2xl font-black text-sm text-white shadow-xl transition-all flex items-center gap-3 ${isPlaying ? 'bg-rose-500' : 'bg-emerald-600'}`}
+                       className={`px-8 py-3 rounded-2xl font-black text-sm text-white transition-all flex items-center gap-3 ${isPlaying ? 'bg-rose-500' : 'bg-emerald-600'}`}
                      >
                        {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
                        {isPlaying ? '停止回放' : '试听音符'}
@@ -244,7 +244,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
                                return (
                                  <div
                                    key={pitchIdx}
-                                   className={`h-12 rounded-xl border-2 flex items-center justify-center transition-all ${isActive ? `${note.color} border-white shadow-lg scale-110 z-10` : isDark ? 'bg-white/5 border-white/5 opacity-20' : 'bg-slate-50 border-slate-100 opacity-20'}`}
+                                   className={`h-12 rounded-xl border-2 flex items-center justify-center transition-all ${isActive ? `${note.color} border-white scale-110 z-10` : isDark ? 'bg-white/5 border-white/5 opacity-20' : 'bg-slate-50 border-slate-100 opacity-20'}`}
                                  >
                                    {isActive && (
                                      <div className="flex flex-col items-center leading-none">

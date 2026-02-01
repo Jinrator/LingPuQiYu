@@ -48,17 +48,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme, onLogout }) => {
       <div className="max-w-6xl mx-auto space-y-10">
         
         {/* 顶部个人名片 */}
-        <div className={`relative rounded-[4rem] p-10 border transition-all duration-500 overflow-hidden ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100 shadow-xl shadow-blue-900/5'}`}>
+        <div className={`relative rounded-[4rem] p-10 border transition-all duration-500 overflow-hidden shadow-sm ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
           <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -z-10" />
           
           <div className="flex flex-col lg:flex-row items-center gap-10">
             {/* 头像区域 */}
             <div className="relative group">
               <div className="absolute inset-0 bg-blue-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
-              <div className="relative w-44 h-44 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-slate-100">
+              <div className="relative w-44 h-44 rounded-full border-4 border-white overflow-hidden bg-slate-100">
                 <img src={userData.avatar} alt="Avatar" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute -bottom-2 right-4 bg-blue-600 text-white px-4 py-1.5 rounded-full font-black text-xs shadow-lg border-2 border-white">
+              <div className="absolute -bottom-2 right-4 bg-blue-600 text-white px-4 py-1.5 rounded-full font-black text-xs border-2 border-white">
                 LV.{userData.level}
               </div>
             </div>
@@ -115,9 +115,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme, onLogout }) => {
             </h3>
             <div className="space-y-4">
               {myCourses.map(course => (
-                <div key={course.id} className={`p-6 rounded-[2.5rem] border group transition-all hover:scale-[1.02] ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-100'}`}>
+                <div key={course.id} className={`p-6 rounded-[2.5rem] border shadow-sm group transition-all hover:scale-[1.02] hover:shadow-md ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-100'}`}>
                   <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${course.color} flex items-center justify-center text-white shadow-lg`}>
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${course.color} flex items-center justify-center text-white`}>
                       <course.icon size={24} />
                     </div>
                     <div>
@@ -153,9 +153,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme, onLogout }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {myWorks.map(work => (
-                <div key={work.id} className={`group p-6 rounded-[3rem] border transition-all hover:-translate-y-2 ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-100 shadow-xl shadow-blue-900/5'}`}>
+                <div key={work.id} className={`group p-6 rounded-[3rem] border shadow-sm transition-all hover:-translate-y-2 hover:shadow-md ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-100'}`}>
                   <div className="flex items-center gap-6">
-                    <div className={`w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}>
+                    <div className={`w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center text-4xl relative overflow-hidden`}>
                       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                       {work.icon}
                       <div className="absolute inset-0 border-[6px] border-black/10 rounded-full" />
@@ -215,9 +215,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme, onLogout }) => {
       {/* 退出确认弹窗 */}
       {showExitConfirm && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className={`w-full max-w-md rounded-[3.5rem] p-10 border shadow-2xl animate-in zoom-in-95 duration-500 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-blue-100'}`}>
+          <div className={`w-full max-w-md rounded-[3.5rem] p-10 border shadow-lg animate-in zoom-in-95 duration-500 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-blue-100'}`}>
             <div className="flex flex-col items-center text-center gap-6">
-              <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl shadow-xl ${showExitConfirm === 'logout' ? 'bg-rose-500/20 text-rose-500' : 'bg-blue-500/20 text-blue-500'}`}>
+              <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-3xl ${showExitConfirm === 'logout' ? 'bg-rose-500/20 text-rose-500' : 'bg-blue-500/20 text-blue-500'}`}>
                 {showExitConfirm === 'logout' ? <AlertTriangle size={36} /> : <UserCircle2 size={36} />}
               </div>
               
@@ -241,7 +241,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ theme, onLogout }) => {
                 </button>
                 <button 
                   onClick={handleConfirmExit}
-                  className={`flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white shadow-xl transition-all ${showExitConfirm === 'logout' ? 'bg-rose-600 hover:bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'}`}
+                  className={`flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white transition-all ${showExitConfirm === 'logout' ? 'bg-rose-600 hover:bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                 >
                   确认{showExitConfirm === 'logout' ? '退出' : '切换'}
                 </button>

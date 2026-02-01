@@ -9,9 +9,9 @@ interface RhythmLegoProjectProps {
 }
 
 const TRACKS = [
-  { id: 'hihat', name: '擦片 (Hi-hat)', icon: '✨', color: 'bg-yellow-400', activeBorder: 'border-yellow-300', shadow: 'shadow-[0_0_25px_rgba(250,204,21,0.5)]', sound: '次' },
-  { id: 'snare', name: '军鼓 (Snare)', icon: '👏', color: 'bg-blue-500', activeBorder: 'border-blue-400', shadow: 'shadow-[0_0_25px_rgba(59,130,246,0.5)]', sound: '啪' },
-  { id: 'kick', name: '底鼓 (Kick)', icon: '🥁', color: 'bg-rose-500', activeBorder: 'border-rose-400', shadow: 'shadow-[0_0_25px_rgba(244,63,94,0.5)]', sound: '咚' },
+  { id: 'hihat', name: '擦片 (Hi-hat)', icon: '✨', color: 'bg-yellow-400', activeBorder: 'border-yellow-300', shadow: '', sound: '次' },
+  { id: 'snare', name: '军鼓 (Snare)', icon: '👏', color: 'bg-blue-500', activeBorder: 'border-blue-400', shadow: '', sound: '啪' },
+  { id: 'kick', name: '底鼓 (Kick)', icon: '🥁', color: 'bg-rose-500', activeBorder: 'border-rose-400', shadow: '', sound: '咚' },
 ];
 
 const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
@@ -97,9 +97,9 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
 
   return (
     <div className={`fixed inset-0 z-[200] flex flex-col transition-colors duration-500 animate-in fade-in ${isDark ? 'bg-[#0a0f1e] text-slate-200' : 'bg-[#f0f4f8] text-slate-900'}`}>
-      <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-[#0f172a]/80 border-white/5 backdrop-blur-md' : 'bg-white border-slate-200 shadow-sm'}`}>
+      <header className={`p-8 border-b flex items-center justify-between transition-colors ${isDark ? 'bg-[#0f172a]/80 border-white/5 backdrop-blur-md' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white text-slate-500 hover:text-blue-600 border shadow-sm'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border border-white/10' : 'bg-white text-slate-500 hover:text-blue-600 border'}`}>
             <X size={24} />
           </button>
           <div>
@@ -108,14 +108,14 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
           </div>
         </div>
         <div className="flex items-center gap-8">
-           <div className={`flex items-center gap-6 px-6 py-2.5 rounded-2xl border transition-colors ${isDark ? 'bg-black/30 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+           <div className={`flex items-center gap-6 px-6 py-2.5 rounded-2xl border transition-colors ${isDark ? 'bg-black/30 border-white/10' : 'bg-white border-slate-200'}`}>
              <span className="text-[9px] font-black text-slate-500 uppercase">速度 (BPM)</span>
              <input type="range" min="60" max="180" value={bpm} onChange={(e) => setBpm(parseInt(e.target.value))} className="w-32 accent-blue-600 h-1.5" />
              <span className="font-fredoka text-lg w-8 text-blue-500">{bpm}</span>
            </div>
            <button 
              onClick={onComplete}
-             className="px-8 py-3 bg-blue-600 rounded-xl font-black text-sm text-white shadow-xl hover:bg-blue-500 active:scale-95 transition-all flex items-center gap-2"
+             className="px-8 py-3 bg-blue-600 rounded-xl font-black text-sm text-white hover:bg-blue-500 active:scale-95 transition-all flex items-center gap-2"
            >
              保存节奏 <Check size={18} />
            </button>
@@ -131,11 +131,11 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
             </p>
           </div>
 
-          <div className={`p-12 rounded-[4rem] border transition-all shadow-2xl relative ${isDark ? 'bg-[#111827]/80 border-white/5' : 'bg-white border-slate-200'}`}>
+          <div className={`p-12 rounded-[4rem] border transition-all relative ${isDark ? 'bg-[#111827]/80 border-white/5' : 'bg-white border-slate-200'}`}>
             <div className="flex flex-col gap-8 relative z-10">
               {TRACKS.map((track) => (
                 <div key={track.id} className="flex items-center gap-8 relative">
-                  <div className={`w-44 h-24 rounded-[2rem] flex flex-col items-center justify-center gap-1 border-2 transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100 shadow-inner'}`}>
+                  <div className={`w-44 h-24 rounded-[2rem] flex flex-col items-center justify-center gap-1 border-2 transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                     <span className="text-3xl">{track.icon}</span>
                     <span className="text-[10px] font-black tracking-widest uppercase opacity-60">{track.name.split(' ')[0]}</span>
                   </div>
@@ -175,13 +175,13 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
             <div className="flex justify-center mt-12 gap-6">
               <button 
                 onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-                className={`w-24 h-24 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white active:scale-90`}
+                className={`w-24 h-24 rounded-[2.5rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white active:scale-90`}
               >
                 {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-2" />}
               </button>
               <button 
                 onClick={() => setGrid({ kick: new Array(16).fill(false), snare: new Array(16).fill(false), hihat: new Array(16).fill(false) })}
-                className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-xl border-2 transition-all ${isDark ? 'bg-slate-800 border-white/10 text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-400'} hover:text-rose-500 active:scale-90`}
+                className={`w-20 h-20 rounded-[2rem] flex items-center justify-center border-2 transition-all ${isDark ? 'bg-slate-800 border-white/10 text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-400'} hover:text-rose-500 active:scale-90`}
               >
                 <Trash2 size={28} />
               </button>

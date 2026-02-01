@@ -36,9 +36,9 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* 发光效果 */
+/* 发光效果 - 调小 */
 .glow-dot {
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
 }
 
 /* Safari兼容性 - backdrop-filter需要webkit前缀 */

@@ -1,5 +1,5 @@
 
-import { Level } from './types';
+import { Level } from '../types';
 
 export const GRID_ROWS = 8;
 export const GRID_COLS = 16;
@@ -49,7 +49,7 @@ export const TIMELINE_SECTIONS = [
 ];
 
 
-import { Note, NoteName, ChordType } from './types';
+import { Note, NoteName, ChordType } from '../types';
 
 export const NOTE_NAMES: NoteName[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 

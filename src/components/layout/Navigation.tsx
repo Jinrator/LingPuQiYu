@@ -17,7 +17,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange, them
   ];
 
   return (
-    <nav className={`flex items-center gap-3 p-2 rounded-3xl border backdrop-blur-xl shadow-2xl transition-all duration-500 ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-blue-50/50 border-blue-100'}`}>
+    <nav className={`flex items-center gap-3 p-2 rounded-3xl border backdrop-blur-xl shadow-sm transition-all duration-500 ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-blue-50/50 border-blue-100'}`}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = currentView === tab.id;
@@ -28,10 +28,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange, them
             className={`
               flex items-center gap-3 px-8 py-3 rounded-2xl transition-all duration-500
               ${isActive 
-                ? 'bg-blue-600 text-white shadow-[0_10px_25px_rgba(37,99,235,0.4)] scale-105' 
+                ? 'bg-blue-600 text-white scale-105' 
                 : theme === 'dark' 
-                  ? 'text-slate-400 hover:text-white hover:bg-white/5' 
-                  : 'text-slate-500 hover:text-blue-600 hover:bg-white/50'}
+                  ? 'text-slate-400 hover:text-white hover:bg-white/5 hover:shadow-sm' 
+                  : 'text-slate-500 hover:text-blue-600 hover:bg-white/50 hover:shadow-sm'}
             `}
           >
             <Icon size={22} className={isActive ? 'animate-pulse' : ''} />

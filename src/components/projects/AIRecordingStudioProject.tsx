@@ -77,7 +77,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
 
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all shadow-sm ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
+          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
             <X size={24} />
           </button>
           <div>
@@ -89,7 +89,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
         <button 
           disabled={!isComplete}
           onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white shadow-xl transition-all ${isComplete ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
+          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${isComplete ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
         >
           发布我的单曲 <Check size={18} className="ml-2 inline" />
         </button>
@@ -99,8 +99,8 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
         
         {!audioFile ? (
           <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl">
-             <div className={`w-full aspect-[21/9] rounded-[4rem] border-4 border-dashed flex flex-col items-center justify-center gap-8 transition-all group relative overflow-hidden ${isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/50 shadow-2xl' : 'bg-white border-blue-100 hover:border-blue-300 shadow-xl'}`}>
-                <div className="w-24 h-24 rounded-[2rem] bg-blue-600 flex items-center justify-center text-white shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all ring-8 ring-blue-500/10">
+             <div className={`w-full aspect-[21/9] rounded-[4rem] border-4 border-dashed flex flex-col items-center justify-center gap-8 transition-all group relative overflow-hidden ${isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/50' : 'bg-white border-blue-100 hover:border-blue-300'}`}>
+                <div className="w-24 h-24 rounded-[2rem] bg-blue-600 flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-6 transition-all ring-8 ring-blue-500/10">
                    <Upload size={40} />
                 </div>
                 <div className="text-center">
@@ -117,7 +117,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* 左侧：文件信息 */}
-                <div className={`p-8 rounded-[3rem] border flex flex-col gap-6 ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50 shadow-lg'}`}>
+                <div className={`p-8 rounded-[3rem] border flex flex-col gap-6 ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50'}`}>
                    <div className="flex items-center gap-5">
                       <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-500">
                          <FileAudio size={28} />
@@ -144,16 +144,16 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
                 </div>
 
                 {/* 中间：AI 处理台 */}
-                <div className={`p-8 rounded-[3.5rem] border flex flex-col items-center justify-center text-center gap-6 relative overflow-hidden ${isDark ? 'bg-slate-900/80 border-white/5 shadow-2xl' : 'bg-white border-blue-100 shadow-xl'}`}>
+                <div className={`p-8 rounded-[3.5rem] border flex flex-col items-center justify-center text-center gap-6 relative overflow-hidden ${isDark ? 'bg-slate-900/80 border-white/5' : 'bg-white border-blue-100'}`}>
                    {!isComplete && !isProcessing && (
                      <>
-                        <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-xl animate-pulse">
+                        <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white animate-pulse">
                            <Cpu size={32} />
                         </div>
                         <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>准备 AI 混音</h4>
                         <button 
                           onClick={startProcessing}
-                          className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-black shadow-xl hover:scale-105 transition-all"
+                          className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-black hover:scale-105 transition-all"
                         >
                           开始母带优化
                         </button>
@@ -178,7 +178,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
 
                    {isComplete && (
                      <div className="animate-in zoom-in-95 duration-500">
-                        <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(16,185,129,0.4)] mx-auto mb-4">
+                        <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-white mx-auto mb-4">
                            <Headphones size={36} />
                         </div>
                         <h4 className={`text-2xl font-black text-emerald-500`}>混音大功告成！</h4>
@@ -188,7 +188,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
                 </div>
 
                 {/* 右侧：母带监测器 */}
-                <div className={`p-8 rounded-[3rem] border flex flex-col gap-6 ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50 shadow-lg'}`}>
+                <div className={`p-8 rounded-[3rem] border flex flex-col gap-6 ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-50'}`}>
                    <div className="flex items-center gap-5">
                       <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-500">
                          <Activity size={28} />
@@ -220,7 +220,7 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
              </div>
 
              {/* 主控制台 */}
-             <div className={`p-12 rounded-[4rem] border flex flex-col items-center gap-10 ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50 shadow-2xl'}`}>
+             <div className={`p-12 rounded-[4rem] border flex flex-col items-center gap-10 ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
                 
                 {/* 实时波形可视化 */}
                 <div className="w-full h-40 flex items-center justify-center gap-1 px-10 relative">
@@ -240,14 +240,14 @@ const AIRecordingStudioProject: React.FC<AIRecordingStudioProjectProps> = ({ onC
                 <div className="flex items-center gap-12">
                    <button 
                      onClick={togglePlay}
-                     className={`w-24 h-24 rounded-[3rem] flex items-center justify-center shadow-2xl transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-95`}
+                     className={`w-24 h-24 rounded-[3rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-95`}
                    >
                      {isPlaying ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}
                    </button>
 
                    <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-3">
-                         <div className={`w-3 h-3 rounded-full ${isComplete ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-slate-500'}`} />
+                         <div className={`w-3 h-3 rounded-full ${isComplete ? 'bg-emerald-500' : 'bg-slate-500'}`} />
                          <span className={`font-black text-sm uppercase tracking-widest ${isDark ? 'text-white' : 'text-blue-900'}`}>
                            {isComplete ? '大师混音模式 (Mastered)' : '原始声轨模式 (Raw)'}
                          </span>

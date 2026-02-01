@@ -61,15 +61,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
         <div className={`absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] transition-all duration-1000 ${isDark ? 'bg-indigo-500/10' : 'bg-sky-100/60'}`}></div>
       </div>
 
-      <div className={`w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 rounded-[3.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] border transition-all duration-700 ${isDark ? 'bg-slate-900/90 border-white/5' : 'bg-white/95 border-blue-100/50 backdrop-blur-xl'}`}>
+      <div className={`w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 rounded-[3.5rem] overflow-hidden shadow-lg border transition-all duration-700 ${isDark ? 'bg-slate-900/90 border-white/5' : 'bg-white/95 border-blue-100/50 backdrop-blur-xl'}`}>
         <div className="relative p-12 flex flex-col justify-between bg-gradient-to-br from-[#0052cc] via-[#0072ff] to-[#00b4ff] text-white overflow-hidden">
           <div className="relative z-10">
-             <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mb-8 border border-white/30 transform rotate-[-5deg] shadow-xl">
+             <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mb-8 border border-white/30 transform rotate-[-5deg]">
                 <svg viewBox="0 0 100 100" className="w-10 h-10 text-white fill-current">
                   <path d="M20,40 Q20,20 50,20 Q80,20 80,40 L80,50 Q80,60 70,60 L40,60 L40,45 L65,45 L65,50 L35,50 L35,70 Q35,85 65,85 Q95,85 95,60" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
                 </svg>
              </div>
-             <h2 className="text-5xl font-fredoka mb-4 tracking-tight drop-shadow-lg">生音科技</h2>
+             <h2 className="text-5xl font-fredoka mb-4 tracking-tight">生音科技</h2>
              <div className="space-y-4">
                 <p className="text-blue-50 text-xl font-bold leading-relaxed opacity-95">
                   每一个孩子都可以在音乐中快乐成长，<br/>成为自己人生的的建筑师。
@@ -83,7 +83,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
           <div className="relative z-10 mt-12 pt-8 border-t border-white/10">
              <div className="flex -space-x-2 mb-4">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0072ff] bg-slate-200 overflow-hidden shadow-md transform hover:-translate-y-1 transition-transform">
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0072ff] bg-slate-200 overflow-hidden transform hover:-translate-y-1 transition-transform">
                     <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 60}`} alt="avatar" />
                   </div>
                 ))}
@@ -122,14 +122,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                 <div className={`flex p-1.5 rounded-2xl transition-colors ${isDark ? 'bg-white/5' : 'bg-slate-100/50'}`}>
                   <button 
                     onClick={() => setLoginMethod('phone')}
-                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'phone' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-400'}`}
+                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'phone' ? 'bg-white text-blue-600' : 'text-slate-400'}`}
                   >
                     <Smartphone size={14} />
                     手机登录
                   </button>
                   <button 
                     onClick={() => setLoginMethod('wechat')}
-                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'wechat' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-400'}`}
+                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'wechat' ? 'bg-white text-blue-600' : 'text-slate-400'}`}
                   >
                     <MessageCircle size={14} fill={loginMethod === 'wechat' ? "currentColor" : "none"} />
                     微信扫码
@@ -138,10 +138,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
 
                 {loginMethod === 'wechat' ? (
                   <div className="flex flex-col items-center gap-6 py-4 animate-in zoom-in-95 duration-300">
-                    <div className={`relative w-48 h-48 p-4 rounded-[2.5rem] border-4 flex items-center justify-center bg-white shadow-2xl overflow-hidden group transition-all hover:scale-105 ${isDark ? 'border-white/10' : 'border-blue-50'}`}>
+                    <div className={`relative w-48 h-48 p-4 rounded-[2.5rem] border-4 flex items-center justify-center bg-white overflow-hidden group transition-all hover:scale-105 ${isDark ? 'border-white/10' : 'border-blue-50'}`}>
                       <QrCode size={140} className="text-slate-800" />
                      
-                      <div className="absolute top-0 left-0 w-full h-1 bg-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-[scan_3s_linear_infinite]" />
+                      <div className="absolute top-0 left-0 w-full h-1 bg-blue-500/40 animate-[scan_3s_linear_infinite]" />
                       <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <p className={`text-[10px] font-black uppercase tracking-[0.3em] text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -168,7 +168,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                         className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                          ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
+                          ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-2 ring-blue-500/10 focus:border-blue-200'}`}
                       />
                     </div>
                     <div className="relative group flex gap-3">
@@ -182,13 +182,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                           value={vCode}
                           onChange={(e) => setVCode(e.target.value.slice(0, 6))}
                           className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                            ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
+                            ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-2 ring-blue-500/10 focus:border-blue-200'}`}
                         />
                       </div>
                       <button 
                         disabled={countdown > 0 || phone.length !== 11}
                         onClick={getVCode}
-                        className={`px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${countdown > 0 || phone.length !== 11 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white shadow-lg hover:bg-blue-500 active:scale-95'}`}
+                        className={`px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${countdown > 0 || phone.length !== 11 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95'}`}
                       >
                         {countdown > 0 ? `${countdown}s` : '获取验证码'}
                       </button>
@@ -198,7 +198,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                       disabled={isAuthorizing || phone.length !== 11 || vCode.length < 4}
                       className={`
                         group relative w-full py-5 bg-[#07C160] text-white rounded-[1.8rem] font-black text-lg mt-4
-                        hover:scale-[1.01] active:scale-95 transition-all shadow-lg 
+                        hover:scale-[1.01] active:scale-95 transition-all
                         flex items-center justify-center gap-3 overflow-hidden
                         ${isAuthorizing || phone.length !== 11 || vCode.length < 4 ? 'opacity-50 cursor-not-allowed grayscale' : ''}
                       `}
@@ -224,10 +224,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                         onClick={() => setCourse(c.id)}
                         className={`flex flex-col items-center p-4 rounded-3xl border-2 transition-all group text-center
                           ${course === c.id 
-                            ? 'border-blue-500 bg-blue-600/5 shadow-lg ring-4 ring-blue-500/10' 
+                            ? 'border-blue-500 bg-blue-600/5 ring-2 ring-blue-500/10' 
                             : isDark ? 'border-white/5 bg-white/5 hover:border-white/20' : 'border-slate-100 bg-slate-50/50 hover:border-blue-100 hover:bg-white'}`}
                       >
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center text-white shadow-md mb-2 group-hover:rotate-6 transition-transform`}>
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center text-white mb-2 group-hover:rotate-6 transition-transform`}>
                           <c.icon size={20} />
                         </div>
                         <span className={`font-black text-[10px] leading-tight ${isDark ? 'text-white' : 'text-blue-900'}`}>{c.title}</span>
@@ -271,7 +271,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                   disabled={isAuthorizing || (!course || !name || phone.length !== 11)}
                   className={`
                     group relative w-full py-5 bg-[#07C160] text-white rounded-[1.8rem] font-black text-lg 
-                    hover:scale-[1.01] active:scale-95 transition-all shadow-lg 
+                    hover:scale-[1.01] active:scale-95 transition-all
                     flex items-center justify-center gap-3 overflow-hidden
                     ${isAuthorizing || (!course || !name || phone.length !== 11) ? 'opacity-50 cursor-not-allowed grayscale' : ''}
                   `}
