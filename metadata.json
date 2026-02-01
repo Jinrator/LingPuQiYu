@@ -1,0 +1,8 @@
+{
+  "name": "生音工坊",
+  "description": "专为儿童设计的互动音乐创作世界，包含冒险关卡、自由创作工坊和演出舞台。",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
