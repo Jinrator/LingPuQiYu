@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { audioService } from '../services/audioService';
-import { DrumType } from '../types';
+import { audioService } from '../../services/audioService';
+import { DrumType } from '../../types';
 import { Play, Square, Trash2 } from 'lucide-react';
 
 const STEPS = 16;

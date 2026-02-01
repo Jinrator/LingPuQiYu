@@ -1,22 +1,22 @@
 
 import React, { useState } from 'react';
-import { ADVENTURE_LEVELS, AdventureLevel } from '../constants';
+import { ADVENTURE_LEVELS, AdventureLevel } from '../../constants';
 import { Lock, Star, Trophy, Sparkles, X, CheckCircle2, PlayCircle, Gift, ArrowRightCircle, ShieldAlert } from 'lucide-react';
-import SoundHuntingProject from './SoundHuntingProject';
-import RhythmColoringProject from './RhythmColoringProject';
-import RhythmLegoProject from './RhythmLegoProject';
-import PitchLadderProject from './PitchLadderProject';
-import MoodDoodleProject from './MoodDoodleProject';
-import MelodyMirrorProject from './MelodyMirrorProject';
-import InspirationRetroProject from './InspirationRetroProject';
-import ChordBurgerProject from './ChordBurgerProject';
-import ChordRouteProject from './ChordRouteProject';
-import StyleTransformProject from './StyleTransformProject';
-import MusicAtlasProject from './MusicAtlasProject';
-import MemoryHookProject from './MemoryHookProject';
-import MusicTrainProject from './MusicTrainProject';
-import AIRecordingStudioProject from './AIRecordingStudioProject';
-import PersonalDebutProject from './PersonalDebutProject';
+import SoundHuntingProject from '../projects/SoundHuntingProject';
+import RhythmColoringProject from '../projects/RhythmColoringProject';
+import RhythmLegoProject from '../projects/RhythmLegoProject';
+import PitchLadderProject from '../projects/PitchLadderProject';
+import MoodDoodleProject from '../projects/MoodDoodleProject';
+import MelodyMirrorProject from '../projects/MelodyMirrorProject';
+import InspirationRetroProject from '../projects/InspirationRetroProject';
+import ChordBurgerProject from '../projects/ChordBurgerProject';
+import ChordRouteProject from '../projects/ChordRouteProject';
+import StyleTransformProject from '../projects/StyleTransformProject';
+import MusicAtlasProject from '../projects/MusicAtlasProject';
+import MemoryHookProject from '../projects/MemoryHookProject';
+import MusicTrainProject from '../projects/MusicTrainProject';
+import AIRecordingStudioProject from '../projects/AIRecordingStudioProject';
+import PersonalDebutProject from '../projects/PersonalDebutProject';
 
 interface AdventureModeProps {
   theme?: 'light' | 'dark';

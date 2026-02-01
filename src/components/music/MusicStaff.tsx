@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Note } from '../types';
-import { NUMBERED_NOTATION_MAP } from '../constants';
+import { Note } from '../../types';
+import { NUMBERED_NOTATION_MAP } from '../../constants';
 
 interface MusicStaffProps {
   activeNotes: Note[];

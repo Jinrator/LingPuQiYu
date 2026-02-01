@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ViewMode } from '../types';
+import { ViewMode } from '../../types';
 import { Map, Palette, Disc } from 'lucide-react';
 
 interface NavigationProps {

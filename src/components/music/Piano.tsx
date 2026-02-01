@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Note } from '../types';
-import { ALL_NOTES } from '../constants';
+import { Note } from '../../types';
+import { ALL_NOTES } from '../../constants';
 
 interface PianoProps {
   activeNotes: string[]; // List of note full names e.g. "C4"

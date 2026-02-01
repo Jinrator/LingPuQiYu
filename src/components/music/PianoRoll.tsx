@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Note } from '../types';
-import { ALL_NOTES } from '../constants';
-import { audioService } from '../services/audioService';
+import { Note } from '../../types';
+import { ALL_NOTES } from '../../constants';
+import { audioService } from '../../services/audioService';
 import { Play, Square, Trash2 } from 'lucide-react';
 
 interface PianoRollProps {

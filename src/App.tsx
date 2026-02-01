@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from './types';
-import AdventureMode from './components/AdventureMode';
-import FreeLab from './components/FreeLab';
-import StageMode from './components/StageMode';
-import UserProfile from './components/UserProfile';
-import AIAssistant from './components/AIAssistant';
-import Navigation from './components/Navigation';
-import AuthPage from './components/AuthPage';
+import AdventureMode from './components/modes/AdventureMode';
+import FreeLab from './components/modes/FreeLab';
+import StageMode from './components/modes/StageMode';
+import UserProfile from './components/layout/UserProfile';
+import AIAssistant from './components/ui/AIAssistant';
+import Navigation from './components/layout/Navigation';
+import AuthPage from './components/layout/AuthPage';
 import { Sun, Moon, LogOut, User } from 'lucide-react';
 
 const App: React.FC = () => {

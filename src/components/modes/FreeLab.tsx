@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GRID_COLS, TIMELINE_SECTIONS, RAINBOW_COLORS } from '../constants';
+import { GRID_COLS, TIMELINE_SECTIONS, RAINBOW_COLORS } from '../../constants';
 import { Play, Pause, Trash2, Library, Music4, Mic, BookOpen, Drum, PenTool, Waves, Zap, TrainFront } from 'lucide-react';
-import { AppStage, Note } from '../types';
-import { audioService } from '../services/audioService';
+import { AppStage, Note } from '../../types';
+import { audioService } from '../../services/audioService';
 import { Music, Activity, Grid, Volume2, Clock, Radio } from 'lucide-react';
-import { ALL_NOTES, CHORDS, SOLFEGE_MAP, NUMBERED_NOTATION_MAP } from '../constants';
-import Piano from './Piano';
-import MusicStaff from './MusicStaff';
-import PianoRoll from './PianoRoll';
-import DrumSequencer from './DrumSequencer';
+import { ALL_NOTES, CHORDS, SOLFEGE_MAP, NUMBERED_NOTATION_MAP } from '../../constants';
+import Piano from '../music/Piano';
+import MusicStaff from '../music/MusicStaff';
+import PianoRoll from '../music/PianoRoll';
+import DrumSequencer from '../music/DrumSequencer';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
 type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE';
