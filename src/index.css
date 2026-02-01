@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义样式 */
+body {
+  font-family: 'Quicksand', sans-serif;
+  overflow: hidden;
+}
+
+.font-fredoka {
+  font-family: 'Fredoka One', cursive;
+}
+
+/* 滚动条隐藏 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 动画 */
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 发光效果 */
+.glow-dot {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+}
+
+/* Safari兼容性 - backdrop-filter需要webkit前缀 */
+.backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
