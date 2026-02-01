@@ -80,6 +80,9 @@
 # 安装依赖
 npm install
 
+# 配置环境变量
+cp .env.local.example .env.local
+
 # 启动开发服务器
 npm run dev
 
@@ -89,3 +92,62 @@ npm run build
 # 预览生产构建
 npm run preview
 ```
+
+## 📚 文档体系
+
+本项目采用**双文档体系**，确保知识沉淀和开发效率：
+
+### � 1. 技术文档 (`docs/`)
+面向开发者的部署和集成指南：
+- **[Authing 登录集成指南](./docs/AUTHING_LOGIN_GUIDE.md)** - 微信、QQ、手机号登录完整方案
+
+### � 2. 解决方案知识库 (`docs/solutions/`)
+每次解决问题后的技术沉淀：
+- **[Piano 高亮延迟修复](./docs/solutions/PIANO_HIGHLIGHT_DELAY_FIX.md)** - 钢琴键盘高亮延迟问题
+- **[Safari 兼容性修复](./docs/solutions/SAFARI_FIX_ANALYSIS.md)** - Safari 浏览器兼容性问题
+- **[Authing 集成方案](./docs/solutions/AUTHING_INTEGRATION_SOLUTION.md)** - Authing 认证集成完整方案
+
+---
+
+## 📝 文档工作流
+
+**核心原则：每次解决问题后，必须写 Solution 文档扩充项目知识库**
+
+### 标准工作流程
+
+```
+遇到问题 → 调试分析 → 实施修复 → 写 Solution 文档 → 提交代码
+```
+
+### Solution 文档规范
+
+**存放位置**: `docs/solutions/`
+
+**命名格式**: 
+- 问题修复：`PROBLEM_NAME_FIX.md`
+- 功能方案：`FEATURE_NAME_SOLUTION.md`
+
+**必须包含**:
+1. 问题描述/背景
+2. 根本原因分析
+3. 解决方案详解
+4. 关键代码示例
+5. 测试验证方法
+
+### 文档目录结构
+
+```
+docs/
+├── AUTHING_LOGIN_GUIDE.md        # 技术文档：开发者集成指南
+├── OTHER_TECH_GUIDE.md           # 技术文档：其他部署文档
+└── solutions/                     # 解决方案：问题知识库
+    ├── PIANO_HIGHLIGHT_DELAY_FIX.md
+    ├── SAFARI_FIX_ANALYSIS.md
+    └── AUTHING_INTEGRATION_SOLUTION.md
+```
+
+**为什么这样做？**
+- ✅ 避免重复踩坑
+- ✅ 新成员快速上手
+- ✅ 技术决策可追溯
+- ✅ 形成团队知识资产

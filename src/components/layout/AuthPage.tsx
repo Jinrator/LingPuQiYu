@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Phone, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, ShieldCheck, MessageCircle, Loader2, Lock, QrCode, KeyRound, ArrowLeftRight } from 'lucide-react';
+import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, ShieldCheck, MessageCircle, Loader2, QrCode, KeyRound, ArrowLeftRight, Mail } from 'lucide-react';
+import { useAuthing } from '../../hooks/useAuthing';
 
 interface AuthPageProps {
   onLogin: () => void;
@@ -12,16 +13,34 @@ type LoginMethod = 'wechat' | 'phone';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
+  // 使用 Authing Hook
+  const { 
+    isAuthenticated,
+    loginWithPhone: authingLoginWithPhone,
+    loginWithWechat,
+    loginWithQQ,
+    sendSmsCode,
+    register: authingRegister
+  } = useAuthing();
+  
   const [mode, setMode] = useState<AuthMode>('login');
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone'); // 默认改为手机登录
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [course, setCourse] = useState<CourseType | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [vCode, setVCode] = useState('');
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const isDark = theme === 'dark';
+
+  // 如果已登录，自动跳转
+  useEffect(() => {
+    if (isAuthenticated) {
+      onLogin();
+    }
+  }, [isAuthenticated, onLogin]);
 
   const courses = [
     { id: 'PRODUCER' as CourseType, title: 'AI数智作曲家', desc: 'AI与算法编曲', icon: Orbit, color: 'from-blue-500 to-indigo-600' },
@@ -33,24 +52,79 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
     let timer: number;
     if (countdown > 0) {
       timer = window.setInterval(() => {
-        setCountdown(prev => prev - 1);
+        setCountdown((prev: number) => prev - 1);
       }, 1000);
     }
     return () => clearInterval(timer);
   }, [countdown]);
 
-  const handleAction = () => {
+  // 处理登录/注册
+  const handleAction = async () => {
     setIsAuthorizing(true);
-    setTimeout(() => {
+    setErrorMsg('');
+    
+    try {
+      if (mode === 'login') {
+        // 登录
+        const result = await authingLoginWithPhone(phone, vCode);
+        if (result && !result.success) {
+          setErrorMsg(result.message || '登录失败');
+        }
+      } else {
+        // 注册
+        const result = await authingRegister({
+          phone,
+          code: vCode,
+          username: name,
+          profile: {
+            courseType: course
+          }
+        });
+        if (result && !result.success) {
+          setErrorMsg((result as any).message || '注册失败');
+        }
+      }
+    } catch (error: any) {
+      setErrorMsg(error.message || '操作失败');
+    } finally {
       setIsAuthorizing(false);
-      onLogin();
-    }, 1200);
+    }
   };
 
-  const getVCode = () => {
+  // 发送验证码
+  const getVCode = async () => {
     if (phone.length === 11) {
-      setCountdown(60);
-      // 模拟发送验证码
+      const result = await sendSmsCode(phone);
+      if (result && result.success) {
+        setCountdown(60);
+        setErrorMsg('');
+      } else {
+        setErrorMsg((result && result.message) || '发送失败');
+      }
+    }
+  };
+
+  // 微信登录
+  const handleWechatLogin = async () => {
+    setIsAuthorizing(true);
+    try {
+      await loginWithWechat();
+      // Authing 会自动跳转，不需要手动处理
+    } catch (error) {
+      setErrorMsg('微信登录失败，请重试');
+      setIsAuthorizing(false);
+    }
+  };
+
+  // QQ登录
+  const handleQQLogin = async () => {
+    setIsAuthorizing(true);
+    try {
+      await loginWithQQ();
+      // Authing 会自动跳转，不需要手动处理
+    } catch (error) {
+      setErrorMsg('QQ登录失败，请重试');
+      setIsAuthorizing(false);
     }
   };
 
@@ -149,15 +223,36 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                     </p>
                     <div className={`w-full h-[1px] ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
                     <button 
-                      onClick={handleAction}
-                      className="text-[11px] font-black text-blue-600 hover:text-blue-500 flex items-center gap-2 uppercase tracking-widest"
+                      onClick={handleWechatLogin}
+                      disabled={isAuthorizing}
+                      className="text-[11px] font-black text-blue-600 hover:text-blue-500 flex items-center gap-2 uppercase tracking-widest disabled:opacity-50"
                     >
-                      <ArrowLeftRight size={12} />
-                      或使用微信一键登录
+                      {isAuthorizing ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                      {isAuthorizing ? '跳转中...' : '或使用微信一键登录'}
                     </button>
+                    
+                    {/* 其他社交登录方式 */}
+                    <div className={`w-full h-[1px] ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
+                    <div className="flex items-center justify-center gap-4">
+                      <button
+                        onClick={handleQQLogin}
+                        disabled={isAuthorizing}
+                        className={`group flex items-center gap-2 px-6 py-3 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
+                      >
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-xs">
+                          Q
+                        </div>
+                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ登录</span>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4 py-2 animate-in slide-in-from-left-4 duration-300">
+                    {errorMsg && (
+                      <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-in slide-in-from-top-2">
+                        {errorMsg}
+                      </div>
+                    )}
                     <div className="relative group">
                       <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
                         <Smartphone size={18} />
@@ -205,6 +300,40 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                     >
                       {isAuthorizing ? <Loader2 size={22} className="animate-spin" /> : <><CheckCircle2 size={20} /> 进入实验室</>}
                     </button>
+
+                    {/* 社交登录快捷入口 */}
+                    <div className="relative my-6">
+                      <div className={`absolute inset-0 flex items-center ${isDark ? '' : ''}`}>
+                        <div className={`w-full border-t ${isDark ? 'border-white/5' : 'border-slate-200'}`}></div>
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className={`px-4 text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400'}`}>
+                          或使用社交账号登录
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={handleWechatLogin}
+                        disabled={isAuthorizing}
+                        className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#07C160]/50 hover:bg-[#07C160]/10' : 'border-slate-200 bg-white hover:border-[#07C160] hover:bg-[#07C160]/5'}`}
+                      >
+                        <MessageCircle size={18} className="text-[#07C160]" fill="#07C160" />
+                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>微信</span>
+                      </button>
+                      
+                      <button
+                        onClick={handleQQLogin}
+                        disabled={isAuthorizing}
+                        className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
+                      >
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-[10px]">
+                          Q
+                        </div>
+                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -266,18 +395,75 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
                   </div>
                 </div>
 
+                <div className="relative group animate-in slide-in-from-top-3 duration-500">
+                  <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
+                    <KeyRound size={18} />
+                  </div>
+                  <div className="flex gap-3">
+                    <input 
+                      type="text"
+                      placeholder="动态验证码"
+                      value={vCode}
+                      onChange={(e) => setVCode(e.target.value.slice(0, 6))}
+                      className={`flex-1 pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
+                        ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
+                    />
+                    <button 
+                      disabled={countdown > 0 || phone.length !== 11}
+                      onClick={getVCode}
+                      className={`px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${countdown > 0 || phone.length !== 11 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95'}`}
+                    >
+                      {countdown > 0 ? `${countdown}s` : '获取'}
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleAction}
-                  disabled={isAuthorizing || (!course || !name || phone.length !== 11)}
+                  disabled={isAuthorizing || (!course || !name || phone.length !== 11 || vCode.length < 4)}
                   className={`
                     group relative w-full py-5 bg-[#07C160] text-white rounded-[1.8rem] font-black text-lg 
                     hover:scale-[1.01] active:scale-95 transition-all
                     flex items-center justify-center gap-3 overflow-hidden
-                    ${isAuthorizing || (!course || !name || phone.length !== 11) ? 'opacity-50 cursor-not-allowed grayscale' : ''}
+                    ${isAuthorizing || (!course || !name || phone.length !== 11 || vCode.length < 4) ? 'opacity-50 cursor-not-allowed grayscale' : ''}
                   `}
                 >
                   {isAuthorizing ? <Loader2 size={22} className="animate-spin" /> : <><CheckCircle2 size={20} /> 完成申请并入驻</>}
                 </button>
+
+                {/* 社交登录快捷注册 */}
+                <div className="relative my-6">
+                  <div className={`absolute inset-0 flex items-center`}>
+                    <div className={`w-full border-t ${isDark ? 'border-white/5' : 'border-slate-200'}`}></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className={`px-4 text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400'}`}>
+                      或使用社交账号快速注册
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handleWechatLogin}
+                    disabled={isAuthorizing}
+                    className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#07C160]/50 hover:bg-[#07C160]/10' : 'border-slate-200 bg-white hover:border-[#07C160] hover:bg-[#07C160]/5'}`}
+                  >
+                    <MessageCircle size={18} className="text-[#07C160]" fill="#07C160" />
+                    <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>微信</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleQQLogin}
+                    disabled={isAuthorizing}
+                    className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-[10px]">
+                      Q
+                    </div>
+                    <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>

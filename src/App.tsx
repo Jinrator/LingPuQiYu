@@ -13,7 +13,7 @@ import { Sun, Moon, LogOut, User } from 'lucide-react';
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // 默认改为白天模式
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isAudioInitialized, setIsAudioInitialized] = useState(false);
 
   const initAudio = async () => {
