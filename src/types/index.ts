@@ -33,7 +33,7 @@ export interface ChordType {
 export type DrumType = 'kick' | 'snare' | 'hihat' | 'openhat' | 'rimshot' | 'clap' | 'lowtom' | 'midtom' | 'hightom' | 'crash' | 'ride';
 
 // 鼓组套件类型
-export type DrumKitType = 'acoustic' | 'electronic' | 'chinese';
+export type DrumKitType = 'acoustic' | 'electronic';
 
 export enum ViewMode {
   ADVENTURE = 'ADVENTURE',

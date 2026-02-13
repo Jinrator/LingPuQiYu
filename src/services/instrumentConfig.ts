@@ -6,7 +6,6 @@
  * 鼓组采样来源：
  *   - acoustic: Tone.js breakbeat13 (真实录音)
  *   - electronic: oramics TR-808 (经典鼓机采样)
- *   - chinese: 纯合成（暂无真实中国打击乐采样）
  *
  * 钢琴采样来源：Salamander Grand Piano (CC-BY 3.0)
  */
@@ -59,11 +58,7 @@ export const DRUM_KIT_CONFIGS: Record<DrumKitType, DrumKitConfig> = {
       ride:     `${LOCAL_BASE}/drums/electronic/ride.wav`,
     },
   },
-  chinese: {
-    name: 'Chinese Percussion',
-    nameZh: '中国打击乐',
-    samples: null,
-  },
+
 };
 
 // ============ 钢琴采样配置 ============

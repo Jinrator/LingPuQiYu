@@ -34,19 +34,7 @@ const INSTRUMENT_LABELS: Record<DrumKitType, { id: DrumType; label: string; colo
         { id: 'crash', label: '吊镲', color: 'bg-yellow-500' },
         { id: 'ride', label: '叮叮镲', color: 'bg-orange-400' },
     ],
-    chinese: [
-        { id: 'kick', label: '堂鼓', color: 'bg-red-700' },
-        { id: 'snare', label: '排鼓', color: 'bg-red-500' },
-        { id: 'hihat', label: '钹', color: 'bg-yellow-600' },
-        { id: 'openhat', label: '铙钹', color: 'bg-yellow-500' },
-        { id: 'rimshot', label: '梆子', color: 'bg-orange-700' },
-        { id: 'clap', label: '木鱼', color: 'bg-amber-700' },
-        { id: 'hightom', label: '排鼓(高)', color: 'bg-red-400' },
-        { id: 'midtom', label: '排鼓(中)', color: 'bg-red-500' },
-        { id: 'lowtom', label: '大鼓', color: 'bg-red-800' },
-        { id: 'crash', label: '大锣', color: 'bg-yellow-700' },
-        { id: 'ride', label: '小锣', color: 'bg-yellow-400' },
-    ],
+
 };
 
 const DrumSequencer: React.FC = ({theme_type}) => {
