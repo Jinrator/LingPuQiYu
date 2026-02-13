@@ -25,7 +25,7 @@ interface LoginResult {
 }
 
 // TODO: 上线时改为 false，走真实阿里云 API
-const TEST_MODE = false;
+const TEST_MODE = true;
 const TEST_CODE = '888888';
 const STORAGE_KEY = 'shenyin_auth';
 const USERS_KEY = 'shenyin_users';

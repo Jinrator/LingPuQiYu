@@ -1,26 +1,58 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { audioService } from '../../services/audioService';
-import { DrumType } from '../../types';
+import { DrumType, DrumKitType } from '../../types';
 import { Play, Square, Trash2 } from 'lucide-react';
 
 const STEPS = 16;
-const INSTRUMENTS: { id: DrumType; label: string; color: string }[] = [
-    { id: 'kick', label: '底鼓 (Kick)', color: 'bg-indigo-600' },
-    { id: 'snare', label: '军鼓 (Snare)', color: 'bg-rose-500' },
-    { id: 'hihat', label: '闭镲 (Hi-hat)', color: 'bg-amber-400' },
-    { id: 'openhat', label: '开放镲 (Open)', color: 'bg-amber-300' },
-    { id: 'rimshot', label: '边击 (Rim)', color: 'bg-stone-400' },
-    { id: 'clap', label: '拍手 (Clap)', color: 'bg-emerald-500' },
-    { id: 'hightom', label: '高嗵 (Hi-Tom)', color: 'bg-violet-400' },
-    { id: 'midtom', label: '中嗵 (Mid-Tom)', color: 'bg-violet-500' },
-    { id: 'lowtom', label: '低嗵 (Low-Tom)', color: 'bg-violet-600' },
-    { id: 'crash', label: '吊镲 (Crash)', color: 'bg-yellow-500' },
-    { id: 'ride', label: '叮叮镲 (Ride)', color: 'bg-orange-400' },
-];
+
+// 不同鼓组套件的乐器标签
+const INSTRUMENT_LABELS: Record<DrumKitType, { id: DrumType; label: string; color: string }[]> = {
+    acoustic: [
+        { id: 'kick', label: '底鼓 (Kick)', color: 'bg-indigo-600' },
+        { id: 'snare', label: '军鼓 (Snare)', color: 'bg-rose-500' },
+        { id: 'hihat', label: '闭镲 (Hi-hat)', color: 'bg-amber-400' },
+        { id: 'openhat', label: '开放镲 (Open)', color: 'bg-amber-300' },
+        { id: 'rimshot', label: '边击 (Rim)', color: 'bg-stone-400' },
+        { id: 'clap', label: '拍手 (Clap)', color: 'bg-emerald-500' },
+        { id: 'hightom', label: '高嗵 (Hi-Tom)', color: 'bg-violet-400' },
+        { id: 'midtom', label: '中嗵 (Mid-Tom)', color: 'bg-violet-500' },
+        { id: 'lowtom', label: '低嗵 (Low-Tom)', color: 'bg-violet-600' },
+        { id: 'crash', label: '吊镲 (Crash)', color: 'bg-yellow-500' },
+        { id: 'ride', label: '叮叮镲 (Ride)', color: 'bg-orange-400' },
+    ],
+    electronic: [
+        { id: 'kick', label: '808底鼓', color: 'bg-indigo-600' },
+        { id: 'snare', label: '808军鼓', color: 'bg-rose-500' },
+        { id: 'hihat', label: '808闭镲', color: 'bg-amber-400' },
+        { id: 'openhat', label: '808开镲', color: 'bg-amber-300' },
+        { id: 'rimshot', label: '边击', color: 'bg-stone-400' },
+        { id: 'clap', label: '808拍手', color: 'bg-emerald-500' },
+        { id: 'hightom', label: '808高嗵', color: 'bg-violet-400' },
+        { id: 'midtom', label: '808中嗵', color: 'bg-violet-500' },
+        { id: 'lowtom', label: '808低嗵', color: 'bg-violet-600' },
+        { id: 'crash', label: '吊镲', color: 'bg-yellow-500' },
+        { id: 'ride', label: '叮叮镲', color: 'bg-orange-400' },
+    ],
+    chinese: [
+        { id: 'kick', label: '堂鼓', color: 'bg-red-700' },
+        { id: 'snare', label: '排鼓', color: 'bg-red-500' },
+        { id: 'hihat', label: '钹', color: 'bg-yellow-600' },
+        { id: 'openhat', label: '铙钹', color: 'bg-yellow-500' },
+        { id: 'rimshot', label: '梆子', color: 'bg-orange-700' },
+        { id: 'clap', label: '木鱼', color: 'bg-amber-700' },
+        { id: 'hightom', label: '排鼓(高)', color: 'bg-red-400' },
+        { id: 'midtom', label: '排鼓(中)', color: 'bg-red-500' },
+        { id: 'lowtom', label: '大鼓', color: 'bg-red-800' },
+        { id: 'crash', label: '大锣', color: 'bg-yellow-700' },
+        { id: 'ride', label: '小锣', color: 'bg-yellow-400' },
+    ],
+};
 
 const DrumSequencer: React.FC = ({theme_type}) => {
     const isDark = theme_type;
+    const [drumKit, setDrumKit] = useState<DrumKitType>(audioService.getCurrentDrumKit());
+    const INSTRUMENTS = INSTRUMENT_LABELS[drumKit];
     const [grid, setGrid] = useState<boolean[][]>(
         INSTRUMENTS.map(() => Array(STEPS).fill(false))
     );
@@ -117,8 +149,32 @@ const DrumSequencer: React.FC = ({theme_type}) => {
       </button>
     </div>
     
-    <div className="flex items-center gap-4">
-      {/* 修正BPM标签文字色 */}
+    <div className="flex items-center gap-4 flex-wrap">
+      {/* 鼓组切换 */}
+      <div className="flex items-center gap-1">
+        {audioService.getAvailableDrumKits().map(kit => (
+          <button
+            key={kit.type}
+            onClick={() => {
+              setDrumKit(kit.type);
+              audioService.switchDrumKit(kit.type);
+              // 切换鼓组时重置网格
+              setGrid(INSTRUMENT_LABELS[kit.type].map(() => Array(STEPS).fill(false)));
+              if (isPlaying) stop();
+            }}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+              drumKit === kit.type
+                ? 'bg-indigo-500 text-white'
+                : isDark
+                  ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+            }`}
+          >
+            {kit.nameZh}
+          </button>
+        ))}
+      </div>
+      {/* BPM */}
       <label className={`flex items-center gap-2 font-medium ${
         isDark ? "text-slate-300" : "text-slate-600"
       }`}>
