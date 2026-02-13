@@ -65,23 +65,28 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
     setSelectedLevel(null);
   };
 
+  const handleBack = () => {
+    setActiveLevelId(null);
+    setSelectedLevel(null);
+  };
+
   const renderActiveLevel = () => {
     switch(activeLevelId) {
-      case 1: return <SoundHuntingProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 2: return <RhythmColoringProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 3: return <RhythmLegoProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 4: return <PitchLadderProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 5: return <MoodDoodleProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 6: return <MelodyMirrorProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 7: return <InspirationRetroProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 8: return <ChordBurgerProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 9: return <ChordRouteProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 10: return <StyleTransformProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 11: return <MusicAtlasProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 12: return <MemoryHookProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 13: return <MusicTrainProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 14: return <AIRecordingStudioProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
-      case 15: return <PersonalDebutProject theme={theme} onComplete={handleLevelComplete} onBack={() => setActiveLevelId(null)} />;
+      case 1: return <SoundHuntingProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 2: return <RhythmColoringProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 3: return <RhythmLegoProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 4: return <PitchLadderProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 5: return <MoodDoodleProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 6: return <MelodyMirrorProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 7: return <InspirationRetroProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 8: return <ChordBurgerProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 9: return <ChordRouteProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 10: return <StyleTransformProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 11: return <MusicAtlasProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 12: return <MemoryHookProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 13: return <MusicTrainProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 14: return <AIRecordingStudioProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+      case 15: return <PersonalDebutProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
       default: return null;
     }
   };
@@ -163,8 +168,8 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
           <div className="fixed inset-0 z-[120] backdrop-blur-3xl flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300 bg-slate-950/70">
              <div className={`w-full max-w-xl rounded-[4rem] overflow-hidden shadow-lg border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
                 <div className={`relative p-12 bg-gradient-to-br ${getCategoryTheme(selectedLevel.category).color} text-white overflow-hidden`}>
-                  <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-[100px]" />
-                  <button onClick={() => setSelectedLevel(null)} className="absolute top-10 right-10 p-3 bg-black/20 hover:bg-black/40 rounded-full transition-all hover:rotate-90"><X size={24} /></button>
+                  <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+                  <button onClick={() => setSelectedLevel(null)} className="absolute top-10 right-10 p-3 bg-black/20 hover:bg-black/40 rounded-full transition-all hover:rotate-90 z-20"><X size={24} /></button>
                   <div className="flex items-center gap-8 mb-8 relative z-10">
                     <div className="w-24 h-24 bg-white/20 backdrop-blur-2xl rounded-[2.5rem] flex items-center justify-center text-5xl border border-white/30">{selectedLevel.icon}</div>
                     <div>
