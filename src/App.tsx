@@ -8,10 +8,11 @@ import UserProfile from './components/layout/UserProfile';
 import AIAssistant from './components/ui/AIAssistant';
 import Navigation from './components/layout/Navigation';
 import AuthPage from './components/layout/AuthPage';
-import { Sun, Moon, LogOut, User } from 'lucide-react';
+import { useAuth } from './contexts/AuthContext';
+import { Sun, Moon, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated, logout, user } = useAuth();
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isAudioInitialized, setIsAudioInitialized] = useState(false);
@@ -39,14 +40,14 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setView(ViewMode.FREE_LAB); // Reset view for next login
+    logout(); // 清除 localStorage 和 auth 状态
+    setView(ViewMode.FREE_LAB);
   };
 
   return (
     <div className={`h-screen w-full flex flex-col overflow-hidden transition-colors duration-700 ${theme === 'dark' ? 'bg-[#000b1a] text-slate-100' : 'bg-[#f8fafc] text-slate-900'} select-none`} onClick={initAudio}>
-      {!isLoggedIn ? (
-        <AuthPage onLogin={() => setIsLoggedIn(true)} theme={theme} />
+      {!isAuthenticated ? (
+        <AuthPage theme={theme} />
       ) : (
         <>
           {/* 科技感背景装饰 */}
@@ -91,6 +92,14 @@ const App: React.FC = () => {
                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest pr-2 hidden sm:inline">我的档案</span>
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${theme === 'dark' ? 'bg-white/5 border-white/10 text-slate-400 hover:text-red-400 hover:border-red-500/30' : 'bg-white border-blue-100 text-slate-500 hover:text-red-500 hover:border-red-200'}`}
+                  title="退出登录"
+                >
+                  <LogOut size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">退出</span>
                 </button>
               </div>
             </div>

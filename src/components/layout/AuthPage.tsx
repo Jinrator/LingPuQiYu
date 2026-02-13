@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, ShieldCheck, MessageCircle, Loader2, QrCode, KeyRound, ArrowLeftRight, Mail } from 'lucide-react';
-import { useAuthing } from '../../hooks/useAuthing';
+import { useAuth } from '../../hooks/useAuth';
 
 interface AuthPageProps {
-  onLogin: () => void;
   theme: 'light' | 'dark';
 }
 
@@ -12,16 +11,15 @@ type AuthMode = 'login' | 'register';
 type LoginMethod = 'wechat' | 'phone';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
 
-const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
-  // 使用 Authing Hook
+const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
+  // 使用自定义认证 Hook
   const { 
-    isAuthenticated,
-    loginWithPhone: authingLoginWithPhone,
+    loginWithPhone: doLoginWithPhone,
     loginWithWechat,
     loginWithQQ,
     sendSmsCode,
-    register: authingRegister
-  } = useAuthing();
+    register: doRegister
+  } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('login');
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
@@ -34,13 +32,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const isDark = theme === 'dark';
-
-  // 如果已登录，自动跳转
-  useEffect(() => {
-    if (isAuthenticated) {
-      onLogin();
-    }
-  }, [isAuthenticated, onLogin]);
 
   const courses = [
     { id: 'PRODUCER' as CourseType, title: 'AI数智作曲家', desc: 'AI与算法编曲', icon: Orbit, color: 'from-blue-500 to-indigo-600' },
@@ -66,22 +57,20 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
     try {
       if (mode === 'login') {
         // 登录
-        const result = await authingLoginWithPhone(phone, vCode);
+        const result = await doLoginWithPhone(phone, vCode);
         if (result && !result.success) {
           setErrorMsg(result.message || '登录失败');
         }
       } else {
         // 注册
-        const result = await authingRegister({
+        const result = await doRegister({
           phone,
           code: vCode,
           username: name,
-          profile: {
-            courseType: course
-          }
+          courseType: course || undefined,
         });
         if (result && !result.success) {
-          setErrorMsg((result as any).message || '注册失败');
+          setErrorMsg(result.message || '注册失败');
         }
       }
     } catch (error: any) {
@@ -94,12 +83,16 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
   // 发送验证码
   const getVCode = async () => {
     if (phone.length === 11) {
-      const result = await sendSmsCode(phone);
-      if (result && result.success) {
-        setCountdown(60);
-        setErrorMsg('');
-      } else {
-        setErrorMsg((result && result.message) || '发送失败');
+      try {
+        const result = await sendSmsCode(phone);
+        if (result && result.success) {
+          setCountdown(60);
+          setErrorMsg('');
+        } else {
+          setErrorMsg((result && result.message) || '发送失败');
+        }
+      } catch (err: any) {
+        setErrorMsg(err.message || '发送验证码失败，请检查网络');
       }
     }
   };
@@ -108,10 +101,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
   const handleWechatLogin = async () => {
     setIsAuthorizing(true);
     try {
-      await loginWithWechat();
-      // Authing 会自动跳转，不需要手动处理
+      const result = await loginWithWechat();
+      if (result && !result.success) {
+        setErrorMsg(result.message || '微信登录失败，请重试');
+      }
     } catch (error) {
       setErrorMsg('微信登录失败，请重试');
+    } finally {
       setIsAuthorizing(false);
     }
   };
@@ -120,10 +116,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
   const handleQQLogin = async () => {
     setIsAuthorizing(true);
     try {
-      await loginWithQQ();
-      // Authing 会自动跳转，不需要手动处理
+      const result = await loginWithQQ();
+      if (result && !result.success) {
+        setErrorMsg(result.message || 'QQ登录失败，请重试');
+      }
     } catch (error) {
       setErrorMsg('QQ登录失败，请重试');
+    } finally {
       setIsAuthorizing(false);
     }
   };
@@ -341,6 +340,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, theme }) => {
 
             {mode === 'register' && (
               <div className="animate-in slide-in-from-top-4 duration-500 space-y-6">
+                {errorMsg && (
+                  <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-in slide-in-from-top-2">
+                    {errorMsg}
+                  </div>
+                )}
                 <div className="space-y-4">
                   <label className={`block text-[9px] font-black uppercase tracking-[0.3em] ml-2 ${isDark ? 'text-slate-600' : 'text-blue-400/70'}`}>
                     实验室研究方向 (单选)

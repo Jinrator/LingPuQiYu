@@ -106,6 +106,7 @@ npm run preview
 - **[Piano 高亮延迟修复](./docs/solutions/PIANO_HIGHLIGHT_DELAY_FIX.md)** - 钢琴键盘高亮延迟问题
 - **[Safari 兼容性修复](./docs/solutions/SAFARI_FIX_ANALYSIS.md)** - Safari 浏览器兼容性问题
 - **[Authing 集成方案](./docs/solutions/AUTHING_INTEGRATION_SOLUTION.md)** - Authing 认证集成完整方案
+- **[路由状态 & 退出登录修复](./docs/solutions/ROUTING_AND_LOGOUT_FIX.md)** - 路由状态丢失与退出登录功能修复
 
 ---
 
@@ -143,7 +144,8 @@ docs/
 └── solutions/                     # 解决方案：问题知识库
     ├── PIANO_HIGHLIGHT_DELAY_FIX.md
     ├── SAFARI_FIX_ANALYSIS.md
-    └── AUTHING_INTEGRATION_SOLUTION.md
+    ├── AUTHING_INTEGRATION_SOLUTION.md
+    └── ROUTING_AND_LOGOUT_FIX.md
 ```
 
 **为什么这样做？**
