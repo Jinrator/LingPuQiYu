@@ -4,14 +4,32 @@
 
 ```
 ├── src/
-│   ├── App.tsx                    # 应用主入口
 │   ├── index.tsx                  # React 渲染入口
+│   ├── App.tsx                    # 旧版应用入口（已废弃）
+│   │
+│   ├── router/                    # 路由配置
+│   │   └── index.tsx             # React Router 配置
+│   │
+│   ├── pages/                     # 页面组件（类似 Next.js）
+│   │   ├── FreeLab.tsx           # 自由实验室页面
+│   │   ├── Adventure.tsx         # 冒险模式页面
+│   │   ├── Stage.tsx             # 舞台模式页面
+│   │   ├── Profile.tsx           # 用户档案页面
+│   │   ├── Login.tsx             # 登录页面
+│   │   ├── NotFound.tsx          # 404 页面
+│   │   └── lab/                  # 实验室子页面
+│   │       ├── ProjectDetail.tsx # 项目详情页
+│   │       └── CreateProject.tsx # 创建项目页
 │   │
 │   ├── components/                # 组件目录
 │   │   ├── layout/               # 布局组件
+│   │   │   ├── AppLayout.tsx     # 主布局组件
 │   │   │   ├── AuthPage.tsx      # 登录/注册页面
 │   │   │   ├── Navigation.tsx    # 导航栏
 │   │   │   └── UserProfile.tsx   # 用户档案
+│   │   │
+│   │   ├── router/               # 路由组件
+│   │   │   └── ProtectedRoute.tsx # 路由守卫
 │   │   │
 │   │   ├── modes/                # 三大模式
 │   │   │   ├── AdventureMode.tsx # 冒险模式（闯关地图）
@@ -42,10 +60,22 @@
 │   │   │   └── DrumSequencer.tsx # 鼓机音序器
 │   │   │
 │   │   └── ui/                   # UI 组件
-│   │       └── AIAssistant.tsx   # AI 助手（灵感精灵）
+│   │       ├── AIAssistant.tsx   # AI 助手（灵感精灵）
+│   │       └── ExitConfirmation.tsx # 退出确认提示
+│   │
+│   ├── contexts/                 # React Context
+│   │   └── AuthContext.tsx       # 认证上下文
+│   │
+│   ├── hooks/                    # 自定义 Hooks
+│   │   ├── useAuth.ts           # 认证 Hook
+│   │   ├── useAppRouter.ts      # 路由工具 Hook
+│   │   └── useExitConfirmation.ts # 退出确认 Hook
 │   │
 │   ├── services/                 # 服务层
-│   │   └── audioService.ts       # 音频服务（Web Audio API）
+│   │   ├── audioService.ts       # 音频服务（Web Audio API）
+│   │   ├── authService.ts        # 认证服务
+│   │   ├── drumSynthesizer.ts    # 鼓机合成器
+│   │   └── instrumentConfig.ts   # 乐器配置
 │   │
 │   ├── types/                    # TypeScript 类型定义
 │   │   └── index.ts              # 全局类型
@@ -53,26 +83,52 @@
 │   ├── constants/                # 常量配置
 │   │   └── index.ts              # 音符、和弦、关卡等配置
 │   │
-│   ├── assets/                   # 静态资源
-│   │   └── logo.jpg              # Logo 图片
+│   ├── utils/                    # 工具函数
+│   │   └── musicNotes.ts         # 音乐理论工具
 │   │
-│   └── utils/                    # 工具函数（预留）
+│   └── assets/                   # 静态资源
+│       └── logo.jpg              # Logo 图片
+│
+├── public/                       # 公共资源
+│   └── samples/                  # 音频样本
+│       ├── piano/                # 钢琴音色
+│       └── drums/                # 鼓组音色
+│           ├── acoustic/         # 原声鼓
+│           └── electronic/       # 电子鼓
+│
+├── server/                       # 后端服务（可选）
+│   ├── index.js                  # Express 服务器
+│   └── package.json              # 后端依赖
+│
+├── scripts/                      # 工具脚本
+│   └── generate-samples.html     # 音频样本生成工具
+│
+├── docs/                         # 文档目录
+│   ├── AUTHING_LOGIN_GUIDE.md    # 技术文档
+│   └── solutions/               # 解决方案知识库
+│       ├── PIANO_HIGHLIGHT_DELAY_FIX.md
+│       ├── SAFARI_FIX_ANALYSIS.md
+│       ├── AUTHING_INTEGRATION_SOLUTION.md
+│       ├── ROUTING_AND_LOGOUT_FIX.md
+│       ├── REACT_ROUTER_MIGRATION_SOLUTION.md
+│       └── SMS_AUTH_SERVICE_MIGRATION.md
 │
 ├── index.html                    # HTML 入口
 ├── vite.config.ts                # Vite 配置
 ├── tsconfig.json                 # TypeScript 配置
 └── package.json                  # 项目依赖
-
 ```
 
 ## 技术栈
 
 - **框架**: React 19 + TypeScript
+- **路由**: React Router DOM
 - **构建工具**: Vite
 - **样式**: Tailwind CSS
-- **音频**: Web Audio API
+- **音频**: Web Audio API + Tone.js
 - **AI**: Google Gemini API
 - **图标**: Lucide React
+- **认证**: 自定义认证服务（支持手机号、微信、QQ）
 
 ## Run Locally
 
@@ -101,12 +157,14 @@ npm run preview
 面向开发者的部署和集成指南：
 - **[Authing 登录集成指南](./docs/AUTHING_LOGIN_GUIDE.md)** - 微信、QQ、手机号登录完整方案
 
-### � 2. 解决方案知识库 (`docs/solutions/`)
+### 🔧 2. 解决方案知识库 (`docs/solutions/`)
 每次解决问题后的技术沉淀：
 - **[Piano 高亮延迟修复](./docs/solutions/PIANO_HIGHLIGHT_DELAY_FIX.md)** - 钢琴键盘高亮延迟问题
 - **[Safari 兼容性修复](./docs/solutions/SAFARI_FIX_ANALYSIS.md)** - Safari 浏览器兼容性问题
 - **[Authing 集成方案](./docs/solutions/AUTHING_INTEGRATION_SOLUTION.md)** - Authing 认证集成完整方案
 - **[路由状态 & 退出登录修复](./docs/solutions/ROUTING_AND_LOGOUT_FIX.md)** - 路由状态丢失与退出登录功能修复
+- **[React Router 迁移方案](./docs/solutions/REACT_ROUTER_MIGRATION_SOLUTION.md)** - 从状态管理到现代路由系统的完整迁移
+- **[SMS 认证服务迁移](./docs/solutions/SMS_AUTH_SERVICE_MIGRATION.md)** - 短信认证服务迁移方案
 
 ---
 
@@ -145,11 +203,10 @@ docs/
     ├── PIANO_HIGHLIGHT_DELAY_FIX.md
     ├── SAFARI_FIX_ANALYSIS.md
     ├── AUTHING_INTEGRATION_SOLUTION.md
+    ├── ROUTING_AND_LOGOUT_FIX.md
+    ├── REACT_ROUTER_MIGRATION_SOLUTION.md
+    └── SMS_AUTH_SERVICE_MIGRATION.md
+    ├── SAFARI_FIX_ANALYSIS.md
+    ├── AUTHING_INTEGRATION_SOLUTION.md
     └── ROUTING_AND_LOGOUT_FIX.md
 ```
-
-**为什么这样做？**
-- ✅ 避免重复踩坑
-- ✅ 新成员快速上手
-- ✅ 技术决策可追溯
-- ✅ 形成团队知识资产
