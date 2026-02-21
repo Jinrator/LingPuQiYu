@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Map, Compass, Play, Pause, Sparkles, MessageCircle, ArrowRight, Wind, Zap, Sun, Volume2, Info } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES, CHORDS } from '../../utils/musicNotes';
 
 interface MusicAtlasProjectProps {
   onComplete: () => void;
@@ -15,71 +17,45 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
   const [showAITip, setShowAITip] = useState(false);
   const isDark = theme === 'dark';
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const currentStepRef = useRef(0);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-  };
-
-  const playSound = useCallback((freq: number, gainValue: number, type: OscillatorType = 'sine', decay = 0.5) => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    // 软化包络：增加 0.02s 的淡入，避免瞬态刺耳
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(gainValue, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + decay);
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + decay);
-  }, []);
+  // 使用统一的和弦系统
+  const cMajor = CHORDS.C;
 
   const runSequence = useCallback(() => {
     const step = currentStepRef.current % 8;
     
-    // 主歌 A: 稀疏且极其柔和
+    // 主歌 A: 稀疏且柔和
     if (activeSection === 'A') {
-      if (step === 0 || step === 4) playSound(261.63, 0.15, 'sine', 0.8); // C4
-      if (step === 2) playSound(329.63, 0.1, 'sine', 0.6); // E4
+      if (step === 0 || step === 4) {
+        audioService.playPianoNote(NOTES.C4, 0.8, 0.3);
+      }
+      if (step === 2) {
+        audioService.playPianoNote(NOTES.E4, 0.6, 0.2);
+      }
     } 
-    // 副歌 B: 密集但不再刺耳
+    // 副歌 B: 密集且有力
     else {
-      // 1. 稳重的底鼓 (Triangle 波形比 Sine 更厚实但不尖锐)
-      if (step % 2 === 0) playSound(60, 0.4, 'triangle', 0.3); 
-      
-      // 2. 密集的动感音 (改用 Sine 波，频率随能量变化更平滑)
-      // 使用更和谐的倍数，能量越高声音越清脆，而非刺耳
-      const hiFreq = 523.25 * (1 + (energy / 200)); 
-      if (step % 1 === 0) {
-        // 偶数步稍微强一点，奇数步弱一点，形成律动
-        const stepGain = step % 2 === 0 ? 0.08 : 0.04;
-        playSound(hiFreq, stepGain * (energy / 50), 'sine', 0.15);
+      // 底鼓节奏
+      if (step % 2 === 0) {
+        audioService.playDrum('kick');
       }
       
-      // 3. 支撑和弦 (使用 Sine，持续时间略长)
+      // 高音装饰
+      if (step % 1 === 0) {
+        const velocity = energy > 70 ? 0.6 : 0.4;
+        audioService.playPianoNote(NOTES.C5, 0.15, velocity);
+      }
+      
+      // 和弦支撑
       if (step === 0 || step === 4) {
-          playSound(261.63, 0.1, 'sine', 1.0);
-          playSound(329.63, 0.1, 'sine', 1.0);
-          playSound(392.00, 0.1, 'sine', 1.0);
+        audioService.playPianoChord(cMajor, 1.0, 0.3);
       }
     }
 
     currentStepRef.current++;
-  }, [activeSection, energy, playSound]);
+  }, [activeSection, energy, cMajorChord]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -248,7 +224,7 @@ const MusicAtlasProject: React.FC<MusicAtlasProjectProps> = ({ onComplete, onBac
                  </div>
 
                  <button 
-                   onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
+                   onClick={() => setIsPlaying(!isPlaying)}
                    className={`w-full py-6 rounded-3xl font-black text-xl text-white transition-all active:scale-95 ${isPlaying ? 'bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                  >
                    {isPlaying ? '停止预览' : '开启航行'}

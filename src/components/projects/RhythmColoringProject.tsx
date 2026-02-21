@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Trash2, X, Check, Music, MousePointer2, Sparkles, Layers } from 'lucide-react';
+import { audioService } from '../../services/audioService';
 
 interface RhythmColoringProjectProps {
   onComplete: () => void;
@@ -16,33 +17,10 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
   const isDark = theme === 'dark';
   
   const timerRef = useRef<number | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
 
   const playClick = useCallback(() => {
-    initAudio();
-    if (!audioCtxRef.current) return;
-    const osc = audioCtxRef.current.createOscillator();
-    const gain = audioCtxRef.current.createGain();
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, audioCtxRef.current.currentTime);
-    gain.gain.setValueAtTime(0.3, audioCtxRef.current.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtxRef.current.currentTime + 0.1);
-    
-    osc.connect(gain);
-    gain.connect(audioCtxRef.current.destination);
-    
-    osc.start();
-    osc.stop(audioCtxRef.current.currentTime + 0.1);
+    // 使用鼓组的 hihat 声音作为节拍器
+    audioService.playDrum('hihat');
   }, []);
 
   useEffect(() => {
@@ -62,7 +40,6 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
   }, [isPlaying, bpm, grid, playClick]);
 
   const toggleStep = (idx: number) => {
-    initAudio();
     const newGrid = [...grid];
     newGrid[idx] = !newGrid[idx];
     setGrid(newGrid);
@@ -110,7 +87,7 @@ const RhythmColoringProject: React.FC<RhythmColoringProjectProps> = ({ onComplet
           <div className={`p-16 rounded-[4.5rem] border relative transition-all ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex gap-4">
               <button 
-                onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
+                onClick={() => setIsPlaying(!isPlaying)}
                 className={`w-24 h-24 rounded-[2rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}
               >
                 {isPlaying ? <Pause size={40} fill="currentColor" /> : <Play size={40} fill="currentColor" className="ml-2" />}

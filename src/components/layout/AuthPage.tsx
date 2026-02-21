@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, ShieldCheck, MessageCircle, Loader2, QrCode, KeyRound, ArrowLeftRight, Mail } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -12,13 +13,17 @@ type LoginMethod = 'wechat' | 'phone';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
 
 const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   // 使用自定义认证 Hook
   const { 
     loginWithPhone: doLoginWithPhone,
     loginWithWechat,
     loginWithQQ,
     sendSmsCode,
-    register: doRegister
+    register: doRegister,
+    isAuthenticated
   } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('login');
@@ -38,6 +43,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     { id: 'ARTIST' as CourseType, title: '音乐装置艺术家', desc: '声场与交互艺术', icon: Sparkles, color: 'from-cyan-400 to-blue-500' },
     { id: 'MAKER' as CourseType, title: '智创乐器家', desc: '软硬件乐器开发', icon: Atom, color: 'from-blue-600 to-sky-400' },
   ];
+
+  // 监听认证状态变化，登录成功后重定向
+  useEffect(() => {
+    if (isAuthenticated) {
+      // 获取用户尝试访问的原始路径，如果没有则默认到 /lab
+      const from = (location.state as any)?.from?.pathname || '/lab';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location.state]);
 
   useEffect(() => {
     let timer: number;

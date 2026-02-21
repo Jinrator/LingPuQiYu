@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Trash2, X, Check, Clock, Drum, Music, Activity } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { DrumType } from '../../types';
 
 interface RhythmLegoProjectProps {
   onComplete: () => void;
@@ -9,9 +11,9 @@ interface RhythmLegoProjectProps {
 }
 
 const TRACKS = [
-  { id: 'hihat', name: '擦片 (Hi-hat)', icon: '✨', color: 'bg-yellow-400', activeBorder: 'border-yellow-300', shadow: '', sound: '次' },
-  { id: 'snare', name: '军鼓 (Snare)', icon: '👏', color: 'bg-blue-500', activeBorder: 'border-blue-400', shadow: '', sound: '啪' },
-  { id: 'kick', name: '底鼓 (Kick)', icon: '🥁', color: 'bg-rose-500', activeBorder: 'border-rose-400', shadow: '', sound: '咚' },
+  { id: 'hihat' as DrumType, name: '擦片 (Hi-hat)', icon: '✨', color: 'bg-yellow-400', activeBorder: 'border-yellow-300', shadow: '', sound: '次' },
+  { id: 'snare' as DrumType, name: '军鼓 (Snare)', icon: '👏', color: 'bg-blue-500', activeBorder: 'border-blue-400', shadow: '', sound: '啪' },
+  { id: 'kick' as DrumType, name: '底鼓 (Kick)', icon: '🥁', color: 'bg-rose-500', activeBorder: 'border-rose-400', shadow: '', sound: '咚' },
 ];
 
 const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
@@ -26,46 +28,9 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
   
   const isDark = theme === 'dark';
   const timerRef = useRef<number | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
-
-  const playSound = useCallback((type: string) => {
-    initAudio();
-    if (!audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    if (type === 'kick') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(150, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.5, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-    } else if (type === 'snare') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(250, ctx.currentTime);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    } else {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(1000, ctx.currentTime);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-    }
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.2);
+  const playSound = useCallback((type: DrumType) => {
+    audioService.playDrum(type);
   }, []);
 
   useEffect(() => {
@@ -75,7 +40,7 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
         setCurrentStep((prev) => {
           const next = (prev + 1) % 16;
           Object.keys(grid).forEach(trackId => {
-            if (grid[trackId][next]) playSound(trackId);
+            if (grid[trackId][next]) playSound(trackId as DrumType);
           });
           return next;
         });
@@ -87,12 +52,11 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
   }, [isPlaying, bpm, grid, playSound]);
 
   const toggleStep = (trackId: string, idx: number) => {
-    initAudio();
     const newGrid = { ...grid };
     newGrid[trackId] = [...newGrid[trackId]];
     newGrid[trackId][idx] = !newGrid[trackId][idx];
     setGrid(newGrid);
-    if (newGrid[trackId][idx]) playSound(trackId);
+    if (newGrid[trackId][idx]) playSound(trackId as DrumType);
   };
 
   return (
@@ -174,7 +138,7 @@ const RhythmLegoProject: React.FC<RhythmLegoProjectProps> = ({ onComplete, onBac
 
             <div className="flex justify-center mt-12 gap-6">
               <button 
-                onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
+                onClick={() => setIsPlaying(!isPlaying)}
                 className={`w-24 h-24 rounded-[2.5rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white active:scale-90`}
               >
                 {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-2" />}

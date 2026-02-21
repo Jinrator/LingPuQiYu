@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Music2, Play, Pause, Sparkles, Zap, Flame, Headphones, MessageCircle, Info } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES } from '../../utils/musicNotes';
 
 interface MusicStyle {
   id: string;
@@ -24,51 +26,48 @@ const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => vo
   const [activeStyle, setActiveStyle] = useState<MusicStyle>(STYLES[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const isDark = theme === 'dark';
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-    return audioCtxRef.current;
-  };
-
-  const playSound = useCallback((freq: number, gainVal: number, type: OscillatorType = 'sine', len = 0.5) => {
-    const ctx = initAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + len);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + len);
-  }, []);
+  // 简洁的旋律音符 - 使用统一的音符系统
+  const melodyNotes = [
+    NOTES.C4, // Do
+    NOTES.E4, // Mi
+    NOTES.G4, // Sol
+    NOTES.C4, // Do
+  ];
 
   const runSequence = useCallback(() => {
     const step = (currentStep + 1) % 8;
     setCurrentStep(step);
-    const melody = [261.63, 329.63, 392.00, 261.63];
+    
     if (activeStyle.id === 'rock') {
-      if (step % 2 === 0) playSound(60, 0.4, 'triangle', 0.2);
-      if (step % 2 === 1) playSound(1000, 0.1, 'square', 0.1);
-      if (step % 2 === 0) playSound(melody[step % 4], 0.2, 'sawtooth', 0.5);
+      // 摇滚风格：强劲的鼓点 + 失真吉他感
+      if (step % 2 === 0) {
+        audioService.playDrum('kick');
+      }
+      if (step % 2 === 1) {
+        audioService.playDrum('snare');
+      }
+      if (step % 2 === 0) {
+        audioService.playPianoNote(melodyNotes[step % 4], 0.5, 0.8);
+      }
     } else if (activeStyle.id === 'jazz') {
-      if (step % 4 === 0) playSound(55, 0.2, 'sine', 0.4);
-      if (step % 4 !== 1) playSound(melody[step % 4], 0.15, 'sine', 0.8);
+      // 爵士风格：摇摆节奏 + 柔和钢琴
+      if (step % 4 === 0) {
+        audioService.playDrum('kick');
+      }
+      if (step % 4 !== 1) {
+        audioService.playPianoNote(melodyNotes[step % 4], 0.8, 0.4);
+      }
     } else {
-      playSound(50, 0.5, 'sine', 0.2);
-      if (step % 1 === 0) playSound(melody[step % 4], 0.2, 'square', 0.1);
+      // 电子风格：精准节拍 + 合成器音色
+      audioService.playDrum('kick');
+      if (step % 1 === 0) {
+        audioService.playPianoNote(melodyNotes[step % 4], 0.1, 0.6);
+      }
     }
-  }, [activeStyle, currentStep, playSound]);
+  }, [activeStyle, currentStep, melodyNotes]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -81,12 +80,10 @@ const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => vo
   }, [isPlaying, activeStyle, runSequence]);
 
   const handleTogglePlay = () => {
-    initAudio();
     setIsPlaying(!isPlaying);
   };
 
   const handleStyleChange = (style: MusicStyle) => {
-    initAudio();
     setActiveStyle(style);
     setCurrentStep(-1);
   };

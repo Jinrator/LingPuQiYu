@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Utensils, Sparkles, Music, Trash2, Info, Layers, CloudRain, Sun } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES, CHORDS } from '../../utils/musicNotes';
 
 interface ChordBurgerProjectProps {
   onComplete: () => void;
@@ -8,15 +10,16 @@ interface ChordBurgerProjectProps {
   theme?: 'light' | 'dark';
 }
 
+// 简洁的音阶定义 - 使用统一的音符系统
 const SCALE = [
-  { name: 'C', freq: 261.63, label: '1' },
-  { name: 'D', freq: 293.66, label: '2' },
-  { name: 'E', freq: 329.63, label: '3' },
-  { name: 'F', freq: 349.23, label: '4' },
-  { name: 'G', freq: 392.00, label: '5' },
-  { name: 'A', freq: 440.00, label: '6' },
-  { name: 'B', freq: 493.88, label: '7' },
-  { name: 'C5', freq: 523.25, label: 'i' },
+  { name: 'C', note: NOTES.C4, label: '1' },
+  { name: 'D', note: NOTES.D4, label: '2' },
+  { name: 'E', note: NOTES.E4, label: '3' },
+  { name: 'F', note: NOTES.F4, label: '4' },
+  { name: 'G', note: NOTES.G4, label: '5' },
+  { name: 'A', note: NOTES.A4, label: '6' },
+  { name: 'B', note: NOTES.B4, label: '7' },
+  { name: 'C5', note: NOTES.C5, label: '8' },
 ];
 
 const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
@@ -26,49 +29,42 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   const [isMajor, setIsMajor] = useState(true);
   const [showExplanation, setShowExplanation] = useState(true);
   
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const isDark = theme === 'dark';
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-  };
-
   const playChord = useCallback(() => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const playSingle = (freq: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.5);
-    };
-
-    if (bottomNote !== null) playSingle(SCALE[bottomNote].freq);
+    if (bottomNote === null) return;
+    
+    // 汉堡和弦：每一层对应和弦中的单个音符
+    const chordNotes = [];
+    
+    // 底层：根音（面包底）
+    chordNotes.push(SCALE[bottomNote].note);
+    
+    // 中层：三度音（配料）
     if (middleNote !== null) {
-      // Logic for Major/Minor 3rd
-      const baseFreq = SCALE[bottomNote!].freq;
-      const thirdFreq = isMajor ? baseFreq * 1.25 : baseFreq * 1.2;
-      playSingle(thirdFreq);
+      if (isMajor) {
+        // 大三和弦的三度音
+        const majorThirds = [NOTES.E4, NOTES.Fs4, NOTES.Gs4, NOTES.A4]; // C-E, D-F#, E-G#, F-A
+        chordNotes.push(majorThirds[bottomNote]);
+      } else {
+        // 小三和弦的三度音
+        const minorThirds = [NOTES.Ds4, NOTES.F4, NOTES.G4, NOTES.Gs4]; // C-Eb, D-F, E-G, F-Ab
+        chordNotes.push(minorThirds[bottomNote]);
+      }
     }
+    
+    // 顶层：五度音（生菜盖）
     if (topNote !== null) {
-      const fifthFreq = SCALE[bottomNote!].freq * 1.5;
-      playSingle(fifthFreq);
+      const fifths = [NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5]; // C-G, D-A, E-B, F-C
+      chordNotes.push(fifths[bottomNote]);
     }
+    
+    // 播放组合的音符（不是完整和弦，而是选中的层级音符）
+    audioService.playPianoChord(chordNotes, 1.5, 0.7);
   }, [bottomNote, middleNote, topNote, isMajor]);
 
   useEffect(() => {
-    if (bottomNote !== null && middleNote !== null && topNote !== null) {
+    if (bottomNote !== null) {
       playChord();
     }
   }, [bottomNote, middleNote, topNote, playChord]);
@@ -156,7 +152,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                     {SCALE.slice(0, 4).map((n, i) => (
                       <button 
                         key={i} 
-                        onClick={() => { setBottomNote(i); initAudio(); }}
+                        onClick={() => setBottomNote(i)}
                         className={`h-12 rounded-xl font-black border-2 transition-all ${bottomNote === i ? 'bg-orange-600 text-white border-orange-400' : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-slate-100 text-slate-600'}`}
                       >
                         {n.label}
@@ -170,14 +166,14 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">中层：灵魂配料 (3rd)</span>
                  <div className="flex gap-4">
                     <button 
-                      onClick={() => { setIsMajor(true); setMiddleNote(1); initAudio(); }}
+                      onClick={() => { setIsMajor(true); setMiddleNote(1); }}
                       className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && isMajor ? 'bg-amber-400 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                     >
                        <span className="text-2xl">🧀</span>
                        <span className="text-[9px] font-black uppercase tracking-tighter mt-1">金黄芝士</span>
                     </button>
                     <button 
-                      onClick={() => { setIsMajor(false); setMiddleNote(1); initAudio(); }}
+                      onClick={() => { setIsMajor(false); setMiddleNote(1); }}
                       className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && !isMajor ? 'bg-blue-500 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                     >
                        <span className="text-2xl">🫐</span>
@@ -190,7 +186,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
               <div className="space-y-4">
                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">顶层：生菜盖 (5th)</span>
                  <button 
-                   onClick={() => { setTopNote(1); initAudio(); }}
+                   onClick={() => setTopNote(1)}
                    className={`w-full h-16 rounded-2xl flex items-center justify-center gap-3 border-4 transition-all ${topNote !== null ? 'bg-emerald-500 border-white' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
                  >
                     <span className="text-2xl">🥬</span>

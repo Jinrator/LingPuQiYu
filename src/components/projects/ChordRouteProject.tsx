@@ -1,11 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Map, Compass, Play, Pause, Sparkles, MessageCircle, ArrowRight, Heart, Star, Cloud, Ghost } from 'lucide-react';
-
-interface Chord {
-  name: string;
-  freqs: number[];
-}
+import { audioService } from '../../services/audioService';
+import { NOTES, CHORDS } from '../../utils/musicNotes';
 
 interface Route {
   id: string;
@@ -14,16 +11,10 @@ interface Route {
   icon: React.ReactNode;
   color: string;
   bgClass: string;
-  progression: Chord[];
+  progression: string[]; // 简化为和弦名称
 }
 
-const CHORDS_MAP: Record<string, Chord> = {
-  '1': { name: 'C', freqs: [261.63, 329.63, 392.00] },
-  '5': { name: 'G', freqs: [196.00, 246.94, 293.66] },
-  '6': { name: 'Am', freqs: [220.00, 261.63, 329.63] },
-  '4': { name: 'F', freqs: [174.61, 220.00, 261.63] },
-};
-
+// 路线定义 - 使用统一的和弦系统
 const ROUTES: Route[] = [
   { 
     id: 'A', 
@@ -32,7 +23,7 @@ const ROUTES: Route[] = [
     icon: <Star size={24} />, 
     color: 'bg-yellow-500', 
     bgClass: 'from-amber-400/20 to-orange-500/10',
-    progression: [CHORDS_MAP['1'], CHORDS_MAP['5'], CHORDS_MAP['6'], CHORDS_MAP['4']] 
+    progression: ['C', 'G', 'Am', 'F'] 
   },
   { 
     id: 'B', 
@@ -41,7 +32,7 @@ const ROUTES: Route[] = [
     icon: <Heart size={24} />, 
     color: 'bg-pink-500', 
     bgClass: 'from-pink-400/20 to-rose-500/10',
-    progression: [CHORDS_MAP['1'], CHORDS_MAP['6'], CHORDS_MAP['4'], CHORDS_MAP['5']] 
+    progression: ['C', 'Am', 'F', 'G'] 
   },
   { 
     id: 'C', 
@@ -50,7 +41,7 @@ const ROUTES: Route[] = [
     icon: <Ghost size={24} />, 
     color: 'bg-indigo-600', 
     bgClass: 'from-indigo-600/30 to-slate-900/40',
-    progression: [CHORDS_MAP['6'], CHORDS_MAP['4'], CHORDS_MAP['1'], CHORDS_MAP['5']] 
+    progression: ['Am', 'F', 'C', 'G'] 
   },
 ];
 
@@ -64,46 +55,13 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
   const [hasTestedTension, setHasTestedTension] = useState(false);
   const isDark = theme === 'dark';
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const playChord = useCallback((chordName: string) => {
+    const chord = CHORDS[chordName];
+    if (chord) {
+      audioService.playPianoChord(chord, 1.2, 0.6);
     }
-  };
-
-  const playChord = useCallback((chord: Chord) => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    chord.freqs.forEach(freq => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.2);
-    });
-
-    // 同时播放一个对应旋律音
-    const mOsc = ctx.createOscillator();
-    const mGain = ctx.createGain();
-    mOsc.type = 'sine';
-    mOsc.frequency.setValueAtTime(MELODY_FREQS[Math.floor(Math.random() * 4)], ctx.currentTime);
-    mGain.gain.setValueAtTime(0, ctx.currentTime);
-    mGain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
-    mGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-    mOsc.connect(mGain);
-    mGain.connect(ctx.destination);
-    mOsc.start();
-    mOsc.stop(ctx.currentTime + 0.6);
   }, []);
 
   useEffect(() => {
@@ -215,7 +173,9 @@ const ChordRouteProject: React.FC<{ onComplete: () => void; onBack: () => void; 
                 <div className={`w-full h-24 rounded-3xl border-2 transition-all duration-500 flex flex-col items-center justify-center ${currentStep === s ? 'bg-white scale-110 border-blue-400' : isDark ? 'bg-white/5 border-white/5 opacity-30' : 'bg-slate-200 border-slate-300 opacity-30'}`}>
                    {selectedRoute && (
                      <>
-                        <span className={`text-xl font-black ${currentStep === s ? 'text-blue-600' : ''}`}>{selectedRoute.progression[s].name}</span>
+                        <span className={`text-xl font-black ${currentStep === s ? 'text-blue-600' : ''}`}>
+                          {s === 0 ? 'C' : s === 1 ? (selectedRoute.id === 'A' ? 'G' : selectedRoute.id === 'B' ? 'Am' : 'F') : s === 2 ? (selectedRoute.id === 'A' ? 'Am' : selectedRoute.id === 'B' ? 'F' : 'C') : (selectedRoute.id === 'A' ? 'F' : selectedRoute.id === 'B' ? 'G' : 'G')}
+                        </span>
                         <span className="text-[10px] font-bold opacity-50">{s === 0 ? '家 (Tonic)' : s === 3 ? '悬念 (Dominant)' : '出发'}</span>
                      </>
                    )}

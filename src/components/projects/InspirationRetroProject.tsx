@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Upload, Play, Pause, Wand2, Music2, Sparkles, FileAudio, Trash2, Layers } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES } from '../../utils/musicNotes';
 
 interface InspirationRetroProjectProps {
   onComplete: () => void;
@@ -8,15 +10,16 @@ interface InspirationRetroProjectProps {
   theme?: 'light' | 'dark';
 }
 
+// 简洁的音阶定义 - 使用统一的音符系统
 const SCALE = [
-  { num: '1', name: 'C', freq: 261.63, color: 'bg-blue-500' },
-  { num: '2', name: 'D', freq: 293.66, color: 'bg-sky-500' },
-  { num: '3', name: 'E', freq: 329.63, color: 'bg-cyan-500' },
-  { num: '4', name: 'F', freq: 349.23, color: 'bg-emerald-500' },
-  { num: '5', name: 'G', freq: 392.00, color: 'bg-yellow-500' },
-  { num: '6', name: 'A', freq: 440.00, color: 'bg-orange-500' },
-  { num: '7', name: 'B', freq: 493.88, color: 'bg-rose-500' },
-  { num: 'i', name: 'C5', freq: 523.25, color: 'bg-purple-500' },
+  { num: '1', name: 'C', note: NOTES.C4, color: 'bg-blue-500' },
+  { num: '2', name: 'D', note: NOTES.D4, color: 'bg-sky-500' },
+  { num: '3', name: 'E', note: NOTES.E4, color: 'bg-cyan-500' },
+  { num: '4', name: 'F', note: NOTES.F4, color: 'bg-emerald-500' },
+  { num: '5', name: 'G', note: NOTES.G4, color: 'bg-yellow-500' },
+  { num: '6', name: 'A', note: NOTES.A4, color: 'bg-orange-500' },
+  { num: '7', name: 'B', note: NOTES.B4, color: 'bg-rose-500' },
+  { num: 'i', name: 'C5', note: NOTES.C5, color: 'bg-purple-500' },
 ];
 
 const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
@@ -27,32 +30,11 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
   const [currentStep, setCurrentStep] = useState(-1);
   const [conversionProgress, setConversionProgress] = useState(0);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const isDark = theme === 'dark';
 
-  const playNote = useCallback((freq: number) => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.6);
+  const playNote = useCallback((note: Note) => {
+    audioService.playPianoNote(note, 0.5, 0.7);
   }, []);
 
   useEffect(() => {
@@ -62,7 +44,7 @@ const InspirationRetroProject: React.FC<InspirationRetroProjectProps> = ({ onCom
           const next = (prev + 1) % 16;
           const noteIdx = convertedGrid[next];
           if (noteIdx !== -1) {
-            playNote(SCALE[noteIdx].freq);
+            playNote(SCALE[noteIdx].note);
           }
           return next;
         });

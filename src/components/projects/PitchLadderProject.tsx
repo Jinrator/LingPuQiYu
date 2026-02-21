@@ -1,13 +1,15 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { X, Check, ArrowUp, Music, Sparkles, ChevronRight } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES } from '../../utils/musicNotes';
 
 interface NoteData {
   id: number;
   num: string;
   sol: string;
   pitch: string;
-  freq: number;
+  note: any; // 简化类型
   color: string;
   isLow?: boolean;
 }
@@ -17,18 +19,19 @@ interface RhythmBar {
   text: string;
 }
 
-const NOTES: NoteData[] = [
-  { id: 0, num: '5', sol: 'sol', pitch: 'G3', freq: 196.00, color: 'bg-indigo-700', isLow: true },
-  { id: 1, num: '6', sol: 'la', pitch: 'A3', freq: 220.00, color: 'bg-blue-800', isLow: true },
-  { id: 2, num: '7', sol: 'si', pitch: 'B3', freq: 246.94, color: 'bg-sky-800', isLow: true },
-  { id: 3, num: '1', sol: 'do', pitch: 'C4', freq: 261.63, color: 'bg-blue-500' },
-  { id: 4, num: '2', sol: 're', pitch: 'D4', freq: 293.66, color: 'bg-sky-400' },
-  { id: 5, num: '3', sol: 'mi', pitch: 'E4', freq: 329.63, color: 'bg-cyan-400' },
-  { id: 6, num: '4', sol: 'fa', pitch: 'F4', freq: 349.23, color: 'bg-emerald-400' },
-  { id: 7, num: '5', sol: 'sol', pitch: 'G4', freq: 392.00, color: 'bg-yellow-400' },
-  { id: 8, num: '6', sol: 'la', pitch: 'A4', freq: 440.00, color: 'bg-orange-500' },
-  { id: 9, num: '7', sol: 'si', pitch: 'B4', freq: 493.88, color: 'bg-rose-500' },
-  { id: 10, num: 'i', sol: 'do\'', pitch: 'C5', freq: 523.25, color: 'bg-purple-500' },
+// 简洁的音符定义 - 使用统一的音符系统
+const LADDER_NOTES: NoteData[] = [
+  { id: 0, num: '5', sol: 'sol', pitch: 'G3', note: NOTES.G3, color: 'bg-indigo-700', isLow: true },
+  { id: 1, num: '6', sol: 'la', pitch: 'A3', note: NOTES.A3, color: 'bg-blue-800', isLow: true },
+  { id: 2, num: '7', sol: 'si', pitch: 'B3', note: NOTES.B3, color: 'bg-sky-800', isLow: true },
+  { id: 3, num: '1', sol: 'do', pitch: 'C4', note: NOTES.C4, color: 'bg-blue-500' },
+  { id: 4, num: '2', sol: 're', pitch: 'D4', note: NOTES.D4, color: 'bg-sky-400' },
+  { id: 5, num: '3', sol: 'mi', pitch: 'E4', note: NOTES.E4, color: 'bg-cyan-400' },
+  { id: 6, num: '4', sol: 'fa', pitch: 'F4', note: NOTES.F4, color: 'bg-emerald-400' },
+  { id: 7, num: '5', sol: 'sol', pitch: 'G4', note: NOTES.G4, color: 'bg-yellow-400' },
+  { id: 8, num: '6', sol: 'la', pitch: 'A4', note: NOTES.A4, color: 'bg-orange-500' },
+  { id: 9, num: '7', sol: 'si', pitch: 'B4', note: NOTES.B4, color: 'bg-rose-500' },
+  { id: 10, num: 'i', sol: 'do\'', pitch: 'C5', note: NOTES.C5, color: 'bg-purple-500' },
 ];
 
 const TWO_TIGERS_FULL_SCORE: RhythmBar[] = [
@@ -50,42 +53,16 @@ interface PitchLadderProjectProps {
 
 const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
   const [currentIndex, setCurrentIndex] = useState(3);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const isDark = theme === 'dark';
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
-
-  const playNote = useCallback((freq: number) => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 1);
+  const playNote = useCallback((note) => {
+    audioService.playPianoNote(note, 0.8, 0.7);
   }, []);
 
   const handleJump = (index: number) => {
-    const safeIndex = Math.max(0, Math.min(NOTES.length - 1, index));
+    const safeIndex = Math.max(0, Math.min(LADDER_NOTES.length - 1, index));
     setCurrentIndex(safeIndex);
-    playNote(NOTES[safeIndex].freq);
+    playNote(LADDER_NOTES[safeIndex].note);
   };
 
   const getArea = (id: number) => {
@@ -153,7 +130,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
           <div className="flex-1 relative flex flex-col justify-between">
             <div className={`absolute left-1/2 -translate-x-1/2 w-4 top-0 bottom-0 rounded-full transition-colors ${isDark ? 'bg-white/5' : 'bg-blue-100'}`} />
 
-            {[...NOTES].reverse().map((note) => (
+            {[...LADDER_NOTES].reverse().map((note) => (
               <button
                 key={note.id}
                 onClick={() => handleJump(note.id)}

@@ -1,23 +1,29 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Fish, Sparkles, MessageCircle, Play, Pause, Trash2, Repeat, Zap, Waves, Volume2, Music } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES } from '../../utils/musicNotes';
 
 interface MelodyFragment {
   id: string;
   name: string;
-  notes: number[]; 
+  notes: any[]; // 简化类型
   color: string;
   emoji: string;
 }
 
-const MOCK_FRAGMENTS: MelodyFragment[] = [
-  { id: 'f1', name: '夏日闪闪', notes: [0, 2, 4, 7], color: 'bg-yellow-400', emoji: '✨' },
-  { id: 'f2', name: '深夜电波', notes: [7, 5, 4, 0], color: 'bg-indigo-500', emoji: '🌙' },
-  { id: 'f3', name: '彩虹阶梯', notes: [0, 1, 2, 3], color: 'bg-rose-400', emoji: '🌈' },
-  { id: 'f4', name: '心跳加速', notes: [0, 0, 7, 7], color: 'bg-emerald-500', emoji: '💓' },
+// 简洁的音阶定义 - 使用统一的音符系统
+const SCALE_NOTES = [
+  NOTES.C4, NOTES.D4, NOTES.E4, NOTES.F4, 
+  NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5
 ];
 
-const SCALE = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+const MOCK_FRAGMENTS: MelodyFragment[] = [
+  { id: 'f1', name: '夏日闪闪', notes: [SCALE_NOTES[0], SCALE_NOTES[2], SCALE_NOTES[4], SCALE_NOTES[7]], color: 'bg-yellow-400', emoji: '✨' },
+  { id: 'f2', name: '深夜电波', notes: [SCALE_NOTES[7], SCALE_NOTES[5], SCALE_NOTES[4], SCALE_NOTES[0]], color: 'bg-indigo-500', emoji: '🌙' },
+  { id: 'f3', name: '彩虹阶梯', notes: [SCALE_NOTES[0], SCALE_NOTES[1], SCALE_NOTES[2], SCALE_NOTES[3]], color: 'bg-rose-400', emoji: '🌈' },
+  { id: 'f4', name: '心跳加速', notes: [SCALE_NOTES[0], SCALE_NOTES[0], SCALE_NOTES[7], SCALE_NOTES[7]], color: 'bg-emerald-500', emoji: '💓' },
+];
 
 const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark' }> = ({ onComplete, onBack, theme = 'dark' }) => {
   const [hookSlots, setHookSlots] = useState<(MelodyFragment | null)[]>([null, null, null, null]);
@@ -26,36 +32,14 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
   const [showAITip, setShowAITip] = useState(false);
   const isDark = theme === 'dark';
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
-
   const playFragment = useCallback((fragment: MelodyFragment) => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    fragment.notes.forEach((noteIdx, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(SCALE[noteIdx % 8], ctx.currentTime + i * 0.15);
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
-      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.15 + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.15);
-      osc.stop(ctx.currentTime + i * 0.15 + 0.3);
-    });
+    for (let i = 0; i < fragment.notes.length; i++) {
+      setTimeout(() => {
+        audioService.playPianoNote(fragment.notes[i], 0.3, 0.6);
+      }, i * 150);
+    }
   }, []);
 
   useEffect(() => {
@@ -76,7 +60,6 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
   }, [isPlaying, hookSlots, playFragment]);
 
   const addToSlot = (fragment: MelodyFragment) => {
-    initAudio();
     const firstEmpty = hookSlots.findIndex(s => s === null);
     if (firstEmpty !== -1) {
       const newSlots = [...hookSlots];

@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
+    "@types/react-router-dom": "^5.3.3",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-router-dom": "^7.13.0",
     "tone": "^15.1.22"
   },
   "devDependencies": {

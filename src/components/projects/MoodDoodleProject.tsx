@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, Sun, CloudRain, Music, Play, Pause, Sparkles, Info, HeartPulse, BadgeCheck } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES, C_MAJOR_SCALE, C_MINOR_SCALE } from '../../utils/musicNotes';
 
 interface MoodDoodleProjectProps {
   onComplete: () => void;
@@ -17,8 +19,9 @@ const BIRTHDAY_MELODY = [
   { step: 5, note: 2, label: '3' }
 ];
 
-const MAJOR_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-const MINOR_FREQS = [261.63, 293.66, 311.13, 349.23, 392.00, 415.30, 466.16, 523.25];
+// 使用统一的音阶系统
+const MAJOR_NOTES = C_MAJOR_SCALE;
+const MINOR_NOTES = C_MINOR_SCALE;
 
 const MoodDoodleProject: React.FC<MoodDoodleProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
   const [mood, setMood] = useState<'happy' | 'sad'>('happy');
@@ -26,36 +29,10 @@ const MoodDoodleProject: React.FC<MoodDoodleProjectProps> = ({ onComplete, onBac
   const [currentStep, setCurrentStep] = useState(-1);
   const isDark = theme === 'dark';
   
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-    return audioCtxRef.current;
-  };
-
-  const playNote = useCallback((freq: number) => {
-    const ctx = initAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = mood === 'happy' ? 'sine' : 'triangle'; 
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(mood === 'happy' ? 0.3 : 0.2, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 1);
+  const playNote = useCallback((note: Note) => {
+    audioService.playPianoNote(note, 0.8, mood === 'happy' ? 0.7 : 0.5);
   }, [mood]);
 
   useEffect(() => {
@@ -63,10 +40,10 @@ const MoodDoodleProject: React.FC<MoodDoodleProjectProps> = ({ onComplete, onBac
       timerRef.current = window.setInterval(() => {
         setCurrentStep(prev => {
           const next = (prev + 1) % 8;
-          const freqs = mood === 'happy' ? MAJOR_FREQS : MINOR_FREQS;
+          const notes = mood === 'happy' ? MAJOR_NOTES : MINOR_NOTES;
           const melodyNote = BIRTHDAY_MELODY.find(m => m.step === next);
           if (melodyNote) {
-            playNote(freqs[melodyNote.note]);
+            playNote(notes[melodyNote.note]);
           }
           return next;
         });

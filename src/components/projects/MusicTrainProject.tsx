@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Check, TrainFront, Play, Pause, Sparkles, Trash2, Zap, Wind, Music2, Sticker, Repeat, Ghost, CloudFog, Bot, Radio, ZapOff } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES, CHORDS } from '../../utils/musicNotes';
 
 type SectionType = 'INTRO' | 'VERSE' | 'CHORUS' | 'BRIDGE' | 'OUTRO' | 'EMPTY';
 
@@ -29,80 +31,54 @@ const MusicTrainProject: React.FC<{ onComplete: () => void; onBack: () => void; 
   const [isTunnelActive, setIsTunnelActive] = useState(false);
   const isDark = theme === 'dark';
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
+  // 使用统一的音符系统
+  const notes = {
+    C2: NOTES.C2,
+    E2: NOTES.E2,
+    G2: NOTES.G2,
+    A2: NOTES.A2,
+    A1: NOTES.A1,
+    G4: NOTES.G4,
   };
 
   const playSegmentSound = useCallback((type: SectionType, hasFill: boolean) => {
-    initAudio();
-    const ctx = audioCtxRef.current!;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const playSynth = (freq: number, gainVal: number, type: OscillatorType = 'sine', len = 1.0, detune = 0) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(isTunnelActive ? freq * 0.75 : freq, ctx.currentTime);
-      osc.detune.setValueAtTime(detune, ctx.currentTime);
-      
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + len);
-      
-      // 添加低通滤波器模拟隧道效果
-      if (isTunnelActive) {
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(800, ctx.currentTime);
-        osc.connect(filter);
-        filter.connect(gain);
-      } else {
-        osc.connect(gain);
-      }
-      
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + len);
-    };
-
     switch(type) {
       case 'INTRO': 
-        playSynth(130.81, 0.3, 'sawtooth', 1.5, -10); // C2 Startup hum
+        audioService.playPianoNote(notes.C2, 1.5, 0.6);
         break; 
       case 'VERSE': 
-        playSynth(164.81, 0.2, 'square', 0.8); // E2 Steady pulse
+        audioService.playPianoNote(notes.E2, 0.8, 0.4);
         break;   
       case 'CHORUS': 
-        playSynth(196.00, 0.3, 'sawtooth', 0.6, 10); // G2 High energy
-        playSynth(392.00, 0.1, 'sine', 0.4); // Sparkle
+        audioService.playPianoNote(notes.G2, 0.6, 0.7);
+        // 添加高音装饰
+        setTimeout(() => {
+          audioService.playPianoNote(notes.G4, 0.4, 0.3);
+        }, 100);
         break; 
       case 'BRIDGE': 
-        playSynth(220.00, 0.25, 'triangle', 2.0); // A2 Ethereal
+        audioService.playPianoNote(notes.A2, 2.0, 0.5);
         break;   
       case 'OUTRO': 
-        playSynth(110.00, 0.2, 'sine', 2.5); // A1 Power down
+        audioService.playPianoNote(notes.A1, 2.5, 0.4);
         break;
     }
 
     if (hasFill) {
-      // "Dong Dong Pa" Fill-in Logic
-      for (let i = 0; i < 3; i++) {
-        const time = ctx.currentTime + 0.6 + (i * 0.12);
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.frequency.setValueAtTime(120 - (i * 20), time);
-        g.gain.setValueAtTime(0.3, time);
-        g.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-        osc.connect(g); g.connect(ctx.destination);
-        osc.start(time); osc.stop(time + 0.1);
-      }
+      // 添加鼓点装饰
+      setTimeout(() => {
+        audioService.playDrum('kick');
+      }, 600);
+      setTimeout(() => {
+        audioService.playDrum('snare');
+      }, 720);
+      setTimeout(() => {
+        audioService.playDrum('hihat');
+      }, 840);
     }
-  }, [isTunnelActive]);
+  }, [notes]);
 
   useEffect(() => {
     if (isPlaying) {

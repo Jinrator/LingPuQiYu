@@ -1,6 +1,7 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Check, ArrowRightLeft, Sparkles, Play, Pause, HelpCircle, Trash2, Wand2, ArrowUp, ArrowDown, MoveRight } from 'lucide-react';
+import { X, Check, ArrowRightLeft, Play, Pause, HelpCircle, Trash2, ArrowUp, ArrowDown, MoveRight } from 'lucide-react';
+import { audioService } from '../../services/audioService';
+import { NOTES } from '../../utils/musicNotes';
 
 interface MelodyMirrorProjectProps {
   onComplete: () => void;
@@ -8,7 +9,12 @@ interface MelodyMirrorProjectProps {
   theme?: 'light' | 'dark';
 }
 
-const SCALE = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // C4-C5
+// 简洁的音阶定义 - 使用统一的音符系统
+const SCALE_NOTES = [
+  NOTES.C4, NOTES.D4, NOTES.E4, NOTES.F4, 
+  NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5
+];
+
 const NOTE_LABELS = ['1', '2', '3', '4', '5', '6', '7', 'i'];
 
 const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
@@ -19,32 +25,11 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
   const [showExplanation, setShowExplanation] = useState(true);
   const [activeMagic, setActiveMagic] = useState<string | null>(null);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const isDark = theme === 'dark';
 
-  const playNote = useCallback((freq: number) => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.6);
+  const playNote = useCallback((note) => {
+    audioService.playPianoNote(note, 0.5, 0.7);
   }, []);
 
   useEffect(() => {
@@ -62,7 +47,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
           const noteIdx = grid[next % 4];
           
           if (noteIdx !== -1) {
-            playNote(SCALE[noteIdx]);
+            playNote(SCALE_NOTES[noteIdx]);
           }
           return next;
         });
@@ -84,7 +69,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
       newGrid[step] = newGrid[step] === pitch ? -1 : pitch;
       setAnswerGrid(newGrid);
     }
-    if (pitch !== -1) playNote(SCALE[pitch]);
+    if (pitch !== -1) playNote(SCALE_NOTES[pitch]);
   };
 
   const applyMagic = (type: 'up' | 'down' | 'mirror') => {
@@ -104,6 +89,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
       nextAnswer = [...questionGrid].reverse();
     }
 
+    // 确保最后一个音符回到主音
     let lastNoteIdx = -1;
     for (let i = nextAnswer.length - 1; i >= 0; i--) {
       if (nextAnswer[i] !== -1) {
@@ -131,10 +117,12 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
   return (
     <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-700 overflow-hidden ${isDark ? 'bg-[#020617]' : 'bg-[#f8fafc]'}`}>
       
+      {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-pulse" />
       </div>
 
+      {/* Header */}
       <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
         <div className="flex items-center gap-6">
           <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
@@ -156,16 +144,18 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-8">
         
+        {/* Explanation Panel */}
         {showExplanation && (
           <div className={`max-w-4xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
             <div className="flex gap-8 items-start">
               <div className="w-24 h-24 rounded-3xl bg-blue-600 flex flex-col items-center justify-center text-4xl border-4 border-white/10 flex-shrink-0 animate-bounce-subtle">🐰</div>
               <div>
-                <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>旋律的“镜像”与“重力”</h3>
+                <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>旋律的"镜像"与"重力"</h3>
                 <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                  左边是你的“提问”。使用中间的<b>魔法转换工具</b>，你可以让旋律向上爬坡、向下坠落或者整个翻转！观察右边的“答句”发生了什么变化，听一听它们之间的新关系。
+                  左边是你的"提问"。使用中间的<b>魔法转换工具</b>，你可以让旋律向上爬坡、向下坠落或者整个翻转！观察右边的"答句"发生了什么变化，听一听它们之间的新关系。
                 </p>
               </div>
               <button onClick={() => setShowExplanation(false)} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-rose-500 transition-colors"><X size={20} /></button>
@@ -173,8 +163,10 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
           </div>
         )}
 
+        {/* Main Grid Layout */}
         <div className="flex flex-col lg:flex-row items-stretch gap-6 w-full max-w-7xl relative">
            
+           {/* Question Grid */}
            <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center justify-between relative z-10">
                  <div className="flex items-center gap-4">
@@ -216,6 +208,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
               </div>
            </div>
 
+           {/* Magic Controls */}
            <div className="flex flex-col items-center justify-center gap-4 px-4 min-w-[140px]">
               <div className="flex flex-col gap-3 bg-white/5 p-4 rounded-[2.5rem] border border-white/5 backdrop-blur-md">
                  
@@ -249,6 +242,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
               </div>
            </div>
 
+           {/* Answer Grid */}
            <div className={`flex-1 rounded-[3.5rem] p-10 flex flex-col gap-6 border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-blue-50'}`}>
               <div className="flex items-center justify-between relative z-10">
                  <div className="flex items-center gap-4">
