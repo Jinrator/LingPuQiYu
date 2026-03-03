@@ -56,8 +56,8 @@ const App: React.FC = () => {
       className="h-screen w-full flex flex-col overflow-hidden bg-[#F5F7FA] select-none"
       onClick={!isAudioInitialized ? initAudio : undefined}
     >
-      {/* ── Floating island navbar ── */}
-      <div className="flex-shrink-0 flex items-center justify-center pt-4 px-6 z-30 pointer-events-none">
+      {/* ── Floating island navbar (desktop) ── */}
+      <div className="hidden md:flex flex-shrink-0 items-center justify-center pt-4 px-6 z-30 pointer-events-none">
         <nav className="pointer-events-auto flex items-center gap-1 px-2 py-2 rounded-2xl bg-white/90 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-all duration-300">
           {/* Logo */}
           <button
@@ -66,7 +66,7 @@ const App: React.FC = () => {
             style={{ background: PALETTE.blue.bg }}
           >
             <div className="w-5 h-5 rounded overflow-hidden">
-              <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
             </div>
             <span className="font-fredoka font-bold text-sm tracking-tight" style={{ color: PALETTE.blue.accent }}>生音科技</span>
           </button>
@@ -118,6 +118,34 @@ const App: React.FC = () => {
         </nav>
       </div>
 
+      {/* ── Mobile top bar ── */}
+      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] z-30">
+        <button
+          onClick={() => setView(ViewMode.FREE_LAB)}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-7 h-7 rounded overflow-hidden">
+            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-fredoka font-bold text-sm tracking-tight" style={{ color: PALETTE.blue.accent }}>生音科技</span>
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setView(ViewMode.USER_PROFILE)}
+            className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
+            style={view === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
+          >
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={15} />
+          </button>
+        </div>
+      </div>
+
       {/* ── Main content ── */}
       <main className="flex-1 overflow-hidden relative">
         {view === ViewMode.ADVENTURE    && <AdventureMode theme="light" />}
@@ -125,6 +153,24 @@ const App: React.FC = () => {
         {view === ViewMode.STAGE        && <StageMode theme="light" />}
         {view === ViewMode.USER_PROFILE && <UserProfile theme="light" onLogout={handleLogout} />}
       </main>
+
+      {/* ── Mobile bottom nav ── */}
+      <div className="md:hidden flex-shrink-0 flex items-center justify-around bg-white/90 backdrop-blur-md border-t border-slate-100 px-2 py-2 pb-[env(safe-area-inset-bottom)] z-30">
+        {NAV_ITEMS.map(({ id, label, icon: Icon, accent }) => {
+          const active = view === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setView(id)}
+              className="flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-semibold transition-all"
+              style={active ? { color: accent.accent } : { color: '#94A3B8' }}
+            >
+              <Icon size={18} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
 
       <AIAssistant theme="light" />
 
@@ -141,9 +187,9 @@ const App: React.FC = () => {
             <div
               className="w-16 h-16 rounded-2xl overflow-hidden mb-6 shadow-sm"
             >
-              <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
             </div>
-            <h2 className="font-fredoka font-bold text-4xl text-slate-800 mb-2 tracking-tight">生音科技</h2>
+            <h2 className="font-fredoka font-bold text-3xl sm:text-4xl text-slate-800 mb-2 tracking-tight">生音科技</h2>
             <p className="text-[10px] font-semibold uppercase tracking-widest mb-6" style={{ color: PALETTE.blue.accent }}>
               灵谱奇域
             </p>

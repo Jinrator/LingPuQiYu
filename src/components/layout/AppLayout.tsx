@@ -82,8 +82,8 @@ const AppLayout: React.FC = () => {
       className="min-h-screen w-full bg-[#F5F7FA] select-none"
       onClick={!isAudioInitialized ? initAudio : undefined}
     >
-      {/* Navbar — floating island */}
-      <div className="sticky top-0 z-30 flex justify-center px-6 pt-3 pb-0 pointer-events-none">
+      {/* Navbar — floating island (desktop) */}
+      <div className="hidden md:flex sticky top-0 z-30 justify-center px-6 pt-3 pb-0 pointer-events-none">
         <nav className="pointer-events-auto flex items-center justify-between gap-8 px-5 py-2.5 rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] transition-all duration-300 w-full max-w-7xl">
           {/* Left: Logo */}
           <button
@@ -91,7 +91,7 @@ const AppLayout: React.FC = () => {
             className="flex items-center gap-2.5 pl-1 hover:opacity-80 transition-opacity"
           >
             <div className="w-8 h-8 rounded-lg overflow-hidden">
-              <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
             </div>
             <span className="font-fredoka font-bold text-base tracking-tight text-slate-800">生音科技</span>
           </button>
@@ -124,8 +124,44 @@ const AppLayout: React.FC = () => {
         </nav>
       </div>
 
+      {/* Mobile top bar */}
+      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+        <button
+          onClick={() => handleViewChange(ViewMode.FREE_LAB)}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-7 h-7 rounded-lg overflow-hidden">
+            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-fredoka font-bold text-sm tracking-tight text-slate-800">生音科技</span>
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
+            className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
+            style={currentView === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
+          >
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: '#1e293b' }}
+          >
+            退出
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-slate-100 px-2 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around py-2">
+          <Navigation currentView={currentView} onViewChange={handleViewChange} theme="light" />
+        </div>
+      </div>
+
       {/* Main */}
-      <main>
+      <main className="pb-16 md:pb-0">
         <Outlet context={{ theme: 'light', onLogout: handleLogout }} />
       </main>
 
@@ -136,7 +172,7 @@ const AppLayout: React.FC = () => {
       {!isAudioInitialized && (
         <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6">
           <div className="w-20 h-20 rounded-2xl overflow-hidden mb-8">
-            <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
           </div>
           <h2 className="font-fredoka font-bold text-4xl text-slate-800 mb-3">生音科技 · 灵谱奇域</h2>
           <p className="text-slate-400 text-sm font-medium max-w-sm mb-2">

@@ -75,10 +75,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#F5F7FA]"> 
 
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white h-[580px]">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white lg:h-[580px] max-h-[90vh]">
 
-        {/* ── Left panel ── */}
-        <div className="relative flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
+        {/* ── Left panel (hidden on mobile) ── */}
+        <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
 
           {/* decorative blocks — 25 blocks on a 5×5 grid, 50–150px, heavy overlap */}
           {/* col positions: -5%, 18%, 38%, 58%, 78% | row positions: -5%, 18%, 38%, 58%, 78% */}
@@ -126,7 +126,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-14">
               <div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm">
-                <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+                <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
               </div>
               <span className="text-slate-800 font-bold text-base tracking-tight">生音科技</span>
             </div>
@@ -151,7 +151,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         </div>
 
         {/* ── Right panel ── */}
-        <div className="px-10 py-10 flex flex-col bg-white overflow-y-auto scrollbar-hide">
+        <div className="px-6 py-8 sm:px-10 sm:py-10 flex flex-col bg-white overflow-y-auto scrollbar-hide">
 
           {/* header */}
           <div className="flex items-center justify-between mb-8">

@@ -37,14 +37,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
 
   return (
     <div className="h-full overflow-y-auto bg-[#F5F7FA] scrollbar-hide">
-      <div className="max-w-7xl mx-auto px-8 py-12 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-6 sm:space-y-8 pb-20 md:pb-12">
 
         {/* Profile card */}
-        <div className="bg-white rounded-2xl p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col lg:flex-row items-center gap-8">
+        <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
                 <img src={userData.avatar} alt="Avatar" className="w-full h-full object-cover" />
               </div>
               <span
@@ -56,17 +56,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
             </div>
 
             {/* Info */}
-            <div className="flex-1 text-center lg:text-left space-y-3">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 text-center sm:text-left space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <h2 className="text-xl font-bold tracking-tight text-slate-800">{userData.name}</h2>
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full border w-fit mx-auto lg:mx-0"
+                  className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full border w-fit mx-auto sm:mx-0"
                   style={{ background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: PALETTE.blue.accent + '33' }}
                 >
                   {userData.id}
                 </span>
               </div>
-              <div className="flex items-center justify-center lg:justify-start gap-4 text-xs font-medium text-slate-400">
+              <div className="flex items-center justify-center sm:justify-start gap-4 text-xs font-medium text-slate-400">
                 <span className="flex items-center gap-1.5"><MapPin size={13} /> 生音星系 · 021站</span>
                 <span className="flex items-center gap-1.5"><ShieldCheck size={13} style={{ color: PALETTE.green.accent }} /> 已通过专业认证</span>
               </div>
@@ -85,8 +85,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-6 pt-6 lg:pt-0 lg:pl-8">
-              <div className="hidden lg:block w-px bg-slate-100 self-stretch" />
+            <div className="flex gap-6 pt-4 sm:pt-0 sm:pl-8">
+              <div className="hidden sm:block w-px bg-slate-100 self-stretch" />
               {[
                 { label: '发布作品', val: userData.stats.works,  icon: Music, palette: PALETTE.blue  },
                 { label: '获得点赞', val: userData.stats.likes,  icon: Heart, palette: PALETTE.pink  },
@@ -104,7 +104,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Courses */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
@@ -146,7 +146,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
               </h3>
               <button className="text-xs font-semibold" style={{ color: PALETTE.blue.accent }}>查看全部</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {myWorks.map(w => (
                 <div key={w.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 flex items-center gap-4">
                   <div

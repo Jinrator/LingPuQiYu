@@ -75,16 +75,16 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
 
   return (
     <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-6 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 
         {/* ── Hero ── */}
-        <div className="pt-8 pb-4">
+        <div className="pt-6 sm:pt-8 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PALETTE.green.accent }}>
             Adventure Map · 探险地图
           </p>
-          <div className="flex items-end justify-between gap-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-8">
             <div>
-              <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
+              <h1 className="text-3xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
                 解锁你的<br />
                 <span style={{ color: PALETTE.green.accent }}>音乐超能力</span>
               </h1>
@@ -94,14 +94,14 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
             </div>
             <div className="flex-shrink-0 flex items-center gap-6 pb-1">
               <div className="text-center">
-                <div className="text-3xl font-black text-slate-800 leading-none mb-0.5">
-                  {completedCount}<span className="text-lg text-slate-300">/{totalCount}</span>
+                <div className="text-2xl sm:text-3xl font-black text-slate-800 leading-none mb-0.5">
+                  {completedCount}<span className="text-base sm:text-lg text-slate-300">/{totalCount}</span>
                 </div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">已完成</div>
               </div>
               <div className="w-px h-8 bg-slate-100" />
               <div className="text-center">
-                <div className="text-3xl font-black leading-none mb-0.5" style={{ color: PALETTE.yellow.accent }}>
+                <div className="text-2xl sm:text-3xl font-black leading-none mb-0.5" style={{ color: PALETTE.yellow.accent }}>
                   {completedCount * 100}
                 </div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">积分</div>
@@ -117,7 +117,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
         </div>
 
         {/* ── Category filter tabs ── */}
-        <div className="flex items-center gap-2 py-3">
+        <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
           {(Object.entries(CATEGORY_CONFIG) as [Category, typeof cfg][]).map(([cat, c]) => {
             const active = activeCategory === cat;
             return (
@@ -125,7 +125,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                 key={cat}
                 onClick={() => !c.locked && setActiveCategory(cat)}
                 disabled={c.locked}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
                 style={active
                   ? { background: '#1e293b', color: '#fff' }
                   : { background: 'white', color: '#94A3B8' }
@@ -137,7 +137,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
             );
           })}
           <div className="flex-1" />
-          <span className="text-xs font-semibold text-slate-300">{catCompleted}/{categoryLevels.length} 完成</span>
+          <span className="text-xs font-semibold text-slate-300 whitespace-nowrap flex-shrink-0">{catCompleted}/{categoryLevels.length} 完成</span>
         </div>
 
         {/* ── Featured level ── */}
@@ -150,10 +150,10 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
               className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5"
               onClick={() => featuredLevel.unlocked && setSelectedLevel(featuredLevel)}
             >
-              <div className="grid grid-cols-[2fr_3fr]">
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr]">
                 {/* Cover */}
                 <div
-                  className="relative flex items-center justify-center text-7xl min-h-[160px]"
+                  className="relative flex items-center justify-center text-5xl sm:text-7xl min-h-[120px] sm:min-h-[160px]"
                   style={{ background: featuredLevel.completed ? PALETTE.green.bg : cfg.palette.bg }}
                 >
                   <span>{featuredLevel.icon}</span>
@@ -175,7 +175,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                   </span>
                 </div>
                 {/* Info */}
-                <div className="p-6 flex flex-col justify-between">
+                <div className="p-4 sm:p-6 flex flex-col justify-between">
                   <div>
                     <span
                       className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full inline-block mb-3"
@@ -183,7 +183,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                     >
                       {activeCategory}
                     </span>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-800 mb-2">{featuredLevel.title}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mb-2">{featuredLevel.title}</h2>
                     <p className="text-sm font-medium text-slate-400 leading-relaxed">"{featuredLevel.homework}"</p>
                   </div>
                   <div className="flex items-center gap-2 mt-4 text-xs font-semibold text-slate-400">
@@ -202,7 +202,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
         {restLevels.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">全部关卡</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
               {restLevels.map(level => {
                 const isCompleted = level.completed;
                 const isUnlocked = level.unlocked;
@@ -243,8 +243,8 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
 
       {/* ── Level detail modal ── */}
       {selectedLevel && (
-        <div className="fixed inset-0 z-[120] bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] overflow-hidden">
+        <div className="fixed inset-0 z-[120] bg-slate-900/30 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+          <div className="w-full sm:max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] overflow-hidden max-h-[85vh] overflow-y-auto">
             <div className="relative p-6 flex items-center gap-4" style={{ background: cfg.palette.bg }}>
               <button
                 onClick={() => setSelectedLevel(null)}

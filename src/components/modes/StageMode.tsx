@@ -94,14 +94,14 @@ const StageMode: React.FC<StageModeProps> = () => {
 
   return (
     <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-6 pb-36">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-36">
 
         {/* ── Hero ── */}
-        <div className="pt-8 pb-4">
+        <div className="pt-6 sm:pt-8 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PALETTE.pink.accent }}>
             Stage · 作品发布会
           </p>
-          <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
+          <h1 className="text-3xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
             发布你的<br />
             <span style={{ color: PALETTE.pink.accent }}>第一首单曲</span>
           </h1>
@@ -111,14 +111,14 @@ const StageMode: React.FC<StageModeProps> = () => {
         </div>
 
         {/* ── Filter tabs ── */}
-        <div className="flex items-center gap-2 py-3">
+        <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
           {FILTERS.map(f => {
             const active = activeFilter === f.id;
             return (
               <button
                 key={f.id}
                 onClick={() => setActiveFilter(f.id)}
-                className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                className="px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
                 style={active
                   ? { background: '#1e293b', color: '#fff' }
                   : { background: 'white', color: '#94A3B8' }
@@ -129,7 +129,7 @@ const StageMode: React.FC<StageModeProps> = () => {
             );
           })}
           <div className="flex-1" />
-          <span className="text-xs font-semibold text-slate-300">{filtered.length} 首作品</span>
+          <span className="text-xs font-semibold text-slate-300 whitespace-nowrap flex-shrink-0">{filtered.length} 首作品</span>
         </div>
 
         {filtered.length === 0 && (
@@ -147,10 +147,10 @@ const StageMode: React.FC<StageModeProps> = () => {
               className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5"
               onClick={() => handlePlay(featured)}
             >
-              <div className="grid grid-cols-[2fr_3fr]">
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr]">
                 {/* Cover */}
                 <div
-                  className="relative flex items-center justify-center text-7xl min-h-[160px]"
+                  className="relative flex items-center justify-center text-5xl sm:text-7xl min-h-[120px] sm:min-h-[160px]"
                   style={{ background: PALETTE[featured.accentKey].bg }}
                 >
                   <span className={activeSong?.id === featured.id && isPlaying ? 'animate-pulse' : ''}>{featured.icon}</span>
@@ -174,13 +174,13 @@ const StageMode: React.FC<StageModeProps> = () => {
                   )}
                 </div>
                 {/* Info */}
-                <div className="p-6 flex flex-col justify-between">
+                <div className="p-4 sm:p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <User size={11} className="text-slate-300" />
                       <span className="text-xs font-semibold text-slate-400">{featured.author}</span>
                     </div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-800 mb-2">{featured.title}</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-2">{featured.title}</h2>
                     <p className="text-sm font-medium text-slate-400 leading-relaxed">{featured.description}</p>
                   </div>
                   <div className="flex items-center justify-between mt-4">
@@ -280,7 +280,7 @@ const StageMode: React.FC<StageModeProps> = () => {
 
       {/* ── Mini player ── */}
       {activeSong && (
-        <div className="fixed bottom-0 left-[72px] right-0 z-[110] p-4">
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[110] p-3 sm:p-4">
           <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden">
             <div className="h-0.5 bg-slate-100">
               <div

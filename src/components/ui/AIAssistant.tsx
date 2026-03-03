@@ -44,9 +44,9 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[150]">
+    <div className="fixed bottom-20 md:bottom-8 right-4 sm:right-8 z-[150]">
       {isOpen ? (
-        <div className="w-[400px] h-[560px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
+        <div className="w-[calc(100vw-2rem)] sm:w-[400px] h-[70vh] sm:h-[560px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100" style={{ background: PALETTE.blue.bg }}>
             <div className="flex items-center gap-3">

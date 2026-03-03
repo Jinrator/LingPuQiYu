@@ -135,7 +135,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       case 'BASIC':
         return (
           <div className="space-y-4 animate-fade-in">
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card title="音高 (Pitch)" icon={<Music size={16} style={{ color: PALETTE.pink.accent }} />}>
                 <div className="flex flex-col gap-4 items-center">
                   <p className="text-sm text-slate-500 text-center">声音有高低之分，就像楼梯一样。</p>
@@ -234,7 +234,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col items-center gap-3">
               <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
 
-              <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 px-4 py-3 rounded-xl bg-[#F8FAFC]">
+              <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-3 px-4 py-3 rounded-xl bg-[#F8FAFC]">
                 {[
                   { label: '音名 (Name)', value: lastPlayedNote?.name ?? '-', color: PALETTE.blue.accent },
                   { label: '简谱 (Notation)', value: lastPlayedNote ? renderJianpuWithDots(lastPlayedNote) : '-', color: PALETTE.green.accent },
@@ -263,21 +263,21 @@ const FreeLab: React.FC<FreeLabProps> = () => {
           <div className="space-y-3 animate-fade-in">
             {/* Top row: Staff + Chord selector side by side */}
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-              <div className="flex gap-6 items-start">
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
                 {/* Left: Staff */}
-                <div className="flex-1 min-w-0">
+                <div className="w-full lg:flex-1 min-w-0">
                   <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
                 </div>
                 {/* Right: Chord selector */}
-                <div className="flex-shrink-0 flex flex-col gap-2" style={{ minWidth: 420 }}>
+                <div className="w-full lg:flex-shrink-0 flex flex-col gap-2 lg:min-w-[420px]">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">选择和弦</span>
                     <ClearBtn />
                   </div>
                   {CHORDS.map((chord, idx) => (
-                    <div key={idx} className="flex items-center gap-4 px-3 py-2 rounded-xl bg-[#F8FAFC]">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 w-40 flex-shrink-0 leading-tight">{chord.name}</span>
-                      <div className="flex gap-1">
+                    <div key={idx} className="flex items-center gap-3 sm:gap-4 px-3 py-2 rounded-xl bg-[#F8FAFC]">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 w-24 sm:w-40 flex-shrink-0 leading-tight">{chord.name}</span>
+                      <div className="flex gap-1 flex-wrap">
                         {['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(root => (
                           <button
                             key={root}
@@ -347,16 +347,16 @@ const FreeLab: React.FC<FreeLabProps> = () => {
 
   return (
     <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-6 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 
         {/* ── Hero ── */}
-        <div className="pt-8 pb-4">
+        <div className="pt-6 sm:pt-8 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PALETTE.blue.accent }}>
             Free Lab · 自由工坊
           </p>
-          <div className="flex items-end justify-between gap-6">
+          <div className="flex items-end justify-between gap-4 sm:gap-6">
             <div>
-              <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
+              <h1 className="text-3xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
                 探索<span style={{ color: PALETTE.blue.accent }}>音乐的奥秘</span>
               </h1>
               <p className="text-sm font-medium text-slate-400 max-w-sm leading-relaxed">
@@ -370,14 +370,14 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         </div>
 
         {/* ── Filter tabs ── */}
-        <div className="flex items-center gap-2 py-3">
+        <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const active = activeModule === id;
             return (
               <button
                 key={id}
                 onClick={() => setActiveModule(id as SubModule)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
                 style={active
                   ? { background: '#1e293b', color: '#fff' }
                   : { background: 'white', color: '#94A3B8' }
