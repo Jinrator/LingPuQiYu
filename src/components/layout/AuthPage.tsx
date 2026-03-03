@@ -1,33 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, ShieldCheck, MessageCircle, Loader2, QrCode, KeyRound, ArrowLeftRight, Mail } from 'lucide-react';
+import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { PALETTE } from '../../constants/palette';
 
 interface AuthPageProps {
   theme: 'light' | 'dark';
 }
 
 type AuthMode = 'login' | 'register';
-type LoginMethod = 'wechat' | 'phone';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
 
 const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // 使用自定义认证 Hook
-  const { 
-    loginWithPhone: doLoginWithPhone,
-    loginWithWechat,
-    loginWithQQ,
-    sendSmsCode,
-    register: doRegister,
-    isAuthenticated
-  } = useAuth();
-  
+
+  const { loginWithPhone: doLoginWithPhone, sendSmsCode, register: doRegister, isAuthenticated } = useAuth();
+
   const [mode, setMode] = useState<AuthMode>('login');
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [course, setCourse] = useState<CourseType | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -36,18 +26,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const [countdown, setCountdown] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const isDark = theme === 'dark';
-
   const courses = [
-    { id: 'PRODUCER' as CourseType, title: 'AI数智作曲家', desc: 'AI与算法编曲', icon: Orbit, color: 'from-blue-500 to-indigo-600' },
-    { id: 'ARTIST' as CourseType, title: '音乐装置艺术家', desc: '声场与交互艺术', icon: Sparkles, color: 'from-cyan-400 to-blue-500' },
-    { id: 'MAKER' as CourseType, title: '智创乐器家', desc: '软硬件乐器开发', icon: Atom, color: 'from-blue-600 to-sky-400' },
+    { id: 'PRODUCER' as CourseType, title: 'AI数智作曲家', desc: 'AI与算法编曲', icon: Orbit, color: PALETTE.blue },
+    { id: 'ARTIST' as CourseType, title: '音乐装置艺术家', desc: '声场与交互艺术', icon: Sparkles, color: PALETTE.pink },
+    { id: 'MAKER' as CourseType, title: '智创乐器家', desc: '软硬件乐器开发', icon: Atom, color: PALETTE.orange },
   ];
 
-  // 监听认证状态变化，登录成功后重定向
   useEffect(() => {
     if (isAuthenticated) {
-      // 获取用户尝试访问的原始路径，如果没有则默认到 /lab
       const from = (location.state as any)?.from?.pathname || '/lab';
       navigate(from, { replace: true });
     }
@@ -55,459 +41,245 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
   useEffect(() => {
     let timer: number;
-    if (countdown > 0) {
-      timer = window.setInterval(() => {
-        setCountdown((prev: number) => prev - 1);
-      }, 1000);
-    }
+    if (countdown > 0) timer = window.setInterval(() => setCountdown(p => p - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // 处理登录/注册
   const handleAction = async () => {
-    setIsAuthorizing(true);
-    setErrorMsg('');
-    
+    setIsAuthorizing(true); setErrorMsg('');
     try {
       if (mode === 'login') {
-        // 登录
-        const result = await doLoginWithPhone(phone, vCode);
-        if (result && !result.success) {
-          setErrorMsg(result.message || '登录失败');
-        }
+        const r = await doLoginWithPhone(phone, vCode);
+        if (r && !r.success) setErrorMsg(r.message || '登录失败');
       } else {
-        // 注册
-        const result = await doRegister({
-          phone,
-          code: vCode,
-          username: name,
-          courseType: course || undefined,
-        });
-        if (result && !result.success) {
-          setErrorMsg(result.message || '注册失败');
-        }
+        const r = await doRegister({ phone, code: vCode, username: name, courseType: course || undefined });
+        if (r && !r.success) setErrorMsg(r.message || '注册失败');
       }
-    } catch (error: any) {
-      setErrorMsg(error.message || '操作失败');
-    } finally {
-      setIsAuthorizing(false);
-    }
+    } catch (e: any) { setErrorMsg(e.message || '操作失败'); }
+    finally { setIsAuthorizing(false); }
   };
 
-  // 发送验证码
   const getVCode = async () => {
-    if (phone.length === 11) {
-      try {
-        const result = await sendSmsCode(phone);
-        if (result && result.success) {
-          setCountdown(60);
-          setErrorMsg('');
-        } else {
-          setErrorMsg((result && result.message) || '发送失败');
-        }
-      } catch (err: any) {
-        setErrorMsg(err.message || '发送验证码失败，请检查网络');
-      }
-    }
+    if (phone.length !== 11) return;
+    try {
+      const r = await sendSmsCode(phone);
+      if (r?.success) { setCountdown(60); setErrorMsg(''); }
+      else setErrorMsg(r?.message || '发送失败');
+    } catch (e: any) { setErrorMsg(e.message || '发送失败'); }
   };
 
-  // 微信登录
-  const handleWechatLogin = async () => {
-    setIsAuthorizing(true);
-    try {
-      const result = await loginWithWechat();
-      if (result && !result.success) {
-        setErrorMsg(result.message || '微信登录失败，请重试');
-      }
-    } catch (error) {
-      setErrorMsg('微信登录失败，请重试');
-    } finally {
-      setIsAuthorizing(false);
-    }
-  };
-
-  // QQ登录
-  const handleQQLogin = async () => {
-    setIsAuthorizing(true);
-    try {
-      const result = await loginWithQQ();
-      if (result && !result.success) {
-        setErrorMsg(result.message || 'QQ登录失败，请重试');
-      }
-    } catch (error) {
-      setErrorMsg('QQ登录失败，请重试');
-    } finally {
-      setIsAuthorizing(false);
-    }
-  };
+  const inputCls = `w-full pl-11 pr-4 py-3.5 rounded-xl border text-sm font-medium outline-none transition-all
+    bg-white border-slate-200 text-slate-800 placeholder:text-slate-300
+    focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10`;
 
   return (
-    <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-colors duration-1000 ${isDark ? 'bg-[#000b1a]' : 'bg-[#f0f4f8]'}`}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-[-15%] right-[-5%] w-[60%] h-[60%] rounded-full blur-[140px] transition-all duration-1000 ${isDark ? 'bg-blue-600/15' : 'bg-blue-200/50'}`}></div>
-        <div className={`absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] transition-all duration-1000 ${isDark ? 'bg-indigo-500/10' : 'bg-sky-100/60'}`}></div>
-      </div>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#F5F7FA]"> 
 
-      <div className={`w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 rounded-[3.5rem] overflow-hidden shadow-lg border transition-all duration-700 ${isDark ? 'bg-slate-900/90 border-white/5' : 'bg-white/95 border-blue-100/50 backdrop-blur-xl'}`}>
-        <div className="relative p-12 flex flex-col justify-between bg-gradient-to-br from-[#0052cc] via-[#0072ff] to-[#00b4ff] text-white overflow-hidden">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-white h-[580px]">
+
+        {/* ── Left panel ── */}
+        <div className="relative flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
+
+          {/* decorative blocks — 25 blocks on a 5×5 grid, 50–150px, heavy overlap */}
+          {/* col positions: -5%, 18%, 38%, 58%, 78% | row positions: -5%, 18%, 38%, 58%, 78% */}
+          <div className="absolute" style={{width: 130, height: 130, top:  '-5%', left:  '-5%', background: PALETTE.pink.bg,   opacity: 0.62}} />
+          <div className="absolute" style={{width:  70, height:  70, top:   '2%', left:  '20%', background: PALETTE.blue.bg,   opacity: 0.58}} />
+          <div className="absolute" style={{width: 110, height: 110, top:  '-4%', left:  '38%', background: PALETTE.yellow.bg, opacity: 0.60}} />
+          <div className="absolute" style={{width:  60, height:  60, top:   '4%', left:  '58%', background: PALETTE.green.bg,  opacity: 0.55}} />
+          <div className="absolute" style={{width: 140, height: 140, top:  '-6%', left:  '72%', background: PALETTE.blue.bg,   opacity: 0.60}} />
+
+          <div className="absolute" style={{width:  80, height:  80, top:  '18%', left:  '-3%', background: PALETTE.orange.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 150, height: 150, top:  '14%', left:  '14%', background: PALETTE.green.bg,   opacity: 0.55}} />
+          <div className="absolute" style={{width:  65, height:  65, top:  '20%', left:  '42%', background: PALETTE.blue.bg,   opacity: 0.58}} />
+          <div className="absolute" style={{width: 120, height: 120, top:  '16%', left:  '56%', background: PALETTE.orange.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width:  55, height:  55, top:  '22%', left:  '84%', background: PALETTE.yellow.bg, opacity: 0.55}} />
+
+          <div className="absolute" style={{width: 140, height: 140, top:  '36%', left:  '-5%', background: PALETTE.blue.bg,   opacity: 0.57}} />
+          <div className="absolute" style={{width:  60, height:  60, top:  '42%', left:  '22%', background: PALETTE.green.bg,  opacity: 0.55}} />
+          <div className="absolute" style={{width: 100, height: 100, top:  '38%', left:  '36%', background: PALETTE.pink.bg,   opacity: 0.58}} />
+          <div className="absolute" style={{width:  75, height:  75, top:  '40%', left:  '62%', background: PALETTE.yellow.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 130, height: 130, top:  '34%', left:  '74%', background: PALETTE.green.bg,  opacity: 0.57}} />
+
+          <div className="absolute" style={{width:  70, height:  70, top:  '58%', left:   '0%', background: PALETTE.yellow.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 120, height: 120, top:  '54%', left:  '16%', background: PALETTE.blue.bg,   opacity: 0.57}} />
+          <div className="absolute" style={{width:  55, height:  55, top:  '60%', left:  '44%', background: PALETTE.orange.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 110, height: 110, top:  '56%', left:  '58%', background: PALETTE.pink.bg,   opacity: 0.57}} />
+          <div className="absolute" style={{width:  65, height:  65, top:  '62%', left:  '84%', background: PALETTE.blue.bg,   opacity: 0.55}} />
+
+          <div className="absolute" style={{width: 150, height: 150, top:  '74%', left:  '-6%', background: PALETTE.orange.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width:  65, height:  65, top:  '80%', left:  '20%', background: PALETTE.pink.bg,   opacity: 0.55}} />
+          <div className="absolute" style={{width: 125, height: 125, top:  '76%', left:  '36%', background: PALETTE.blue.bg,   opacity: 0.57}} />
+          <div className="absolute" style={{width:  70, height:  70, top:  '82%', left:  '64%', background: PALETTE.green.bg,  opacity: 0.55}} />
+          <div className="absolute" style={{width: 110, height: 110, top:  '72%', left:  '76%', background: PALETTE.yellow.bg, opacity: 0.57}} />
+
+          {/* floating stat bubbles */}
+          {/* <div className="absolute top-20 right-[160px] flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-semibold z-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            12,500+ 位音乐人
+          </div>
+          <div className="absolute bottom-32 right-[140px] flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-semibold z-10">
+            <span className="w-1.5 h-1.5 rounded-full" style={{background: PALETTE.blue.accent}} />
+            4.9 · 120K 评价
+          </div> */}
+
+          {/* brand */}
           <div className="relative z-10">
-             <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mb-8 border border-white/30 transform rotate-[-5deg]">
-                <svg viewBox="0 0 100 100" className="w-10 h-10 text-white fill-current">
-                  <path d="M20,40 Q20,20 50,20 Q80,20 80,40 L80,50 Q80,60 70,60 L40,60 L40,45 L65,45 L65,50 L35,50 L35,70 Q35,85 65,85 Q95,85 95,60" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/>
-                </svg>
-             </div>
-             <h2 className="text-5xl font-fredoka mb-4 tracking-tight">生音科技</h2>
-             <div className="space-y-4">
-                <p className="text-blue-50 text-xl font-bold leading-relaxed opacity-95">
-                  每一个孩子都可以在音乐中快乐成长，<br/>成为自己人生的的建筑师。
-                </p>
-                <p className="text-blue-100/60 text-sm font-medium leading-relaxed">
-                  多端同步灵感，开启你的星系实验室。
-                </p>
-             </div>
+            <div className="flex items-center gap-3 mb-14">
+              <div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm">
+                <img src="/samples/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              </div>
+              <span className="text-slate-800 font-bold text-base tracking-tight">生音科技</span>
+            </div>
+
+            <h2 className="font-black text-5xl leading-[1.1] tracking-tight mb-5 text-slate-800">
+              开启你的<br />
+              <span style={{color: PALETTE.blue.accent}}>音乐之旅</span>
+            </h2>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-[240px]">
+              从零基础到专业创作，AI 驱动的个性化音乐学习平台，适合所有年龄段。
+            </p>
           </div>
 
-          <div className="relative z-10 mt-12 pt-8 border-t border-white/10">
-             <div className="flex -space-x-2 mb-4">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0072ff] bg-slate-200 overflow-hidden transform hover:-translate-y-1 transition-transform">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 60}`} alt="avatar" />
-                  </div>
-                ))}
-             </div>
-             <div className="flex items-center gap-2 text-blue-100/60 text-[10px] font-black uppercase tracking-widest">
-                <CheckCircle2 size={14} className="text-emerald-300" />
-                <span>12,500+ 位音乐人已入驻</span>
-             </div>
+          <div className="relative z-10 flex gap-2 flex-wrap">
+            {['零基础友好', 'AI 个性化', '全年龄段'].map((tag) => (
+              <span key={tag} className="px-3 py-1 rounded-full text-xs font-semibold border"
+                style={{background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: PALETTE.blue.accent + '33'}}>
+                {tag}
+              </span>
+            ))}
           </div>
-
-          <div className="absolute top-[-20%] left-[-20%] w-80 h-80 bg-white/5 rounded-full blur-[80px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-48 h-48 bg-cyan-400/20 rounded-full blur-[60px]"></div>
         </div>
 
-       
-        <div className="p-10 flex flex-col justify-center relative bg-white/40 overflow-y-auto max-h-[85vh] scrollbar-hide">
-          <div className="mb-6 flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <h3 className={`text-3xl font-fredoka tracking-tight transition-colors ${isDark ? 'text-white' : 'text-blue-950'}`}>
-                {mode === 'login' ? '授权登录' : '申请入驻'}
+        {/* ── Right panel ── */}
+        <div className="px-10 py-10 flex flex-col bg-white overflow-y-auto scrollbar-hide">
+
+          {/* header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-bold tracking-tight text-slate-800">
+                {mode === 'login' ? '欢迎回来' : '创建账号'}
               </h3>
-              <button 
-                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                className="text-blue-600 font-black text-[11px] hover:text-blue-700 transition-colors flex items-center gap-1.5 group uppercase tracking-wider"
-              >
-                {mode === 'login' ? '去申请' : '已有通行证'}
-                <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+              <p className="text-xs mt-1 text-slate-400">
+                {mode === 'login' ? '登录以继续你的学习' : '填写信息完成注册'}
+              </p>
             </div>
+            <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrorMsg(''); }}
+              className="text-xs font-semibold flex items-center gap-1 text-slate-400 hover:text-slate-800 transition-colors">
+              {mode === 'login' ? '注册账号' : '返回登录'}
+              <ArrowRight size={12} />
+            </button>
           </div>
 
-          <div className="space-y-6 relative z-10">
+          {errorMsg && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-xs font-medium">
+              {errorMsg}
+            </div>
+          )}
+
+          <div className="flex flex-col">
+
+            {/* ── LOGIN ── */}
             {mode === 'login' && (
-              <div className="space-y-6 animate-in fade-in duration-500">
-                
-                <div className={`flex p-1.5 rounded-2xl transition-colors ${isDark ? 'bg-white/5' : 'bg-slate-100/50'}`}>
-                  <button 
-                    onClick={() => setLoginMethod('phone')}
-                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'phone' ? 'bg-white text-blue-600' : 'text-slate-400'}`}
-                  >
-                    <Smartphone size={14} />
-                    手机登录
-                  </button>
-                  <button 
-                    onClick={() => setLoginMethod('wechat')}
-                    className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === 'wechat' ? 'bg-white text-blue-600' : 'text-slate-400'}`}
-                  >
-                    <MessageCircle size={14} fill={loginMethod === 'wechat' ? "currentColor" : "none"} />
-                    微信扫码
+              <div className="space-y-3">
+                <div className="h-[10px]" />
+                <div className="relative">
+                  <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                  <input type="tel" placeholder="手机号" value={phone}
+                    onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                    className={inputCls} />
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input type="text" placeholder="验证码" value={vCode}
+                      onChange={e => setVCode(e.target.value.slice(0, 6))}
+                      className={inputCls} />
+                  </div>
+                  <button onClick={getVCode} disabled={countdown > 0 || phone.length !== 11}
+                    className={`px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all
+                      ${countdown > 0 || phone.length !== 11
+                        ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                        : 'text-white hover:opacity-90'}`}
+                    style={countdown > 0 || phone.length !== 11 ? {} : {background: PALETTE.blue.accent}}>
+                    {countdown > 0 ? `${countdown}s` : '获取验证码'}
                   </button>
                 </div>
-
-                {loginMethod === 'wechat' ? (
-                  <div className="flex flex-col items-center gap-6 py-4 animate-in zoom-in-95 duration-300">
-                    <div className={`relative w-48 h-48 p-4 rounded-[2.5rem] border-4 flex items-center justify-center bg-white overflow-hidden group transition-all hover:scale-105 ${isDark ? 'border-white/10' : 'border-blue-50'}`}>
-                      <QrCode size={140} className="text-slate-800" />
-                     
-                      <div className="absolute top-0 left-0 w-full h-1 bg-blue-500/40 animate-[scan_3s_linear_infinite]" />
-                      <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className={`text-[10px] font-black uppercase tracking-[0.3em] text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                      请使用微信“扫一扫”<br/>安全登录实验室
-                    </p>
-                    <div className={`w-full h-[1px] ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
-                    <button 
-                      onClick={handleWechatLogin}
-                      disabled={isAuthorizing}
-                      className="text-[11px] font-black text-blue-600 hover:text-blue-500 flex items-center gap-2 uppercase tracking-widest disabled:opacity-50"
-                    >
-                      {isAuthorizing ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
-                      {isAuthorizing ? '跳转中...' : '或使用微信一键登录'}
-                    </button>
-                    
-                    {/* 其他社交登录方式 */}
-                    <div className={`w-full h-[1px] ${isDark ? 'bg-white/5' : 'bg-slate-100'}`} />
-                    <div className="flex items-center justify-center gap-4">
-                      <button
-                        onClick={handleQQLogin}
-                        disabled={isAuthorizing}
-                        className={`group flex items-center gap-2 px-6 py-3 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
-                      >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-xs">
-                          Q
-                        </div>
-                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ登录</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4 py-2 animate-in slide-in-from-left-4 duration-300">
-                    {errorMsg && (
-                      <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-in slide-in-from-top-2">
-                        {errorMsg}
-                      </div>
-                    )}
-                    <div className="relative group">
-                      <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
-                        <Smartphone size={18} />
-                      </div>
-                      <input 
-                        type="tel"
-                        placeholder="请输入手机号"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                          ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-2 ring-blue-500/10 focus:border-blue-200'}`}
-                      />
-                    </div>
-                    <div className="relative group flex gap-3">
-                      <div className="relative flex-1">
-                        <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
-                          <KeyRound size={18} />
-                        </div>
-                        <input 
-                          type="text"
-                          placeholder="动态验证码"
-                          value={vCode}
-                          onChange={(e) => setVCode(e.target.value.slice(0, 6))}
-                          className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                            ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-2 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-2 ring-blue-500/10 focus:border-blue-200'}`}
-                        />
-                      </div>
-                      <button 
-                        disabled={countdown > 0 || phone.length !== 11}
-                        onClick={getVCode}
-                        className={`px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${countdown > 0 || phone.length !== 11 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95'}`}
-                      >
-                        {countdown > 0 ? `${countdown}s` : '获取验证码'}
-                      </button>
-                    </div>
-                    <button
-                      onClick={handleAction}
-                      disabled={isAuthorizing || phone.length !== 11 || vCode.length < 4}
-                      className={`
-                        group relative w-full py-5 bg-[#07C160] text-white rounded-[1.8rem] font-black text-lg mt-4
-                        hover:scale-[1.01] active:scale-95 transition-all
-                        flex items-center justify-center gap-3 overflow-hidden
-                        ${isAuthorizing || phone.length !== 11 || vCode.length < 4 ? 'opacity-50 cursor-not-allowed grayscale' : ''}
-                      `}
-                    >
-                      {isAuthorizing ? <Loader2 size={22} className="animate-spin" /> : <><CheckCircle2 size={20} /> 进入实验室</>}
-                    </button>
-
-                    {/* 社交登录快捷入口 */}
-                    <div className="relative my-6">
-                      <div className={`absolute inset-0 flex items-center ${isDark ? '' : ''}`}>
-                        <div className={`w-full border-t ${isDark ? 'border-white/5' : 'border-slate-200'}`}></div>
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className={`px-4 text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400'}`}>
-                          或使用社交账号登录
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={handleWechatLogin}
-                        disabled={isAuthorizing}
-                        className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#07C160]/50 hover:bg-[#07C160]/10' : 'border-slate-200 bg-white hover:border-[#07C160] hover:bg-[#07C160]/5'}`}
-                      >
-                        <MessageCircle size={18} className="text-[#07C160]" fill="#07C160" />
-                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>微信</span>
-                      </button>
-                      
-                      <button
-                        onClick={handleQQLogin}
-                        disabled={isAuthorizing}
-                        className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
-                      >
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-[10px]">
-                          Q
-                        </div>
-                        <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <button onClick={handleAction}
+                  disabled={isAuthorizing || phone.length !== 11 || vCode.length < 4}
+                  className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all mt-1 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
+                  style={{background: isAuthorizing || phone.length !== 11 || vCode.length < 4 ? '#cbd5e1' : '#1e293b'}}>
+                  {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />登录</>}
+                </button>
               </div>
             )}
 
+            {/* ── REGISTER ── */}
             {mode === 'register' && (
-              <div className="animate-in slide-in-from-top-4 duration-500 space-y-6">
-                {errorMsg && (
-                  <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium animate-in slide-in-from-top-2">
-                    {errorMsg}
-                  </div>
-                )}
-                <div className="space-y-4">
-                  <label className={`block text-[9px] font-black uppercase tracking-[0.3em] ml-2 ${isDark ? 'text-slate-600' : 'text-blue-400/70'}`}>
-                    实验室研究方向 (单选)
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {courses.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => setCourse(c.id)}
-                        className={`flex flex-col items-center p-4 rounded-3xl border-2 transition-all group text-center
-                          ${course === c.id 
-                            ? 'border-blue-500 bg-blue-600/5 ring-2 ring-blue-500/10' 
-                            : isDark ? 'border-white/5 bg-white/5 hover:border-white/20' : 'border-slate-100 bg-slate-50/50 hover:border-blue-100 hover:bg-white'}`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.color} flex items-center justify-center text-white mb-2 group-hover:rotate-6 transition-transform`}>
-                          <c.icon size={20} />
-                        </div>
-                        <span className={`font-black text-[10px] leading-tight ${isDark ? 'text-white' : 'text-blue-900'}`}>{c.title}</span>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2.5 text-slate-400">选择学习方向</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {courses.map(c => (
+                      <button key={c.id} onClick={() => setCourse(c.id)}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all hover:scale-[1.02]"
+                        style={course === c.id
+                          ? { background: c.color.bg, borderColor: c.color.accent, color: c.color.accent }
+                          : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }}>
+                        <c.icon size={18} />
+                        <span className="text-[10px] font-semibold leading-tight">{c.title}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="relative group animate-in slide-in-from-top-3 duration-500">
-                    <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
-                      <User size={18} />
+                <div className="space-y-2.5">
+                  <div className="relative">
+                    <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input type="text" placeholder="姓名 / 昵称" value={name}
+                      onChange={e => setName(e.target.value)} className={inputCls} />
+                  </div>
+                  <div className="relative">
+                    <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input type="tel" placeholder="手机号" value={phone}
+                      onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className={inputCls} />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input type="text" placeholder="验证码" value={vCode}
+                        onChange={e => setVCode(e.target.value.slice(0, 6))} className={inputCls} />
                     </div>
-                    <input 
-                      type="text" 
-                      placeholder="实验室代号 / 真实姓名"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                        ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
-                    />
-                  </div>
-
-                  <div className="relative group animate-in slide-in-from-top-3 duration-500">
-                    <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
-                      <Smartphone size={18} />
-                    </div>
-                    <input 
-                      type="tel"
-                      placeholder="绑定移动通讯号"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                        ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
-                    />
-                  </div>
-                </div>
-
-                <div className="relative group animate-in slide-in-from-top-3 duration-500">
-                  <div className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-600 group-focus-within:text-blue-500' : 'text-slate-300 group-focus-within:text-blue-600'}`}>
-                    <KeyRound size={18} />
-                  </div>
-                  <div className="flex gap-3">
-                    <input 
-                      type="text"
-                      placeholder="动态验证码"
-                      value={vCode}
-                      onChange={(e) => setVCode(e.target.value.slice(0, 6))}
-                      className={`flex-1 pl-12 pr-6 py-4 rounded-2xl border transition-all outline-none font-bold text-sm
-                        ${isDark ? 'bg-white/5 border-white/10 text-white focus:ring-4 ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-blue-950 focus:bg-white focus:ring-4 ring-blue-500/10 focus:border-blue-200'}`}
-                    />
-                    <button 
-                      disabled={countdown > 0 || phone.length !== 11}
-                      onClick={getVCode}
-                      className={`px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${countdown > 0 || phone.length !== 11 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95'}`}
-                    >
-                      {countdown > 0 ? `${countdown}s` : '获取'}
+                    <button onClick={getVCode} disabled={countdown > 0 || phone.length !== 11}
+                      className={`px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all
+                        ${countdown > 0 || phone.length !== 11
+                          ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                          : 'text-white hover:opacity-90'}`}
+                      style={countdown > 0 || phone.length !== 11 ? {} : {background: PALETTE.blue.accent}}>
+                      {countdown > 0 ? `${countdown}s` : '获取验证码'}
                     </button>
                   </div>
                 </div>
-
-                <button
-                  onClick={handleAction}
-                  disabled={isAuthorizing || (!course || !name || phone.length !== 11 || vCode.length < 4)}
-                  className={`
-                    group relative w-full py-5 bg-[#07C160] text-white rounded-[1.8rem] font-black text-lg 
-                    hover:scale-[1.01] active:scale-95 transition-all
-                    flex items-center justify-center gap-3 overflow-hidden
-                    ${isAuthorizing || (!course || !name || phone.length !== 11 || vCode.length < 4) ? 'opacity-50 cursor-not-allowed grayscale' : ''}
-                  `}
-                >
-                  {isAuthorizing ? <Loader2 size={22} className="animate-spin" /> : <><CheckCircle2 size={20} /> 完成申请并入驻</>}
+                <button onClick={handleAction}
+                  disabled={isAuthorizing || !course || !name || phone.length !== 11 || vCode.length < 4}
+                  className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
+                  style={{background: '#1e293b'}}>
+                  {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />完成注册</>}
                 </button>
-
-                {/* 社交登录快捷注册 */}
-                <div className="relative my-6">
-                  <div className={`absolute inset-0 flex items-center`}>
-                    <div className={`w-full border-t ${isDark ? 'border-white/5' : 'border-slate-200'}`}></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className={`px-4 text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-white/5 text-slate-500' : 'bg-white text-slate-400'}`}>
-                      或使用社交账号快速注册
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={handleWechatLogin}
-                    disabled={isAuthorizing}
-                    className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#07C160]/50 hover:bg-[#07C160]/10' : 'border-slate-200 bg-white hover:border-[#07C160] hover:bg-[#07C160]/5'}`}
-                  >
-                    <MessageCircle size={18} className="text-[#07C160]" fill="#07C160" />
-                    <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>微信</span>
-                  </button>
-                  
-                  <button
-                    onClick={handleQQLogin}
-                    disabled={isAuthorizing}
-                    className={`group flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'border-white/10 bg-white/5 hover:border-[#12B7F5]/50 hover:bg-[#12B7F5]/10' : 'border-slate-200 bg-white hover:border-[#12B7F5] hover:bg-[#12B7F5]/5'}`}
-                  >
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#12B7F5] to-[#0E9FD9] flex items-center justify-center text-white font-black text-[10px]">
-                      Q
-                    </div>
-                    <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-slate-700'}`}>QQ</span>
-                  </button>
-                </div>
               </div>
             )}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-100/50 flex flex-col items-center gap-4">
-             <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                <ShieldCheck size={12} className="text-[#07C160]" />
-                <span>国密级安全加密连接</span>
-             </div>
-             <p className={`text-[9px] text-center font-medium leading-relaxed max-w-[240px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-               登录即表示你同意 
-               <span className="text-blue-500 cursor-pointer hover:underline mx-1">服务协议</span> 
-               和 
-               <span className="text-blue-500 cursor-pointer hover:underline mx-1">隐私政策</span>
-             </p>
+          {/* footer */}
+          <div className="mt-auto pt-5 border-t border-slate-100 flex items-center justify-center">
+            <p className="text-[10px] text-slate-300">
+              登录即同意
+              <span className="cursor-pointer hover:underline mx-1 text-slate-500">服务协议</span>
+              及
+              <span className="cursor-pointer hover:underline mx-1 text-slate-500">隐私政策</span>
+            </p>
           </div>
         </div>
       </div>
-      
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes scan {
-          0% { top: 0; }
-          50% { top: 100%; }
-          100% { top: 0; }
-        }
-      `}} />
     </div>
   );
 };

@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { ADVENTURE_LEVELS, AdventureLevel } from '../../constants';
-import { Lock, Star, Trophy, Sparkles, X, CheckCircle2, PlayCircle, Gift, ArrowRightCircle, ShieldAlert } from 'lucide-react';
+import { Lock, CheckCircle2, Gift, X, Zap, Star } from 'lucide-react';
 import SoundHuntingProject from '../projects/SoundHuntingProject';
 import RhythmColoringProject from '../projects/RhythmColoringProject';
 import RhythmLegoProject from '../projects/RhythmLegoProject';
@@ -17,76 +16,48 @@ import MemoryHookProject from '../projects/MemoryHookProject';
 import MusicTrainProject from '../projects/MusicTrainProject';
 import AIRecordingStudioProject from '../projects/AIRecordingStudioProject';
 import PersonalDebutProject from '../projects/PersonalDebutProject';
+import { PALETTE } from '../../constants/palette';
 
-interface AdventureModeProps {
-  theme?: 'light' | 'dark';
-}
+interface AdventureModeProps { theme?: 'light' | 'dark'; }
 
-const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
+type Category = '初级' | '中级' | '高级';
+
+const CATEGORY_CONFIG: Record<Category, {
+  palette: typeof PALETTE[keyof typeof PALETTE];
+  label: string;
+  locked: boolean;
+}> = {
+  '初级': { palette: PALETTE.green, label: '新手制作人', locked: false },
+  '中级': { palette: PALETTE.blue,  label: '进阶音乐人', locked: true  },
+  '高级': { palette: PALETTE.pink,  label: '大师创作者', locked: true  },
+};
+
+const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
   const [selectedLevel, setSelectedLevel] = useState<AdventureLevel | null>(null);
   const [activeLevelId, setActiveLevelId] = useState<number | null>(null);
-  const isDark = theme === 'dark';
+  const [activeCategory, setActiveCategory] = useState<Category>('初级');
 
-  const categories: ('初级' | '中级' | '高级')[] = ['初级', '中级', '高级'];
-
-  const getCategoryTheme = (category: string) => {
-    switch (category) {
-      case '初级':
-        return {
-          icon: '🌱',
-          label: '新手制作人 · 15课完整地图',
-          color: 'from-emerald-400 to-teal-600',
-          bg: isDark ? 'bg-emerald-500/10' : 'bg-emerald-50',
-          text: isDark ? 'text-emerald-400' : 'text-emerald-600'
-        };
-      case '中级':
-        return {
-          icon: '⚡',
-          label: '进阶课程 · 即将开启',
-          color: 'from-blue-400 to-indigo-600',
-          bg: isDark ? 'bg-blue-500/10' : 'bg-blue-50',
-          text: isDark ? 'text-blue-400' : 'text-blue-600'
-        };
-      case '高级':
-        return {
-          icon: '👑',
-          label: '大师课程 · 敬请期待',
-          color: 'from-purple-400 to-rose-600',
-          bg: isDark ? 'bg-purple-500/10' : 'bg-purple-50',
-          text: isDark ? 'text-purple-400' : 'text-purple-600'
-        };
-      default:
-        return { icon: '❓', label: '未知', color: 'from-slate-400 to-slate-600', bg: 'bg-slate-500/10', text: 'text-slate-400' };
-    }
-  };
-
-  const handleLevelComplete = () => {
-    setActiveLevelId(null);
-    setSelectedLevel(null);
-  };
-
-  const handleBack = () => {
-    setActiveLevelId(null);
-    setSelectedLevel(null);
-  };
+  const handleLevelComplete = () => { setActiveLevelId(null); setSelectedLevel(null); };
+  const handleBack = () => { setActiveLevelId(null); setSelectedLevel(null); };
 
   const renderActiveLevel = () => {
-    switch(activeLevelId) {
-      case 1: return <SoundHuntingProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 2: return <RhythmColoringProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 3: return <RhythmLegoProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 4: return <PitchLadderProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 5: return <MoodDoodleProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 6: return <MelodyMirrorProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 7: return <InspirationRetroProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 8: return <ChordBurgerProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 9: return <ChordRouteProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 10: return <StyleTransformProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 11: return <MusicAtlasProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 12: return <MemoryHookProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 13: return <MusicTrainProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 14: return <AIRecordingStudioProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
-      case 15: return <PersonalDebutProject theme={theme} onComplete={handleLevelComplete} onBack={handleBack} />;
+    const props = { theme, onComplete: handleLevelComplete, onBack: handleBack };
+    switch (activeLevelId) {
+      case 1:  return <SoundHuntingProject {...props} />;
+      case 2:  return <RhythmColoringProject {...props} />;
+      case 3:  return <RhythmLegoProject {...props} />;
+      case 4:  return <PitchLadderProject {...props} />;
+      case 5:  return <MoodDoodleProject {...props} />;
+      case 6:  return <MelodyMirrorProject {...props} />;
+      case 7:  return <InspirationRetroProject {...props} />;
+      case 8:  return <ChordBurgerProject {...props} />;
+      case 9:  return <ChordRouteProject {...props} />;
+      case 10: return <StyleTransformProject {...props} />;
+      case 11: return <MusicAtlasProject {...props} />;
+      case 12: return <MemoryHookProject {...props} />;
+      case 13: return <MusicTrainProject {...props} />;
+      case 14: return <AIRecordingStudioProject {...props} />;
+      case 15: return <PersonalDebutProject {...props} />;
       default: return null;
     }
   };
@@ -94,114 +65,227 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'dark' }) => {
   const activeLevelView = renderActiveLevel();
   if (activeLevelView) return activeLevelView;
 
+  const completedCount = ADVENTURE_LEVELS.filter(l => l.completed).length;
+  const totalCount = ADVENTURE_LEVELS.length;
+  const cfg = CATEGORY_CONFIG[activeCategory];
+  const categoryLevels = ADVENTURE_LEVELS.filter(l => l.category === activeCategory);
+  const catCompleted = categoryLevels.filter(l => l.completed).length;
+  const featuredLevel = categoryLevels.find(l => l.unlocked && !l.completed) ?? categoryLevels[0];
+  const restLevels = categoryLevels.filter(l => l.id !== featuredLevel?.id);
+
   return (
-    <div className={`h-full flex flex-col items-center px-8 pb-32 overflow-y-auto animate-in zoom-in duration-700 scrollbar-hide transition-colors duration-500 ${isDark ? 'bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,1)_0%,rgba(2,6,23,1)_100%)]' : 'bg-white'}`}>
-      <div className="max-w-6xl w-full py-20 relative">
-        <header className="text-center mb-28 relative z-10">
-          <div className={`inline-block px-6 py-2 border rounded-full mb-6 backdrop-blur-md transition-colors ${isDark ? 'bg-blue-500/10 border-blue-500/30' : 'bg-blue-50 border-blue-200'}`}>
-             <span className={`text-sm font-black tracking-[0.3em] uppercase ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>ADVENTURE MAP</span>
-          </div>
-          <h2 className={`text-7xl font-fredoka mb-6 tracking-tight transition-all duration-500 ${isDark ? 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-sky-300 to-blue-400' : 'text-blue-900'}`}>
-            生音探险地图
-          </h2>
-          <p className={`text-xl font-medium max-w-2xl mx-auto leading-relaxed transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            完成 15 节挑战课程，解锁全套音色徽章。你的音乐传奇从这里开始！✨
+    <div className="bg-[#F5F7FA]">
+      <div className="max-w-7xl mx-auto px-6 pb-10">
+
+        {/* ── Hero ── */}
+        <div className="pt-8 pb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PALETTE.green.accent }}>
+            Adventure Map · 探险地图
           </p>
-        </header>
-
-        <div className="flex flex-col gap-24 relative">
-          {categories.map((cat) => {
-            const catTheme = getCategoryTheme(cat);
-            const levelInSection = ADVENTURE_LEVELS.filter(l => l.category === cat);
-            const isSectionLocked = cat !== '初级';
-
-            return (
-              <div key={cat} className={`relative rounded-[4rem] p-12 border-4 shadow-sm transition-all duration-700 ${isSectionLocked ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'} ${isDark ? 'border-white/5 bg-slate-900/40' : 'border-blue-50 bg-slate-50/50'}`}>
-                <div className="flex items-center justify-between mb-16 px-4">
-                  <div className="flex items-center gap-6">
-                    <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${catTheme.color} flex items-center justify-center text-4xl border border-white/20 transform rotate-[-5deg]`}>
-                      {catTheme.icon}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className={`text-4xl font-black tracking-tight transition-colors ${isDark ? 'text-white' : 'text-blue-950'}`}>{cat}模式</h3>
-                        {isSectionLocked && (
-                          <div className="flex items-center gap-2 px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-xs font-black uppercase border border-rose-500/20">
-                            <Lock size={14} />
-                            暂未解锁
-                          </div>
-                        )}
-                      </div>
-                      <p className={`font-bold text-lg mt-1 transition-colors ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {catTheme.label}
-                      </p>
-                    </div>
-                  </div>
+          <div className="flex items-end justify-between gap-8">
+            <div>
+              <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
+                解锁你的<br />
+                <span style={{ color: PALETTE.green.accent }}>音乐超能力</span>
+              </h1>
+              <p className="text-sm font-medium text-slate-400 max-w-sm leading-relaxed">
+                完成15节挑战课程，从新手制作人成长为大师创作者
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-6 pb-1">
+              <div className="text-center">
+                <div className="text-3xl font-black text-slate-800 leading-none mb-0.5">
+                  {completedCount}<span className="text-lg text-slate-300">/{totalCount}</span>
                 </div>
-
-                {!isSectionLocked && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-16 gap-x-8 px-4">
-                    {levelInSection.map((level) => (
-                      <button 
-                        key={level.id}
-                        onClick={() => level.unlocked && setSelectedLevel(level)}
-                        className={`relative group flex flex-col items-center transition-all duration-500 ${!level.unlocked ? 'cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}
-                      >
-                        <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center relative border-4 transition-all duration-500 ${level.completed ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300/40' : level.unlocked ? `bg-gradient-to-br ${catTheme.color} border-white/20` : isDark ? 'bg-slate-800 border-slate-700 opacity-40' : 'bg-slate-100 border-slate-200 opacity-50'}`}>
-                          {level.unlocked ? <span className="text-5xl group-hover:rotate-12 transition-transform duration-500">{level.icon}</span> : <Lock className={isDark ? 'text-slate-600' : 'text-slate-400'} size={36} />}
-                          {level.completed && <div className="absolute -top-3 -right-3 bg-emerald-500 text-white rounded-2xl p-2 ring-4 ring-white z-20"><CheckCircle2 size={20} /></div>}
-                          {level.unlocked && !level.completed && <div className="absolute inset-[-4px] border-4 border-blue-400 rounded-[2.5rem] animate-ping opacity-20 pointer-events-none" />}
-                        </div>
-                        <div className="mt-4 flex flex-col items-center gap-1">
-                          <span className={`text-base font-black tracking-tight transition-colors ${level.unlocked ? isDark ? 'text-white' : 'text-blue-900' : isDark ? 'text-slate-600' : 'text-slate-400'}`}>L{level.id} {level.title}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">已完成</div>
               </div>
-            );
-          })}
+              <div className="w-px h-8 bg-slate-100" />
+              <div className="text-center">
+                <div className="text-3xl font-black leading-none mb-0.5" style={{ color: PALETTE.yellow.accent }}>
+                  {completedCount * 100}
+                </div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">积分</div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 h-1 bg-slate-100 rounded-full overflow-hidden max-w-sm">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${(completedCount / totalCount) * 100}%`, background: PALETTE.green.accent }}
+            />
+          </div>
         </div>
 
-        {selectedLevel && (
-          <div className="fixed inset-0 z-[120] backdrop-blur-3xl flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300 bg-slate-950/70">
-             <div className={`w-full max-w-xl rounded-[4rem] overflow-hidden shadow-lg border transition-all duration-500 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
-                <div className={`relative p-12 bg-gradient-to-br ${getCategoryTheme(selectedLevel.category).color} text-white overflow-hidden`}>
-                  <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-                  <button onClick={() => setSelectedLevel(null)} className="absolute top-10 right-10 p-3 bg-black/20 hover:bg-black/40 rounded-full transition-all hover:rotate-90 z-20"><X size={24} /></button>
-                  <div className="flex items-center gap-8 mb-8 relative z-10">
-                    <div className="w-24 h-24 bg-white/20 backdrop-blur-2xl rounded-[2.5rem] flex items-center justify-center text-5xl border border-white/30">{selectedLevel.icon}</div>
-                    <div>
-                      <h4 className="text-xs font-black tracking-[0.4em] text-white/60 uppercase mb-2">LESSON {selectedLevel.id}</h4>
-                      <h3 className="text-4xl font-fredoka tracking-tight leading-none">{selectedLevel.title}</h3>
+        {/* ── Category filter tabs ── */}
+        <div className="flex items-center gap-2 py-3">
+          {(Object.entries(CATEGORY_CONFIG) as [Category, typeof cfg][]).map(([cat, c]) => {
+            const active = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => !c.locked && setActiveCategory(cat)}
+                disabled={c.locked}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                style={active
+                  ? { background: '#1e293b', color: '#fff' }
+                  : { background: 'white', color: '#94A3B8' }
+                }
+              >
+                {c.locked && <Lock size={10} />}
+                {cat} · {c.label}
+              </button>
+            );
+          })}
+          <div className="flex-1" />
+          <span className="text-xs font-semibold text-slate-300">{catCompleted}/{categoryLevels.length} 完成</span>
+        </div>
+
+        {/* ── Featured level ── */}
+        {featuredLevel && (
+          <div className="mb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
+              {featuredLevel.completed ? '已完成' : '下一关卡'}
+            </p>
+            <div
+              className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5"
+              onClick={() => featuredLevel.unlocked && setSelectedLevel(featuredLevel)}
+            >
+              <div className="grid grid-cols-[2fr_3fr]">
+                {/* Cover */}
+                <div
+                  className="relative flex items-center justify-center text-7xl min-h-[160px]"
+                  style={{ background: featuredLevel.completed ? PALETTE.green.bg : cfg.palette.bg }}
+                >
+                  <span>{featuredLevel.icon}</span>
+                  {featuredLevel.completed && (
+                    <div className="absolute top-3 left-3">
+                      <CheckCircle2 size={18} style={{ color: PALETTE.green.accent }} />
                     </div>
+                  )}
+                  {!featuredLevel.completed && featuredLevel.unlocked && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/40 backdrop-blur-sm transition-opacity">
+                      <Zap size={32} style={{ color: cfg.palette.accent }} />
+                    </div>
+                  )}
+                  <span
+                    className="absolute top-3 right-3 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    style={{ background: 'white', color: cfg.palette.accent }}
+                  >
+                    L{featuredLevel.id}
+                  </span>
+                </div>
+                {/* Info */}
+                <div className="p-6 flex flex-col justify-between">
+                  <div>
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full inline-block mb-3"
+                      style={{ background: cfg.palette.bg, color: cfg.palette.accent }}
+                    >
+                      {activeCategory}
+                    </span>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-800 mb-2">{featuredLevel.title}</h2>
+                    <p className="text-sm font-medium text-slate-400 leading-relaxed">"{featuredLevel.homework}"</p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-4 text-xs font-semibold text-slate-400">
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: PALETTE.yellow.bg }}>
+                      <Gift size={12} style={{ color: PALETTE.yellow.accent }} />
+                    </div>
+                    {featuredLevel.reward}
                   </div>
                 </div>
-                <div className="p-12 flex flex-col gap-10">
-                   <div className={`rounded-[3rem] p-8 border transition-colors ${isDark ? 'bg-slate-800/40 border-slate-700/30' : 'bg-blue-50/50 border-blue-100'}`}>
-                      <p className={`text-2xl font-bold leading-relaxed transition-colors ${isDark ? 'text-slate-100' : 'text-blue-950'}`}>“ {selectedLevel.homework} ”</p>
-                   </div>
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-colors ${isDark ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-yellow-50 border-yellow-200'}`}><Gift className="text-yellow-500" size={28} /></div>
-                         <div>
-                            <div className="text-xs text-slate-500 font-black uppercase mb-1">解锁徽章</div>
-                            <div className={`text-xl font-black transition-colors ${isDark ? 'text-white' : 'text-blue-950'}`}>{selectedLevel.reward}</div>
-                         </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Rest levels grid ── */}
+        {restLevels.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">全部关卡</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+              {restLevels.map(level => {
+                const isCompleted = level.completed;
+                const isUnlocked = level.unlocked;
+                return (
+                  <div
+                    key={level.id}
+                    onClick={() => isUnlocked && setSelectedLevel(level)}
+                    className={`bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.03)] transition-all ${isUnlocked ? 'cursor-pointer hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] hover:-translate-y-0.5' : 'opacity-40 cursor-not-allowed'}`}
+                  >
+                    <div
+                      className="flex items-center justify-center text-3xl aspect-square relative"
+                      style={{ background: isCompleted ? PALETTE.green.bg : isUnlocked ? cfg.palette.bg + 'aa' : '#F8FAFC' }}
+                    >
+                      {isCompleted
+                        ? <CheckCircle2 size={26} style={{ color: PALETTE.green.accent }} />
+                        : isUnlocked
+                        ? <span>{level.icon}</span>
+                        : <Lock size={18} className="text-slate-300" />
+                      }
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-slate-400">L{level.id}</span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <p className="text-xs font-bold text-slate-800 truncate">{level.title}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {isCompleted && <Star size={9} fill="currentColor" style={{ color: PALETTE.yellow.accent }} />}
+                        <p className="text-[10px] font-medium text-slate-400">
+                          {isCompleted ? '已完成' : isUnlocked ? '可挑战' : '未解锁'}
+                        </p>
                       </div>
-                      <button 
-                        onClick={() => setActiveLevelId(selectedLevel.id)} 
-                        className="px-12 py-5 bg-blue-600 rounded-[2rem] font-black text-xl text-white hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-                      >
-                        开启课程 <ArrowRightCircle size={24} />
-                      </button>
-                   </div>
-                </div>
-             </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
+
+      {/* ── Level detail modal ── */}
+      {selectedLevel && (
+        <div className="fixed inset-0 z-[120] bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] overflow-hidden">
+            <div className="relative p-6 flex items-center gap-4" style={{ background: cfg.palette.bg }}>
+              <button
+                onClick={() => setSelectedLevel(null)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/70 text-slate-400 hover:text-slate-600 transition-all"
+              >
+                <X size={14} />
+              </button>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl bg-white flex-shrink-0 shadow-sm">
+                {selectedLevel.icon}
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  Lesson {selectedLevel.id}
+                </span>
+                <h3 className="text-lg font-bold tracking-tight text-slate-800 mt-0.5">{selectedLevel.title}</h3>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-[#F8FAFC] rounded-xl p-4">
+                <p className="text-sm font-medium text-slate-600 leading-relaxed">"{selectedLevel.homework}"</p>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#FFFBE8]">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: PALETTE.yellow.bg }}>
+                  <Gift size={16} style={{ color: PALETTE.yellow.accent }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">解锁徽章</p>
+                  <p className="text-sm font-bold text-slate-800 truncate">{selectedLevel.reward}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveLevelId(selectedLevel.id)}
+                className="w-full py-3.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
+                style={{ background: '#1e293b' }}
+              >
+                <Zap size={16} /> 开启课程
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

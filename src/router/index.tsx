@@ -9,8 +9,6 @@ import StagePage from '../pages/Stage';
 import ProfilePage from '../pages/Profile';
 import LoginPage from '../pages/Login';
 import NotFoundPage from '../pages/NotFound';
-import ProjectDetail from '../pages/lab/ProjectDetail';
-import CreateProject from '../pages/lab/CreateProject';
 
 // 路由配置 - 支持多层级嵌套
 export const routes = [
@@ -33,25 +31,7 @@ export const routes = [
             <FreeLabPage />
           </ProtectedRoute>
         ),
-        children: [
-          // 实验室子页面
-          {
-            path: 'project/:id',
-            element: (
-              <ProtectedRoute>
-                <ProjectDetail />
-              </ProtectedRoute>
-            )
-          },
-          {
-            path: 'create',
-            element: (
-              <ProtectedRoute>
-                <CreateProject />
-              </ProtectedRoute>
-            )
-          }
-        ]
+        children: []
       },
       {
         path: 'adventure',
