@@ -23,5 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# Server env
+# Env files - never commit secrets
+.env
+.env.local
+.env.*.local
 server/.env
+server/.env.local
