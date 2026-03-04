@@ -32,6 +32,14 @@ const CATEGORY_CONFIG: Record<Category, {
   '高级': { palette: PALETTE.pink,  label: '大师创作者', locked: true  },
 };
 
+const PHASE_COLORS: Record<string, keyof typeof PALETTE> = {
+  '声音实验室': 'blue',
+  '情绪调色盘': 'orange',
+  '和声魔法屋': 'pink',
+  '创作大拼图': 'green',
+  '制作人舞台': 'yellow',
+};
+
 const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
   const [selectedLevel, setSelectedLevel] = useState<AdventureLevel | null>(null);
   const [activeLevelId, setActiveLevelId] = useState<number | null>(null);
@@ -70,8 +78,9 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
   const cfg = CATEGORY_CONFIG[activeCategory];
   const categoryLevels = ADVENTURE_LEVELS.filter(l => l.category === activeCategory);
   const catCompleted = categoryLevels.filter(l => l.completed).length;
-  const featuredLevel = categoryLevels.find(l => l.unlocked && !l.completed) ?? categoryLevels[0];
-  const restLevels = categoryLevels.filter(l => l.id !== featuredLevel?.id);
+
+  // Group levels by phase
+  const phases = Array.from(new Set(categoryLevels.map(l => l.phase)));
 
   return (
     <div className="bg-[#F5F7FA]">
@@ -140,105 +149,66 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
           <span className="text-xs font-semibold text-slate-300 whitespace-nowrap flex-shrink-0">{catCompleted}/{categoryLevels.length} 完成</span>
         </div>
 
-        {/* ── Featured level ── */}
-        {featuredLevel && (
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
-              {featuredLevel.completed ? '已完成' : '下一关卡'}
-            </p>
-            <div
-              className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5"
-              onClick={() => featuredLevel.unlocked && setSelectedLevel(featuredLevel)}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr]">
-                {/* Cover */}
-                <div
-                  className="relative flex items-center justify-center text-5xl sm:text-7xl min-h-[120px] sm:min-h-[160px]"
-                  style={{ background: featuredLevel.completed ? PALETTE.green.bg : cfg.palette.bg }}
-                >
-                  <span>{featuredLevel.icon}</span>
-                  {featuredLevel.completed && (
-                    <div className="absolute top-3 left-3">
-                      <CheckCircle2 size={18} style={{ color: PALETTE.green.accent }} />
-                    </div>
-                  )}
-                  {!featuredLevel.completed && featuredLevel.unlocked && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/40 backdrop-blur-sm transition-opacity">
-                      <Zap size={32} style={{ color: cfg.palette.accent }} />
-                    </div>
-                  )}
+        {/* ── Levels by phase ── */}
+        <div className="space-y-6 mt-2">
+          {phases.map(phase => {
+            const phaseLevels = categoryLevels.filter(l => l.phase === phase);
+            const phaseColorKey = PHASE_COLORS[phase] || 'blue';
+            const phaseColor = PALETTE[phaseColorKey];
+            const phaseCompleted = phaseLevels.filter(l => l.completed).length;
+            return (
+              <div key={phase}>
+                <div className="flex items-center gap-2 mb-2.5">
                   <span
-                    className="absolute top-3 right-3 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
-                    style={{ background: 'white', color: cfg.palette.accent }}
+                    className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ background: phaseColor.bg, color: phaseColor.accent }}
                   >
-                    L{featuredLevel.id}
+                    {phase}
                   </span>
+                  <span className="text-[10px] font-semibold text-slate-300">{phaseCompleted}/{phaseLevels.length}</span>
                 </div>
-                {/* Info */}
-                <div className="p-4 sm:p-6 flex flex-col justify-between">
-                  <div>
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full inline-block mb-3"
-                      style={{ background: cfg.palette.bg, color: cfg.palette.accent }}
-                    >
-                      {activeCategory}
-                    </span>
-                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mb-2">{featuredLevel.title}</h2>
-                    <p className="text-sm font-medium text-slate-400 leading-relaxed">"{featuredLevel.homework}"</p>
-                  </div>
-                  <div className="flex items-center gap-2 mt-4 text-xs font-semibold text-slate-400">
-                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: PALETTE.yellow.bg }}>
-                      <Gift size={12} style={{ color: PALETTE.yellow.accent }} />
-                    </div>
-                    {featuredLevel.reward}
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  {phaseLevels.map(level => {
+                    const isCompleted = level.completed;
+                    const isUnlocked = level.unlocked;
+                    return (
+                      <div
+                        key={level.id}
+                        onClick={() => isUnlocked && setSelectedLevel(level)}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white border transition-all ${
+                          isCompleted
+                            ? 'border-emerald-100'
+                            : isUnlocked
+                            ? 'border-slate-100 hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer'
+                            : 'border-slate-100 opacity-35 cursor-not-allowed'
+                        }`}
+                      >
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
+                          style={{ background: isCompleted ? PALETTE.green.bg : isUnlocked ? phaseColor.bg : '#F8FAFC' }}
+                        >
+                          {isCompleted
+                            ? <CheckCircle2 size={16} style={{ color: PALETTE.green.accent }} />
+                            : isUnlocked
+                            ? <span>{level.icon}</span>
+                            : <Lock size={12} className="text-slate-300" />
+                          }
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[9px] font-bold text-slate-300">L{level.id}</span>
+                            {isCompleted && <Star size={8} fill="currentColor" style={{ color: PALETTE.yellow.accent }} />}
+                          </div>
+                          <p className="text-xs font-bold text-slate-700 truncate max-w-[100px]">{level.title}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Rest levels grid ── */}
-        {restLevels.length > 0 && (
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">全部关卡</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-              {restLevels.map(level => {
-                const isCompleted = level.completed;
-                const isUnlocked = level.unlocked;
-                return (
-                  <div
-                    key={level.id}
-                    onClick={() => isUnlocked && setSelectedLevel(level)}
-                    className={`bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.03)] transition-all ${isUnlocked ? 'cursor-pointer hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] hover:-translate-y-0.5' : 'opacity-40 cursor-not-allowed'}`}
-                  >
-                    <div
-                      className="flex items-center justify-center text-3xl aspect-square relative"
-                      style={{ background: isCompleted ? PALETTE.green.bg : isUnlocked ? cfg.palette.bg + 'aa' : '#F8FAFC' }}
-                    >
-                      {isCompleted
-                        ? <CheckCircle2 size={26} style={{ color: PALETTE.green.accent }} />
-                        : isUnlocked
-                        ? <span>{level.icon}</span>
-                        : <Lock size={18} className="text-slate-300" />
-                      }
-                      <span className="absolute top-2 right-2 text-[9px] font-bold text-slate-400">L{level.id}</span>
-                    </div>
-                    <div className="px-3 py-2">
-                      <p className="text-xs font-bold text-slate-800 truncate">{level.title}</p>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        {isCompleted && <Star size={9} fill="currentColor" style={{ color: PALETTE.yellow.accent }} />}
-                        <p className="text-[10px] font-medium text-slate-400">
-                          {isCompleted ? '已完成' : isUnlocked ? '可挑战' : '未解锁'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Level detail modal ── */}
