@@ -261,23 +261,23 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       case 'HARMONY':
         return (
           <div className="space-y-3 animate-fade-in">
-            {/* Top row: Staff + Chord selector side by side */}
-            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-              <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Staff + Chord selector: side by side on desktop, stacked on mobile */}
+            <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 lg:gap-4 items-center">
                 {/* Left: Staff */}
-                <div className="w-full lg:flex-1 min-w-0">
-                  <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
+                <div className="min-w-0">
+                  <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[160px] sm:h-[200px] lg:h-[220px] w-full" />
                 </div>
                 {/* Right: Chord selector */}
-                <div className="w-full lg:flex-shrink-0 flex flex-col gap-2 lg:min-w-[420px]">
-                  <div className="flex justify-between items-center mb-1">
+                <div className="flex flex-col gap-1.5 sm:gap-2 lg:w-[440px]">
+                  <div className="flex justify-between items-center mb-0.5 sm:mb-1">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">选择和弦</span>
                     <ClearBtn />
                   </div>
                   {CHORDS.map((chord, idx) => (
-                    <div key={idx} className="flex items-center gap-3 sm:gap-4 px-3 py-2 rounded-xl bg-[#F8FAFC]">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 w-24 sm:w-40 flex-shrink-0 leading-tight">{chord.name}</span>
-                      <div className="flex gap-1 flex-wrap">
+                    <div key={idx} className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-[#F8FAFC]">
+                      <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex-shrink-0 leading-tight truncate max-w-[72px] sm:max-w-none sm:w-32">{chord.name}</span>
+                      <div className="flex gap-[3px] sm:gap-1.5 flex-nowrap">
                         {['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(root => (
                           <button
                             key={root}
@@ -285,7 +285,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                               const rootNote = ALL_NOTES.find(n => n.name === root && n.octave === 4);
                               if (rootNote) playChord(rootNote, chord.intervals);
                             }}
-                            className="w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg bg-white text-slate-600 hover:text-white transition-all hover:scale-[1.02] active:scale-95 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                            className="w-[30px] h-[30px] sm:w-8 sm:h-8 flex items-center justify-center text-[11px] sm:text-xs font-semibold rounded-lg bg-white text-slate-600 hover:text-white transition-all active:scale-95 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                             onMouseEnter={e => (e.currentTarget.style.background = PALETTE.blue.accent)}
                             onMouseLeave={e => (e.currentTarget.style.background = '')}
                           >
