@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Play, Pause, Heart, ChevronLeft, ChevronRight, SkipBack, SkipForward, Disc3, Search, X } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface StageModeProps { theme?: 'light' | 'dark'; }
 interface LyricLine { time: number; text: string; }
@@ -11,105 +12,50 @@ interface SongData {
   tag?: string;
 }
 
-const ALL_SONGS: SongData[] = [
-  {
-    id: '1', title: '夏日微风', author: '小乐', accentKey: 'blue', tag: '清新',
-    description: '清脆的铃声，像在海边吹着凉爽的风',
-    likes: 124, liked: false, icon: '🌊',
-    lyrics: [
-      { time: 0, text: '金色的阳光 洒在海面上' }, { time: 3, text: '微风轻轻吹 掠过我脸庞' },
-      { time: 6, text: '海浪在歌唱 烦恼都忘光' }, { time: 9, text: '夏日的约定 就在这远方' },
-      { time: 12, text: '啦啦啦~ 快乐的时光' },
-    ],
-  },
-  {
-    id: '2', title: '月光跳跃', author: '莎莎', accentKey: 'pink', tag: '梦幻',
-    description: '灵感来自夜晚在草丛里跳跃的小兔子',
-    likes: 245, liked: true, icon: '🐰',
-    lyrics: [
-      { time: 0, text: '月亮圆圆 挂在云端' }, { time: 3, text: '小兔跳跳 穿过森林' },
-      { time: 6, text: '星光点点 闪闪发亮' }, { time: 9, text: '梦境甜甜 就要降临' },
-      { time: 12, text: '蹦蹦跳~ 快乐不停' },
-    ],
-  },
-  {
-    id: '3', title: '恐龙舞步', author: '大壮', accentKey: 'green', tag: '自然',
-    description: '模仿霸王龙走路的声音，震撼感十足',
-    likes: 89, liked: false, icon: '🦖',
-    lyrics: [
-      { time: 0, text: '大地在颤抖 咚 咚 咚' }, { time: 3, text: '巨龙在跳舞 吼 吼 吼' },
-      { time: 6, text: '有力的脚步 充满节奏' }, { time: 9, text: '森林的霸主 谁敢不服' },
-      { time: 12, text: '看我最强的 恐龙舞步' },
-    ],
-  },
-  {
-    id: '4', title: '星空列车', author: '小星', accentKey: 'yellow', tag: '奇幻',
-    description: '坐上星空列车，穿越银河系的奇妙旅程',
-    likes: 312, liked: false, icon: '🚂',
-    lyrics: [
-      { time: 0, text: '列车出发了 驶向星空' }, { time: 3, text: '窗外的星星 闪闪发光' },
-      { time: 6, text: '银河在脚下 梦想在远方' }, { time: 9, text: '每一站都有 新的希望' },
-      { time: 12, text: '嘟嘟嘟~ 星空列车' },
-    ],
-  },
-  {
-    id: '5', title: '彩虹糖果', author: '甜甜', accentKey: 'orange', tag: '甜蜜',
-    description: '甜甜的旋律，像吃了一颗彩虹糖',
-    likes: 198, liked: true, icon: '🍬',
-    lyrics: [
-      { time: 0, text: '红橙黄绿蓝 彩虹的颜色' }, { time: 3, text: '每一颗糖果 都是快乐' },
-      { time: 6, text: '甜蜜的味道 在嘴里融化' }, { time: 9, text: '分享给朋友 一起欢笑' },
-      { time: 12, text: '啦啦啦~ 彩虹糖果' },
-    ],
-  },
-  {
-    id: '6', title: '森林精灵', author: '小叶', accentKey: 'green', tag: '自然',
-    description: '森林深处传来的神秘旋律',
-    likes: 156, liked: false, icon: '🧚',
-    lyrics: [
-      { time: 0, text: '树叶沙沙响 风在歌唱' }, { time: 3, text: '小精灵飞舞 在花丛中' },
-      { time: 6, text: '露珠是琴弦 蘑菇是鼓' }, { time: 9, text: '森林音乐会 正在进行' },
-      { time: 12, text: '叮叮咚~ 精灵之歌' },
-    ],
-  },
-  {
-    id: '7', title: '机器人派对', author: '阿铁', accentKey: 'blue', tag: '电子',
-    description: '嘀嘀嗒嗒的电子节拍，机器人也会跳舞',
-    likes: 203, liked: false, icon: '🤖',
-    lyrics: [
-      { time: 0, text: '嘀嘀嗒嗒 电子心跳' }, { time: 3, text: '机器人们 排好队形' },
-      { time: 6, text: '灯光闪烁 舞池旋转' }, { time: 9, text: '今晚的派对 嗨到天亮' },
-      { time: 12, text: '哔哔哔~ 机器人舞' },
-    ],
-  },
-  {
-    id: '8', title: '海底冒险', author: '小鱼', accentKey: 'blue', tag: '清新',
-    description: '潜入深海，和鱼群一起游泳的冒险曲',
-    likes: 167, liked: false, icon: '🐠',
-    lyrics: [
-      { time: 0, text: '蓝色的海洋 深不见底' }, { time: 3, text: '珊瑚在招手 水母在跳舞' },
-      { time: 6, text: '小丑鱼带路 穿过海藻' }, { time: 9, text: '海底的宝藏 等你发现' },
-      { time: 12, text: '咕噜噜~ 海底世界' },
-    ],
-  },
+const SONG_META = [
+  { id: '1', accentKey: 'blue' as const, icon: '🌊', likes: 124, liked: false },
+  { id: '2', accentKey: 'pink' as const, icon: '🐰', likes: 245, liked: true },
+  { id: '3', accentKey: 'green' as const, icon: '🦖', likes: 89, liked: false },
+  { id: '4', accentKey: 'yellow' as const, icon: '🚂', likes: 312, liked: false },
+  { id: '5', accentKey: 'orange' as const, icon: '🍬', likes: 198, liked: true },
+  { id: '6', accentKey: 'green' as const, icon: '🧚', likes: 156, liked: false },
+  { id: '7', accentKey: 'blue' as const, icon: '🤖', likes: 203, liked: false },
+  { id: '8', accentKey: 'blue' as const, icon: '🐠', likes: 167, liked: false },
 ];
 
-const BANNER_ITEMS = [
-  { id: '1', title: '本周新歌榜', subtitle: '最受欢迎的新作品', colorKey: 'blue' as keyof typeof PALETTE, icon: '🏆' },
-  { id: '2', title: '编辑精选集', subtitle: '老师推荐的优秀作品', colorKey: 'pink' as keyof typeof PALETTE, icon: '⭐' },
-  { id: '3', title: '创作挑战赛', subtitle: '用三个音符写一首歌', colorKey: 'orange' as keyof typeof PALETTE, icon: '🎯' },
+const BANNER_META = [
+  { id: '1', titleKey: 'stage.banner1.title', subtitleKey: 'stage.banner1.subtitle', colorKey: 'blue' as const, icon: '🏆' },
+  { id: '2', titleKey: 'stage.banner2.title', subtitleKey: 'stage.banner2.subtitle', colorKey: 'pink' as const, icon: '⭐' },
+  { id: '3', titleKey: 'stage.banner3.title', subtitleKey: 'stage.banner3.subtitle', colorKey: 'orange' as const, icon: '🎯' },
 ];
 
-const PLAYLISTS = [
-  { id: 'chill', name: '放松时刻', icon: '☁️', colorKey: 'blue' as keyof typeof PALETTE, count: 12 },
-  { id: 'energy', name: '活力满满', icon: '⚡', colorKey: 'orange' as keyof typeof PALETTE, count: 8 },
-  { id: 'dream', name: '梦幻之旅', icon: '🌙', colorKey: 'pink' as keyof typeof PALETTE, count: 15 },
-  { id: 'nature', name: '自然之声', icon: '🌿', colorKey: 'green' as keyof typeof PALETTE, count: 10 },
-  { id: 'party', name: '派对时间', icon: '🎉', colorKey: 'yellow' as keyof typeof PALETTE, count: 6 },
+const PLAYLIST_META = [
+  { id: 'chill', nameKey: 'stage.pl.chill', icon: '☁️', colorKey: 'blue' as const, count: 12 },
+  { id: 'energy', nameKey: 'stage.pl.energy', icon: '⚡', colorKey: 'orange' as const, count: 8 },
+  { id: 'dream', nameKey: 'stage.pl.dream', icon: '🌙', colorKey: 'pink' as const, count: 15 },
+  { id: 'nature', nameKey: 'stage.pl.nature', icon: '🌿', colorKey: 'green' as const, count: 10 },
+  { id: 'party', nameKey: 'stage.pl.party', icon: '🎉', colorKey: 'yellow' as const, count: 6 },
 ];
+
+function buildSongs(t: (k: string) => string): SongData[] {
+  return SONG_META.map(m => ({
+    ...m,
+    title: t(`stage.song.${m.id}.title`),
+    author: t(`stage.song.${m.id}.author`),
+    description: t(`stage.song.${m.id}.desc`),
+    tag: t(`stage.song.${m.id}.tag`),
+    lyrics: [0, 3, 6, 9, 12].map((time, i) => ({
+      time,
+      text: t(`stage.song.${m.id}.ly${i + 1}`),
+    })),
+  }));
+}
 
 const StageMode: React.FC<StageModeProps> = () => {
-  const [songs, setSongs] = useState<SongData[]>(ALL_SONGS);
+  const { t } = useSettings();
+
+  const allSongs = useMemo(() => buildSongs(t), [t]);
+  const [songs, setSongs] = useState<SongData[]>(allSongs);
   const [activeSong, setActiveSong] = useState<SongData | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -119,10 +65,25 @@ const StageMode: React.FC<StageModeProps> = () => {
   const bannerRef = useRef<HTMLDivElement>(null);
   const duration = 15;
 
+  // Sync songs when language changes
+  useEffect(() => {
+    setSongs(prev => {
+      const next = buildSongs(t);
+      return next.map(s => {
+        const old = prev.find(o => o.id === s.id);
+        return old ? { ...s, likes: old.likes, liked: old.liked } : s;
+      });
+    });
+    if (activeSong) {
+      const updated = buildSongs(t).find(s => s.id === activeSong.id);
+      if (updated) setActiveSong(prev => prev ? { ...updated, likes: prev.likes, liked: prev.liked } : null);
+    }
+  }, [t]);
+
   // Auto-rotate banner
   useEffect(() => {
     const timer = setInterval(() => {
-      setBannerIndex(prev => (prev + 1) % BANNER_ITEMS.length);
+      setBannerIndex(prev => (prev + 1) % BANNER_META.length);
     }, 4000);
     return () => clearInterval(timer);
   }, []);
@@ -182,15 +143,15 @@ const StageMode: React.FC<StageModeProps> = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-36">
 
         {/* ── Search ── */}
-        <div className="relative pt-4 sm:pt-6 pb-3">
+        <div className="relative pt-4 sm:pt-6 pb-2 sm:pb-3">
           <div className="relative z-20">
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="搜索歌曲、作者..."
-              className="w-full pl-11 pr-10 py-3 rounded-xl border text-sm font-medium outline-none transition-all bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10"
+              placeholder={t('stage.search')}
+              className="w-full pl-11 pr-10 py-2.5 sm:py-3 rounded-xl border text-sm font-medium outline-none transition-all bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10"
             />
             {searchQuery && (
               <button
@@ -201,6 +162,7 @@ const StageMode: React.FC<StageModeProps> = () => {
               </button>
             )}
           </div>
+
           {/* Search results — floating overlay */}
           {searchQuery.trim() && (() => {
             const q = searchQuery.trim().toLowerCase();
@@ -260,7 +222,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                 ) : (
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] text-center py-8">
                     <Search size={20} className="text-slate-200 mx-auto mb-2" />
-                    <p className="text-xs font-medium text-slate-400">没有找到 "{searchQuery}" 相关的作品</p>
+                    <p className="text-xs font-medium text-slate-400">{t('stage.noResults')} "{searchQuery}" {t('stage.relatedWorks')}</p>
                   </div>
                 )}
               </div>
@@ -269,24 +231,24 @@ const StageMode: React.FC<StageModeProps> = () => {
         </div>
 
         {/* ── Banner carousel ── */}
-        <div className="pb-3">
+        <div className="pb-2.5 sm:pb-3">
           <div className="overflow-hidden rounded-2xl" ref={bannerRef}>
             <div
               className="flex transition-transform duration-500"
               style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
             >
-              {BANNER_ITEMS.map(item => {
+              {BANNER_META.map(item => {
                 const color = PALETTE[item.colorKey];
                 return (
                   <div
                     key={item.id}
-                    className="w-full flex-shrink-0 p-6 sm:p-8 relative overflow-hidden"
+                    className="w-full flex-shrink-0 p-5 sm:p-8 relative overflow-hidden"
                     style={{ background: color.bg }}
                   >
                     <div className="relative z-10">
-                      <span className="text-3xl sm:text-4xl mb-3 block">{item.icon}</span>
-                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-1">{item.title}</h2>
-                      <p className="text-sm font-medium text-slate-500">{item.subtitle}</p>
+                      <span className="text-2xl sm:text-4xl mb-2 sm:mb-3 block">{item.icon}</span>
+                      <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-800 mb-0.5 sm:mb-1">{t(item.titleKey)}</h2>
+                      <p className="text-sm font-medium text-slate-500">{t(item.subtitleKey)}</p>
                     </div>
                     <div className="absolute top-[-20px] right-[-20px] w-32 h-32 rounded-3xl rotate-12 opacity-40" style={{ background: color.accent + '22' }} />
                     <div className="absolute bottom-[-10px] right-[40px] w-20 h-20 rounded-2xl rotate-6 opacity-30" style={{ background: color.accent + '33' }} />
@@ -298,13 +260,13 @@ const StageMode: React.FC<StageModeProps> = () => {
           {/* Controls below banner */}
           <div className="flex items-center justify-center gap-3 mt-2">
             <button
-              onClick={() => setBannerIndex(prev => (prev - 1 + BANNER_ITEMS.length) % BANNER_ITEMS.length)}
+              onClick={() => setBannerIndex(prev => (prev - 1 + BANNER_META.length) % BANNER_META.length)}
               className="w-7 h-7 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
             >
               <ChevronLeft size={14} />
             </button>
             <div className="flex gap-1.5">
-              {BANNER_ITEMS.map((_, i) => (
+              {BANNER_META.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setBannerIndex(i)}
@@ -314,7 +276,7 @@ const StageMode: React.FC<StageModeProps> = () => {
               ))}
             </div>
             <button
-              onClick={() => setBannerIndex(prev => (prev + 1) % BANNER_ITEMS.length)}
+              onClick={() => setBannerIndex(prev => (prev + 1) % BANNER_META.length)}
               className="w-7 h-7 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
             >
               <ChevronRight size={14} />
@@ -323,24 +285,24 @@ const StageMode: React.FC<StageModeProps> = () => {
         </div>
 
         {/* ── Playlists row ── */}
-        <div className="mb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">推荐歌单</p>
-          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-            {PLAYLISTS.map(pl => {
+        <div className="mb-3.5 sm:mb-4">
+          <p className="text-sm font-bold tracking-tight text-slate-700 mb-2.5 sm:mb-3">{t('stage.playlists')}</p>
+          <div className="flex gap-2 sm:gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+            {PLAYLIST_META.map(pl => {
               const color = PALETTE[pl.colorKey];
               return (
                 <div
                   key={pl.id}
-                  className="flex-shrink-0 w-28 bg-white rounded-xl border border-slate-100 p-3 text-center transition-all hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer"
+                  className="flex-shrink-0 w-24 sm:w-28 bg-white rounded-xl border border-slate-100 p-2.5 sm:p-3 text-center transition-all hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer"
                 >
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-2"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl mx-auto mb-1.5 sm:mb-2"
                     style={{ background: color.bg }}
                   >
                     {pl.icon}
                   </div>
-                  <p className="text-xs font-bold text-slate-700 truncate">{pl.name}</p>
-                  <p className="text-[10px] font-medium text-slate-400">{pl.count}首</p>
+                  <p className="text-xs font-bold text-slate-700 truncate">{t(pl.nameKey)}</p>
+                  <p className="text-[10px] font-medium text-slate-400">{pl.count}{t('stage.songs')}</p>
                 </div>
               );
             })}
@@ -348,9 +310,9 @@ const StageMode: React.FC<StageModeProps> = () => {
         </div>
 
         {/* ── Hot chart ── */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">热门排行</p>
+        <div className="mb-3.5 sm:mb-4">
+          <div className="flex items-center justify-between mb-2.5 sm:mb-3">
+            <p className="text-sm font-bold tracking-tight text-slate-700">{t('stage.hotChart')}</p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             {hotSongs.map((song, idx) => {
@@ -361,7 +323,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                 <div
                   key={song.id}
                   onClick={() => handlePlay(song)}
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all hover:bg-slate-50 ${idx < hotSongs.length - 1 ? 'border-b border-slate-50' : ''}`}
+                  className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer transition-all hover:bg-slate-50 ${idx < hotSongs.length - 1 ? 'border-b border-slate-50' : ''}`}
                   style={isActive ? { background: color.bg + '66' } : {}}
                 >
                   <span className={`w-5 flex-shrink-0 text-center text-xs font-black ${idx < 3 ? '' : 'text-slate-300'}`} style={idx < 3 ? { color: color.accent } : {}}>
@@ -380,7 +342,6 @@ const StageMode: React.FC<StageModeProps> = () => {
                     <p className="text-sm font-bold text-slate-800 truncate">{song.title}</p>
                     <p className="text-[10px] font-medium text-slate-400 truncate">{song.author}</p>
                   </div>
-                  {/* Fixed-width tag column for alignment */}
                   <div className="hidden sm:flex w-10 flex-shrink-0 justify-end">
                     {song.tag && (
                       <span
@@ -406,9 +367,9 @@ const StageMode: React.FC<StageModeProps> = () => {
         </div>
 
         {/* ── New releases grid ── */}
-        <div className="mb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">最新发布</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="mb-3.5 sm:mb-4">
+          <p className="text-sm font-bold tracking-tight text-slate-700 mb-2.5 sm:mb-3">{t('stage.newReleases')}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
             {newSongs.map(song => {
               const color = PALETTE[song.accentKey];
               const isActive = activeSong?.id === song.id;
@@ -433,7 +394,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                       <div className="absolute bottom-0 left-0 h-0.5 transition-all duration-1000" style={{ width: `${(currentTime / duration) * 100}%`, background: color.accent }} />
                     )}
                   </div>
-                  <div className="p-3">
+                  <div className="p-2.5 sm:p-3">
                     <p className="text-xs font-bold text-slate-800 truncate">{song.title}</p>
                     <p className="text-[10px] font-medium text-slate-400 truncate">{song.author}</p>
                   </div>
@@ -458,7 +419,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                 style={{ width: `${(currentTime / duration) * 100}%`, background: PALETTE[activeSong.accentKey].accent }}
               />
             </div>
-            <div className="px-4 py-3 flex items-center gap-3">
+            <div className="px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                 style={{ background: PALETTE[activeSong.accentKey].bg }}
@@ -470,7 +431,7 @@ const StageMode: React.FC<StageModeProps> = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-800 truncate">{activeSong.title}</p>
-                <p className="text-[10px] font-semibold truncate" style={{ color: PALETTE[activeSong.accentKey].accent }}>
+                <p className="text-xs sm:text-[10px] font-semibold truncate" style={{ color: PALETTE[activeSong.accentKey].accent }}>
                   {getCurrentLyric()}
                 </p>
               </div>
@@ -496,7 +457,7 @@ const StageMode: React.FC<StageModeProps> = () => {
       {activeSong && showFullPlayer && (
         <div className="fixed inset-0 z-[120] bg-white flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4">
             <button
               onClick={() => setShowFullPlayer(false)}
               className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-600 transition-all"
@@ -504,8 +465,8 @@ const StageMode: React.FC<StageModeProps> = () => {
               <ChevronLeft size={16} />
             </button>
             <div className="text-center">
-              <p className="text-xs font-bold text-slate-800">{activeSong.title}</p>
-              <p className="text-[10px] font-medium text-slate-400">{activeSong.author}</p>
+              <p className="text-sm font-bold text-slate-800">{activeSong.title}</p>
+              <p className="text-xs font-medium text-slate-400">{activeSong.author}</p>
             </div>
             <button
               onClick={e => toggleLike(activeSong.id, e)}
@@ -517,17 +478,17 @@ const StageMode: React.FC<StageModeProps> = () => {
           </div>
 
           {/* Cover art */}
-          <div className="flex-1 flex flex-col items-center justify-center px-8">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8">
             <div
-              className={`w-48 h-48 sm:w-56 sm:h-56 rounded-2xl flex items-center justify-center text-7xl sm:text-8xl shadow-[0_8px_40px_rgba(0,0,0,0.06)] transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-95'}`}
+              className={`w-44 h-44 sm:w-56 sm:h-56 rounded-2xl flex items-center justify-center text-6xl sm:text-8xl shadow-[0_8px_40px_rgba(0,0,0,0.06)] transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-95'}`}
               style={{ background: PALETTE[activeSong.accentKey].bg }}
             >
               <span className={isPlaying ? 'animate-pulse' : ''}>{activeSong.icon}</span>
             </div>
 
             {/* Lyrics */}
-            <div className="mt-8 text-center h-16">
-              <p className="text-lg font-bold text-slate-800 transition-all duration-500">
+            <div className="mt-6 sm:mt-8 text-center h-16">
+              <p className="text-base sm:text-lg font-bold text-slate-800 transition-all duration-500">
                 {getCurrentLyric()}
               </p>
               <p className="text-xs font-medium text-slate-400 mt-1">{activeSong.description}</p>
@@ -535,7 +496,7 @@ const StageMode: React.FC<StageModeProps> = () => {
           </div>
 
           {/* Controls */}
-          <div className="px-8 pb-10 sm:pb-12">
+          <div className="px-6 sm:px-8 pb-8 sm:pb-12">
             {/* Progress bar */}
             <div className="mb-4">
               <div className="h-1 bg-slate-100 rounded-full overflow-hidden">

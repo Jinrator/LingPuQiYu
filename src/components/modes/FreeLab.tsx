@@ -10,6 +10,7 @@ import MusicStaff from '../music/MusicStaff';
 import PianoRoll from '../music/PianoRoll';
 import DrumSequencer from '../music/DrumSequencer';
 import { PALETTE } from '../../constants/palette';
+import { useSettings } from '../../contexts/SettingsContext';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
 type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE';
@@ -49,6 +50,7 @@ interface FreeLabProps {
 }
 
 const FreeLab: React.FC<FreeLabProps> = () => {
+  const { t } = useSettings();
   const [activeModule, setActiveModule] = useState<SubModule>('BASIC');
   const [activeNotes, setActiveNotes] = useState<Note[]>([]);
   const [lastPlayedNote, setLastPlayedNote] = useState<Note | null>(null);
@@ -108,12 +110,12 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   );
 
   const Card = ({ title, icon, children }: { title: string; icon: React.ReactNode; children?: React.ReactNode }) => (
-    <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-      <div className="flex items-center gap-3 mb-3 pb-3" style={{ borderBottom: '1px solid #F1F5F9' }}>
-        <div className="p-2 rounded-xl" style={{ background: PALETTE.blue.bg }}>
+    <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+      <div className="flex items-center gap-2.5 mb-2.5 pb-2.5 sm:gap-3 sm:mb-3 sm:pb-3" style={{ borderBottom: '1px solid #F1F5F9' }}>
+        <div className="p-1.5 sm:p-2 rounded-xl" style={{ background: PALETTE.blue.bg }}>
           {icon}
         </div>
-        <h3 className="font-bold text-slate-800">{title}</h3>
+        <h3 className="font-bold text-sm sm:text-base text-slate-800">{title}</h3>
       </div>
       {children}
     </div>
@@ -124,7 +126,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       onClick={clearActiveNotes}
       className="text-xs font-semibold text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full transition-all"
     >
-      清除高亮
+      {t('lab.clearHighlight')}
     </button>
   );
 
@@ -135,10 +137,10 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       case 'BASIC':
         return (
           <div className="space-y-4 animate-fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card title="音高 (Pitch)" icon={<Music size={16} style={{ color: PALETTE.pink.accent }} />}>
-                <div className="flex flex-col gap-4 items-center">
-                  <p className="text-sm text-slate-500 text-center">声音有高低之分，就像楼梯一样。</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <Card title={t('lab.pitch')} icon={<Music size={16} style={{ color: PALETTE.pink.accent }} />}>
+                <div className="flex flex-col gap-3 sm:gap-4 items-center">
+                  <p className="text-sm text-slate-500 text-center">{t('lab.pitchDesc')}</p>
                   <div className="flex gap-3">
                     <button
                       onClick={async () => {
@@ -147,7 +149,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all hover:scale-[1.02] active:scale-95"
                     >
-                      低音
+                      {t('lab.low')}
                     </button>
                     <button
                       onClick={async () => {
@@ -157,15 +159,15 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
                       style={{ background: PALETTE.blue.accent }}
                     >
-                      高音
+                      {t('lab.high')}
                     </button>
                   </div>
                 </div>
               </Card>
 
-              <Card title="长短 (Duration)" icon={<Clock size={16} style={{ color: PALETTE.blue.accent }} />}>
-                <div className="flex flex-col gap-4 items-center">
-                  <p className="text-sm text-slate-500 text-center">声音有长有短，组成了节奏。</p>
+              <Card title={t('lab.duration')} icon={<Clock size={16} style={{ color: PALETTE.blue.accent }} />}>
+                <div className="flex flex-col gap-3 sm:gap-4 items-center">
+                  <p className="text-sm text-slate-500 text-center">{t('lab.durationDesc')}</p>
                   <div className="flex gap-3">
                     <button
                       onClick={async () => {
@@ -174,7 +176,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all hover:scale-[1.02] active:scale-95"
                     >
-                      短
+                      {t('lab.short')}
                     </button>
                     <button
                       onClick={async () => {
@@ -184,15 +186,15 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
                       style={{ background: PALETTE.pink.accent }}
                     >
-                      长
+                      {t('lab.long')}
                     </button>
                   </div>
                 </div>
               </Card>
 
-              <Card title="强弱 (Dynamics)" icon={<Volume2 size={16} style={{ color: PALETTE.green.accent }} />}>
-                <div className="flex flex-col gap-4 items-center">
-                  <p className="text-sm text-slate-500 text-center">声音的力量可以很强，也可以很温柔。</p>
+              <Card title={t('lab.dynamics')} icon={<Volume2 size={16} style={{ color: PALETTE.green.accent }} />}>
+                <div className="flex flex-col gap-3 sm:gap-4 items-center">
+                  <p className="text-sm text-slate-500 text-center">{t('lab.dynamicsDesc')}</p>
                   <div className="flex gap-3">
                     <button
                       onClick={async () => {
@@ -201,7 +203,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all hover:scale-[1.02] active:scale-95"
                     >
-                      弱
+                      {t('lab.soft')}
                     </button>
                     <button
                       onClick={async () => {
@@ -211,7 +213,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
                       style={{ background: PALETTE.orange.accent }}
                     >
-                      强
+                      {t('lab.loud')}
                     </button>
                   </div>
                 </div>
@@ -220,7 +222,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
 
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-slate-800">试一试</h3>
+                <h3 className="font-bold text-slate-800">{t('lab.tryIt')}</h3>
                 <ClearBtn />
               </div>
               <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
@@ -234,16 +236,16 @@ const FreeLab: React.FC<FreeLabProps> = () => {
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col items-center gap-3">
               <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
 
-              <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-3 px-4 py-3 rounded-xl bg-[#F8FAFC]">
+              <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#F8FAFC]">
                 {[
-                  { label: '音名 (Name)', value: lastPlayedNote?.name ?? '-', color: PALETTE.blue.accent },
-                  { label: '简谱 (Notation)', value: lastPlayedNote ? renderJianpuWithDots(lastPlayedNote) : '-', color: PALETTE.green.accent },
-                  { label: '音高 (Pitch)', value: lastPlayedNote?.full ?? '-', color: PALETTE.orange.accent },
-                  { label: '唱名 (Solfege)', value: lastPlayedNote ? SOLFEGE_MAP[lastPlayedNote.name] : '-', color: PALETTE.pink.accent },
+                  { label: t('lab.noteName'), value: lastPlayedNote?.name ?? '-', color: PALETTE.blue.accent },
+                  { label: t('lab.notation'), value: lastPlayedNote ? renderJianpuWithDots(lastPlayedNote) : '-', color: PALETTE.green.accent },
+                  { label: t('lab.pitchLabel'), value: lastPlayedNote?.full ?? '-', color: PALETTE.orange.accent },
+                  { label: t('lab.solfege'), value: lastPlayedNote ? SOLFEGE_MAP[lastPlayedNote.name] : '-', color: PALETTE.pink.accent },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="text-center p-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest block mb-1 text-slate-400">{label}</span>
-                    <div className="text-2xl font-bold" style={{ color }}>{value}</div>
+                  <div key={label} className="text-center p-1.5 sm:p-2">
+                    <span className="text-[10px] sm:text-[10px] font-semibold uppercase tracking-widest block mb-1 text-slate-400">{label}</span>
+                    <div className="text-xl sm:text-2xl font-bold" style={{ color }}>{value}</div>
                   </div>
                 ))}
               </div>
@@ -271,7 +273,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                 {/* Right: Chord selector */}
                 <div className="flex flex-col gap-1.5 sm:gap-2 lg:w-[440px]">
                   <div className="flex justify-between items-center mb-0.5 sm:mb-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">选择和弦</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{t('lab.selectChord')}</span>
                     <ClearBtn />
                   </div>
                   {CHORDS.map((chord, idx) => (
@@ -307,11 +309,11 @@ const FreeLab: React.FC<FreeLabProps> = () => {
 
       case 'RHYTHM':
         return (
-          <div className="space-y-4 animate-fade-in">
+          <div className="space-y-3 sm:space-y-4 animate-fade-in">
             <DrumSequencer {...{ theme_type: false } as any} />
-            <div className="bg-white rounded-xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-              <h4 className="text-sm font-bold text-slate-800 mb-1">乐器说明</h4>
-              <p className="text-sm text-slate-500">点击方块即可点亮节奏，按下播放键开始演奏。</p>
+            <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+              <h4 className="text-sm font-bold text-slate-800 mb-1">{t('lab.instrumentInfo')}</h4>
+              <p className="text-sm text-slate-500">{t('lab.instrumentDesc')}</p>
             </div>
           </div>
         );
@@ -330,19 +332,19 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   // ── Nav items ──────────────────────────────────────────────────────────────
 
   const NAV_ITEMS = [
-    { id: 'BASIC',   label: '基础感知', icon: Library },
-    { id: 'THEORY',  label: '乐理知识', icon: BookOpen },
-    { id: 'HARMONY', label: '和弦音阶', icon: Radio },
-    { id: 'RHYTHM',  label: '节奏创作', icon: Drum },
-    { id: 'COMPOSE', label: '旋律创作', icon: PenTool },
+    { id: 'BASIC',   label: t('lab.basic'), icon: Library },
+    { id: 'THEORY',  label: t('lab.theory'), icon: BookOpen },
+    { id: 'HARMONY', label: t('lab.harmony'), icon: Radio },
+    { id: 'RHYTHM',  label: t('lab.rhythm'), icon: Drum },
+    { id: 'COMPOSE', label: t('lab.compose'), icon: PenTool },
   ] as const;
 
   const MODULE_SUBTITLES: Record<SubModule, string> = {
-    BASIC:   '感受声音的高低、长短与强弱',
-    THEORY:  '认识五线谱、简谱与唱名',
-    HARMONY: '探索声音的组合魔法',
-    RHYTHM:  '使用专业鼓机制作动感节拍',
-    COMPOSE: '在钢琴卷帘上编写你的乐章',
+    BASIC:   t('lab.sub.basic'),
+    THEORY:  t('lab.sub.theory'),
+    HARMONY: t('lab.sub.harmony'),
+    RHYTHM:  t('lab.sub.rhythm'),
+    COMPOSE: t('lab.sub.compose'),
   };
 
   return (
@@ -350,14 +352,14 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 
         {/* ── Hero ── */}
-        <div className="pt-6 sm:pt-8 pb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PALETTE.blue.accent }}>
-            Free Lab · 自由工坊
+        <div className="pt-5 sm:pt-8 pb-3">
+          <p className="text-xs sm:text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: PALETTE.blue.accent }}>
+            {t('lab.subtitle')}
           </p>
           <div className="flex items-end justify-between gap-4 sm:gap-6">
             <div>
-              <h1 className="text-3xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-2">
-                探索<span style={{ color: PALETTE.blue.accent }}>音乐的奥秘</span>
+              <h1 className="text-2xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-800 mb-1.5">
+                {t('lab.hero')}<span style={{ color: PALETTE.blue.accent }}>{t('lab.heroAccent')}</span>
               </h1>
               <p className="text-sm font-medium text-slate-400 max-w-sm leading-relaxed">
                 {MODULE_SUBTITLES[activeModule]}
@@ -370,14 +372,14 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         </div>
 
         {/* ── Filter tabs ── */}
-        <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1.5 sm:gap-2 py-2.5 overflow-x-auto scrollbar-hide">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const active = activeModule === id;
             return (
               <button
                 key={id}
                 onClick={() => setActiveModule(id as SubModule)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
+                className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0"
                 style={active
                   ? { background: '#1e293b', color: '#fff' }
                   : { background: 'white', color: '#94A3B8' }

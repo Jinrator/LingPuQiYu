@@ -9,6 +9,7 @@ import StagePage from '../pages/Stage';
 import ProfilePage from '../pages/Profile';
 import LoginPage from '../pages/Login';
 import NotFoundPage from '../pages/NotFound';
+import SettingsPage from '../pages/Settings';
 
 // 路由配置 - 支持多层级嵌套
 export const routes = [
@@ -209,6 +210,14 @@ export const routes = [
             )
           }
         ]
+      },
+      {
+        path: 'settings',
+        element: (
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: '*',

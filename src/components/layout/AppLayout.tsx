@@ -7,8 +7,9 @@ import Navigation from './Navigation';
 import AIAssistant from '../ui/AIAssistant';
 import ExitConfirmation from '../ui/ExitConfirmation';
 import { useExitConfirmation } from '../../hooks/useExitConfirmation';
-import { Music4 } from 'lucide-react';
+import { Music4, Settings } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
@@ -16,6 +17,7 @@ const AppLayout: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useSettings();
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'
   );
@@ -63,7 +65,7 @@ const AppLayout: React.FC = () => {
           <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto" style={{ background: PALETTE.blue.bg }}>
             <Music4 size={20} style={{ color: PALETTE.blue.accent }} />
           </div>
-          <p className="text-sm font-medium text-slate-400">正在跳转到登录页面...</p>
+          <p className="text-sm font-medium text-slate-400">{t('app.redirecting')}</p>
         </div>
       </div>
     );
@@ -91,9 +93,9 @@ const AppLayout: React.FC = () => {
             className="flex items-center gap-2.5 pl-1 hover:opacity-80 transition-opacity"
           >
             <div className="w-8 h-8 rounded-lg overflow-hidden">
-              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
             </div>
-            <span className="font-fredoka font-bold text-base tracking-tight text-slate-800">生音科技</span>
+            <span className="font-fredoka font-bold text-base tracking-tight text-slate-800">{t('app.brand')}</span>
           </button>
 
           {/* Center: Nav */}
@@ -111,14 +113,14 @@ const AppLayout: React.FC = () => {
               <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
               </div>
-              我的档案
+              {t('nav.profile')}
             </button>
             <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-              style={{ background: '#1e293b' }}
+              onClick={() => navigate('/settings')}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+              style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
             >
-              退出
+              <Settings size={16} />
             </button>
           </div>
         </nav>
@@ -131,9 +133,9 @@ const AppLayout: React.FC = () => {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <div className="w-7 h-7 rounded-lg overflow-hidden">
-            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+            <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
           </div>
-          <span className="font-fredoka font-bold text-sm tracking-tight text-slate-800">生音科技</span>
+          <span className="font-fredoka font-bold text-sm tracking-tight text-slate-800">{t('app.brand')}</span>
         </button>
         <div className="flex items-center gap-2">
           <button
@@ -144,11 +146,11 @@ const AppLayout: React.FC = () => {
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
           </button>
           <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: '#1e293b' }}
+            onClick={() => navigate('/settings')}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+            style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
           >
-            退出
+            <Settings size={16} />
           </button>
         </div>
       </div>
@@ -172,19 +174,19 @@ const AppLayout: React.FC = () => {
       {!isAudioInitialized && (
         <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6">
           <div className="w-20 h-20 rounded-2xl overflow-hidden mb-8">
-            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+            <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
           </div>
-          <h2 className="font-fredoka font-bold text-4xl text-slate-800 mb-3">生音科技 · 灵谱奇域</h2>
+          <h2 className="font-fredoka font-bold text-4xl text-slate-800 mb-3">{t('app.brandFull')}</h2>
           <p className="text-slate-400 text-sm font-medium max-w-sm mb-2">
-            每一个孩子都可以在音乐中快乐成长，成为自己人生的建筑师。
+            {t('app.slogan')}
           </p>
-          <p className="text-slate-300 text-xs mb-10">点击任意位置或按任意键进入</p>
+          <p className="text-slate-300 text-xs mb-10">{t('app.clickToEnter')}</p>
           <button
             onClick={initAudio}
             className="px-12 py-3.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: '#1e293b' }}
           >
-            立即进入
+            {t('app.enter')}
           </button>
         </div>
       )}

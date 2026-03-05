@@ -9,17 +9,19 @@ import AuthPage from './components/layout/AuthPage';
 import { useAuth } from './contexts/AuthContext';
 import { Music4, Map, Palette, Disc, LogOut, Headphones } from 'lucide-react';
 import { PALETTE } from './constants/palette';
+import { useSettings } from './contexts/SettingsContext';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
 const NAV_ITEMS = [
-  { id: ViewMode.ADVENTURE, label: '冒险模式', icon: Map,     accent: PALETTE.green },
-  { id: ViewMode.FREE_LAB,  label: '自由工坊', icon: Palette, accent: PALETTE.blue  },
-  { id: ViewMode.STAGE,     label: '演出舞台', icon: Disc,    accent: PALETTE.pink  },
+  { id: ViewMode.ADVENTURE, labelKey: 'nav.adventure', icon: Map,     accent: PALETTE.green },
+  { id: ViewMode.FREE_LAB,  labelKey: 'nav.lab',       icon: Palette, accent: PALETTE.blue  },
+  { id: ViewMode.STAGE,     labelKey: 'nav.stage',     icon: Disc,    accent: PALETTE.pink  },
 ];
 
 const App: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
+  const { t } = useSettings();
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'
@@ -66,16 +68,16 @@ const App: React.FC = () => {
             style={{ background: PALETTE.blue.bg }}
           >
             <div className="w-5 h-5 rounded overflow-hidden">
-              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
             </div>
-            <span className="font-fredoka font-bold text-sm tracking-tight" style={{ color: PALETTE.blue.accent }}>生音科技</span>
+            <span className="font-fredoka font-bold text-sm tracking-tight" style={{ color: PALETTE.blue.accent }}>{t('app.brand')}</span>
           </button>
 
           {/* Divider */}
           <div className="w-px h-5 bg-slate-100 mx-1" />
 
           {/* Nav items */}
-          {NAV_ITEMS.map(({ id, label, icon: Icon, accent }) => {
+          {NAV_ITEMS.map(({ id, labelKey, icon: Icon, accent }) => {
             const active = view === id;
             return (
               <button
@@ -88,7 +90,7 @@ const App: React.FC = () => {
                 }
               >
                 <Icon size={14} />
-                {label}
+                {t(labelKey)}
               </button>
             );
           })}
@@ -119,29 +121,29 @@ const App: React.FC = () => {
       </div>
 
       {/* ── Mobile top bar ── */}
-      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] z-30">
+      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] z-30">
         <button
           onClick={() => setView(ViewMode.FREE_LAB)}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
         >
-          <div className="w-7 h-7 rounded overflow-hidden">
-            <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+          <div className="w-8 h-8 rounded overflow-hidden">
+            <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
           </div>
-          <span className="font-fredoka font-bold text-sm tracking-tight" style={{ color: PALETTE.blue.accent }}>生音科技</span>
+          <span className="font-fredoka font-bold text-base tracking-tight" style={{ color: PALETTE.blue.accent }}>{t('app.brand')}</span>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => setView(ViewMode.USER_PROFILE)}
-            className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
+            className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
             style={view === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
           >
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
           </button>
           <button
             onClick={handleLogout}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-red-400 hover:bg-red-50 transition-all"
           >
-            <LogOut size={15} />
+            <LogOut size={16} />
           </button>
         </div>
       </div>
@@ -155,18 +157,18 @@ const App: React.FC = () => {
       </main>
 
       {/* ── Mobile bottom nav ── */}
-      <div className="md:hidden flex-shrink-0 flex items-center justify-around bg-white/90 backdrop-blur-md border-t border-slate-100 px-2 py-2 pb-[env(safe-area-inset-bottom)] z-30">
-        {NAV_ITEMS.map(({ id, label, icon: Icon, accent }) => {
+      <div className="md:hidden flex-shrink-0 flex items-center justify-around bg-white/90 backdrop-blur-md border-t border-slate-100 px-2 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] z-30">
+        {NAV_ITEMS.map(({ id, labelKey, icon: Icon, accent }) => {
           const active = view === id;
           return (
             <button
               key={id}
               onClick={() => setView(id)}
-              className="flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-semibold transition-all"
+              className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all"
               style={active ? { color: accent.accent } : { color: '#94A3B8' }}
             >
-              <Icon size={18} />
-              {label}
+              <Icon size={20} />
+              {t(labelKey)}
             </button>
           );
         })}
@@ -187,22 +189,19 @@ const App: React.FC = () => {
             <div
               className="w-16 h-16 rounded-2xl overflow-hidden mb-6 shadow-sm"
             >
-              <img src="/logo/logo.png" alt="生音科技" className="w-full h-full object-contain" />
+              <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
             </div>
-            <h2 className="font-fredoka font-bold text-3xl sm:text-4xl text-slate-800 mb-2 tracking-tight">生音科技</h2>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-6" style={{ color: PALETTE.blue.accent }}>
-              灵谱奇域
+            <h2 className="font-fredoka font-bold text-3xl sm:text-4xl text-slate-800 mb-6 tracking-tight">{t('app.brand')}</h2>
+            <p className="text-slate-400 text-base sm:text-sm font-medium max-w-xs mb-1 leading-relaxed">
+              {t('app.slogan')}
             </p>
-            <p className="text-slate-400 text-sm font-medium max-w-xs mb-1 leading-relaxed">
-              每一个孩子都可以在音乐中快乐成长
-            </p>
-            <p className="text-slate-300 text-xs mb-10">点击任意位置或按任意键进入</p>
+            <p className="text-slate-400 text-sm sm:text-xs mb-10">{t('app.clickToEnter')}</p>
             <button
               onClick={initAudio}
-              className="px-10 py-3.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95 shadow-sm"
+              className="px-10 py-3.5 rounded-xl font-semibold text-base sm:text-sm text-white transition-all hover:opacity-90 active:scale-95 shadow-sm"
               style={{ background: '#1e293b' }}
             >
-              立即进入
+              {t('app.enter')}
             </button>
           </div>
         </div>

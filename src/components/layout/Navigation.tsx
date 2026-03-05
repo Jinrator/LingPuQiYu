@@ -2,6 +2,7 @@ import React from 'react';
 import { ViewMode } from '../../types';
 import { Map, Palette, Disc } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface NavigationProps {
   currentView: ViewMode;
@@ -10,10 +11,11 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) => {
+  const { t } = useSettings();
   const tabs = [
-    { id: ViewMode.ADVENTURE, label: '冒险模式', icon: Map },
-    { id: ViewMode.FREE_LAB,  label: '自由工坊', icon: Palette },
-    { id: ViewMode.STAGE,     label: '演出舞台', icon: Disc },
+    { id: ViewMode.ADVENTURE, label: t('nav.adventure'), icon: Map },
+    { id: ViewMode.FREE_LAB,  label: t('nav.lab'),       icon: Palette },
+    { id: ViewMode.STAGE,     label: t('nav.stage'),      icon: Disc },
   ];
 
   return (

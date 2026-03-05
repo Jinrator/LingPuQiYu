@@ -73,9 +73,12 @@ export const PALETTE = {
 |------|------|------|
 | 超大标题 | `text-5xl font-black leading-[1.1] tracking-tight` | 品牌大字、页面主标题 |
 | 大标题 | `text-xl font-bold tracking-tight` | 卡片标题、模块标题 |
+| 分区标题 | `text-sm font-bold tracking-tight text-slate-700` | 内容分区标题（如"推荐歌单"、"热门排行"、"最新发布"） |
 | 正文 | `text-sm font-medium` | 说明文字、表单标签 |
 | 小字 | `text-xs font-semibold` | 按钮文字、辅助说明 |
-| 极小字 | `text-[10px] font-semibold uppercase tracking-widest` | 分类标签、标识 |
+| 极小字 | `text-[10px] font-semibold uppercase tracking-widest` | 元数据标签、标识（如 "LV.12"、"PRO-9527"、阶段标签） |
+
+> ⚠️ **分区标题 vs 极小字的区别**：`text-[10px] uppercase tracking-widest` 仅用于元数据标签和徽章（等级、编号、分类标识），不可用于内容分区标题。凡是标注一组内容的标题（歌单、排行、发布等），必须使用 `text-sm font-bold text-slate-700`。
 
 ### 标题彩色强调
 大标题中的关键词可用 PALETTE 强调色点缀，不用渐变：
@@ -217,3 +220,68 @@ style={{ background: color.bg, borderColor: color.accent, color: color.accent }}
 ## 主题
 
 当前统一使用亮色模式，不再维护双主题切换。组件不需要接收 `theme` prop 做暗色适配（历史组件可保留，新组件不新增）。
+
+---
+
+## 移动端适配规范
+
+### 基础字号
+移动端（`max-width: 639px`）全局基础字号设为 17px，防止 iOS Safari 自动缩放：
+```css
+@media (max-width: 639px) {
+  html { font-size: 17px; }
+}
+html { -webkit-text-size-adjust: 100%; }
+```
+
+### 响应式策略
+采用 mobile-first 写法，用 `sm:` 断点（640px）向上覆盖桌面样式：
+```tsx
+// ✅ 正确：先写移动端，sm: 覆盖桌面
+'p-3.5 sm:p-4'
+'gap-2 sm:gap-3'
+'text-2xl sm:text-5xl'
+
+// ❌ 错误：先写桌面再用 max-* 回退
+'p-4 max-sm:p-3.5'
+```
+
+### 间距收紧
+移动端统一收紧 padding 和 gap，避免内容过于松散：
+
+| 元素 | 移动端 | 桌面端 |
+|------|--------|--------|
+| 卡片内边距 | `p-3.5` | `sm:p-4` ~ `sm:p-5` |
+| 列表间距 | `gap-2` | `sm:gap-3` |
+| 区块间距 | `space-y-4` | `sm:space-y-6` |
+| 面板内边距 | `px-5 py-6` | `sm:px-10 sm:py-10` |
+
+### 字号适配
+
+| 元素 | 移动端 | 桌面端 |
+|------|--------|--------|
+| Hero 大标题 | `text-2xl` | `sm:text-5xl` |
+| 卡片标题 | `text-sm` | `sm:text-base` |
+| 正文 | `text-sm` | `text-sm`（不变） |
+| 辅助说明 | `text-xs` | `text-xs`（不变） |
+
+### 顶部导航栏（移动端）
+- Logo：`w-8 h-8`
+- 品牌文字：`text-base font-bold`
+- 头像/退出图标：`w-9 h-9` / `size={18}`
+
+### 底部导航栏（移动端）
+- 标签文字：`text-xs`（不用 `text-[10px]`）
+- 图标尺寸：`size={20}`
+- 安全区域：`pb-[calc(0.625rem+env(safe-area-inset-bottom))]`
+
+### 弹窗/底部抽屉
+移动端弹窗从底部滑出，桌面端居中：
+```tsx
+// 容器
+'items-end sm:items-center'
+// 弹窗本体
+'rounded-t-2xl sm:rounded-2xl'
+// 宽度
+'w-full sm:max-w-md'
+```
