@@ -6,8 +6,9 @@ import { viewModeToPath, getViewModeFromPath } from '../../router';
 import Navigation from './Navigation';
 import AIAssistant from '../ui/AIAssistant';
 import ExitConfirmation from '../ui/ExitConfirmation';
+import MelodyDecoderModal from '../ui/MelodyDecoderModal';
 import { useExitConfirmation } from '../../hooks/useExitConfirmation';
-import { Music4, Settings } from 'lucide-react';
+import { Music4, Settings, Sparkles } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 
@@ -21,6 +22,7 @@ const AppLayout: React.FC = () => {
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'
   );
+  const [showMelodyDecoder, setShowMelodyDecoder] = useState(false);
   const { showExitConfirm, hideExitConfirm } = useExitConfirmation();
   const currentView = getViewModeFromPath(location.pathname);
 
@@ -106,6 +108,14 @@ const AppLayout: React.FC = () => {
           {/* Right: actions */}
           <div className="flex items-center gap-2 pr-1">
             <button
+              onClick={() => setShowMelodyDecoder(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' }}
+            >
+              <Sparkles size={14} />
+              旋律解码
+            </button>
+            <button
               onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-all"
               style={currentView === ViewMode.USER_PROFILE ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
@@ -139,6 +149,14 @@ const AppLayout: React.FC = () => {
         </button>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowMelodyDecoder(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all"
+            style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' }}
+          >
+            <Sparkles size={12} />
+            旋律解码
+          </button>
+          <button
             onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
             className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
             style={currentView === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
@@ -169,6 +187,7 @@ const AppLayout: React.FC = () => {
 
       <AIAssistant theme="light" />
       <ExitConfirmation show={showExitConfirm} theme="light" onHide={hideExitConfirm} />
+      <MelodyDecoderModal isOpen={showMelodyDecoder} onClose={() => setShowMelodyDecoder(false)} />
 
       {/* Audio init overlay */}
       {!isAudioInitialized && (
