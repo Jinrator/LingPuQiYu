@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import { Wand2, Sparkles, Trophy, Share2, QrCode, Play, Pause, PenTool, Send, Loader2, Music2 } from 'lucide-react';
+import { Wand2, Sparkles, Trophy, Share2, QrCode, Play, Pause, PenTool, Send, Loader2, Music2, Upload, ImagePlus, FileAudio, Disc3 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import ProjectShell from './ProjectShell';
 
@@ -9,10 +9,15 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
   const [producerName, setProducerName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
   const generateCover = async () => {
     if (!prompt.trim()) return;
@@ -34,6 +39,33 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
     } finally { setIsGenerating(false); }
   };
 
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCoverUrl(url);
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAudioFile(file);
+    const url = URL.createObjectURL(file);
+    setAudioUrl(url);
+    setIsPlaying(false);
+  };
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
   const publishSong = () => {
     if (!songTitle || !producerName || !coverUrl) return;
     setIsPublishing(true);
@@ -50,7 +82,7 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-2">传奇首单，正式出道！</h2>
-            <p className="text-sm font-medium text-slate-500">你的音乐已经飞往演出舞台，在那里你会遇见更多的听众。</p>
+            <p className="text-sm font-medium text-slate-500">你的音乐已经飞往演出舞台，快去那里聆听你的作品吧。</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full">
@@ -74,10 +106,30 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
             </div>
           </div>
 
-          <button onClick={onComplete}
-            className="w-full py-3.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 bg-[#1e293b]">
-            返回主地图
-          </button>
+          {/* Stage CTA */}
+          <div className="w-full rounded-xl border p-4 flex items-center gap-4"
+            style={{ background: PALETTE.pink.bg, borderColor: PALETTE.pink.accent + '33' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
+              style={{ background: PALETTE.pink.accent }}>
+              <Disc3 size={20} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-bold text-slate-800">前往演出舞台聆听</p>
+              <p className="text-xs font-medium text-slate-500">你的首单已上架，在舞台模式中可以播放欣赏</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <button onClick={onComplete}
+              className="flex-1 py-3.5 rounded-xl font-semibold text-sm text-slate-600 flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 border border-slate-200 bg-white">
+              返回主地图
+            </button>
+            <button onClick={onComplete}
+              className="flex-1 py-3.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
+              style={{ background: PALETTE.pink.accent }}>
+              <Disc3 size={16} /> 去演出舞台
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -85,26 +137,28 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
 
   return (
     <ProjectShell lessonId={15} title="个人首单发布" subtitle="FINAL STAGE RELEASE" color="blue"
-      actionLabel={isPublishing ? '' : '全球发布'} actionEnabled={!!songTitle && !!producerName && !!coverUrl && !isPublishing}
+      actionLabel={isPublishing ? '' : '全球发布'} actionEnabled={!!songTitle && !!producerName && !!coverUrl && !!audioFile && !isPublishing}
       onAction={publishSong} onBack={onBack} loading={isPublishing} footerText="Voyage Engine · L15">
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Left: vinyl preview */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-5 sm:p-6 flex flex-col items-center gap-4">
           <div className="relative group">
-            <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-[#F8FAFC] border border-slate-200 flex items-center justify-center overflow-hidden">
+            <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+            <button onClick={() => coverInputRef.current?.click()}
+              className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-[#F8FAFC] border border-slate-200 flex items-center justify-center overflow-hidden transition-all hover:border-slate-300 hover:bg-slate-100 active:scale-95 cursor-pointer">
               {coverUrl ? (
                 <img src={coverUrl} alt="Album Art" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-slate-300">
                   <Music2 size={40} />
-                  <span className="text-[10px] font-semibold uppercase tracking-widest">等待封面注入</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest">点击上传封面</span>
                 </div>
               )}
-            </div>
-            {coverUrl && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl bg-slate-900/20">
-                <button onClick={() => setIsPlaying(!isPlaying)}
+            </button>
+            {coverUrl && audioUrl && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl bg-slate-900/20 pointer-events-none">
+                <button onClick={togglePlay} style={{ pointerEvents: 'auto' }}
                   className="w-12 h-12 rounded-xl bg-white/90 flex items-center justify-center text-slate-800 transition-all active:scale-95">
                   {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
                 </button>
@@ -117,6 +171,21 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
               PRODUCED BY {producerName || '神秘制作人'}
             </p>
           </div>
+          {/* Audio upload zone */}
+          <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+          {audioFile ? (
+            <button onClick={() => audioInputRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-slate-600 text-xs font-semibold w-full justify-center transition-all hover:bg-slate-50 active:scale-95">
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: PALETTE.green.accent }} />
+              <span className="truncate">{audioFile.name.length > 22 ? audioFile.name.slice(0, 22) + '…' : audioFile.name}</span>
+            </button>
+          ) : (
+            <button onClick={() => audioInputRef.current?.click()}
+              className="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:border-slate-300 hover:text-slate-500 active:scale-95">
+              <FileAudio size={14} /> 点击上传音频文件
+            </button>
+          )}
+          {audioUrl && <audio ref={audioRef} src={audioUrl} onEnded={() => setIsPlaying(false)} />}
         </div>
 
         {/* Right: controls */}
@@ -143,14 +212,14 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
             </div>
           </div>
 
-          {/* AI cover generator */}
+          {/* Cover: upload or AI generate */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5 space-y-4">
             <div className="flex items-center gap-3">
               <Wand2 size={18} style={{ color: PALETTE.pink.accent }} />
               <h4 className="text-sm font-bold text-slate-800">AI 封面绘图引擎</h4>
             </div>
             <p className="text-xs font-medium text-slate-500 leading-relaxed">描述你音乐的"颜色"或"情绪"，AI 导师将为你生成艺术封面。</p>
-            <textarea rows={3} placeholder="例如：快乐的橙色小猫，在蓝色的音符云朵上跳舞..."
+            <textarea rows={2} placeholder="例如：快乐的橙色小猫，在蓝色的音符云朵上跳舞..."
               value={prompt} onChange={(e) => setPrompt(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border text-sm font-medium outline-none transition-all bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10 resize-none" />
             <button onClick={generateCover} disabled={!prompt.trim() || isGenerating}
@@ -160,9 +229,10 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
                   : 'text-white hover:opacity-90 active:scale-95'
               }`}
               style={prompt.trim() && !isGenerating ? { background: PALETTE.pink.accent } : undefined}>
-              {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <><Sparkles size={16} /> 生成封面艺术</>}
+              {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <><Sparkles size={16} /> AI 生成封面</>}
             </button>
           </div>
+
         </div>
       </div>
 

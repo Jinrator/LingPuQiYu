@@ -1,27 +1,28 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Pause, Heart, ChevronLeft, ChevronRight, SkipBack, SkipForward, Disc3, Search, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Play, Pause, Heart, ChevronLeft, ChevronRight, SkipBack, SkipForward, Disc3, Search, X, Volume2, VolumeX, Music } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
+import { readID3 } from '../../utils/id3';
 
 interface StageModeProps { theme?: 'light' | 'dark'; }
-interface LyricLine { time: number; text: string; }
 interface SongData {
   id: string; title: string; author: string; description: string;
   likes: number; liked: boolean; icon: string;
-  accentKey: keyof typeof PALETTE; lyrics: LyricLine[];
+  accentKey: keyof typeof PALETTE;
   tag?: string;
+  src: string; // audio file path
+  coverUrl?: string; // album art blob URL from ID3
 }
 
 const SONG_META = [
-  { id: '1', accentKey: 'blue' as const, icon: '🌊', likes: 124, liked: false },
-  { id: '2', accentKey: 'pink' as const, icon: '🐰', likes: 245, liked: true },
-  { id: '3', accentKey: 'green' as const, icon: '🦖', likes: 89, liked: false },
-  { id: '4', accentKey: 'yellow' as const, icon: '🚂', likes: 312, liked: false },
-  { id: '5', accentKey: 'orange' as const, icon: '🍬', likes: 198, liked: true },
-  { id: '6', accentKey: 'green' as const, icon: '🧚', likes: 156, liked: false },
-  { id: '7', accentKey: 'blue' as const, icon: '🤖', likes: 203, liked: false },
-  { id: '8', accentKey: 'blue' as const, icon: '🐠', likes: 167, liked: false },
+  { id: '1', accentKey: 'blue' as const, icon: '🏮', likes: 124, liked: false, src: '/music/Lighthouse Glow.mp3' },
+  { id: '2', accentKey: 'pink' as const, icon: '🌙', likes: 245, liked: true, src: '/music/Still in Silence.mp3' },
+  { id: '3', accentKey: 'green' as const, icon: '🌾', likes: 89, liked: false, src: '/music/Whispering Horizon.mp3' },
+  { id: '4', accentKey: 'yellow' as const, icon: '🎋', likes: 312, liked: false, src: '/music/Whispers in the Bamboo Grove.mp3' },
+  { id: '5', accentKey: 'orange' as const, icon: '🦢', likes: 198, liked: true, src: '/music/《咏鹅》.mp3' },
+  { id: '6', accentKey: 'green' as const, icon: '🌃', likes: 156, liked: false, src: '/music/《静夜思》.mp3' },
+  { id: '7', accentKey: 'blue' as const, icon: '💧', likes: 203, liked: false, src: '/music/水滴.mp3' },
 ];
 
 const BANNER_META = [
@@ -31,14 +32,13 @@ const BANNER_META = [
 ];
 
 const PLAYLIST_META = [
-  { id: 'chill', nameKey: 'stage.pl.chill', icon: '☁️', colorKey: 'blue' as const, count: 12 },
-  { id: 'energy', nameKey: 'stage.pl.energy', icon: '⚡', colorKey: 'orange' as const, count: 8 },
-  { id: 'dream', nameKey: 'stage.pl.dream', icon: '🌙', colorKey: 'pink' as const, count: 15 },
-  { id: 'nature', nameKey: 'stage.pl.nature', icon: '🌿', colorKey: 'green' as const, count: 10 },
-  { id: 'party', nameKey: 'stage.pl.party', icon: '🎉', colorKey: 'yellow' as const, count: 6 },
+  { id: 'chill', nameKey: 'stage.pl.chill', icon: '☁️', colorKey: 'blue' as const, count: 3 },
+  { id: 'energy', nameKey: 'stage.pl.energy', icon: '⚡', colorKey: 'orange' as const, count: 2 },
+  { id: 'dream', nameKey: 'stage.pl.dream', icon: '🌙', colorKey: 'pink' as const, count: 4 },
+  { id: 'nature', nameKey: 'stage.pl.nature', icon: '🌿', colorKey: 'green' as const, count: 3 },
+  { id: 'party', nameKey: 'stage.pl.party', icon: '🎉', colorKey: 'yellow' as const, count: 2 },
 ];
 
-// Top3 rank badge grays: #1 darkest → #3 lightest
 const RANK_COLORS = ['#1E293B', '#475569', '#94A3B8'];
 
 function buildSongs(t: (k: string) => string): SongData[] {
@@ -48,10 +48,6 @@ function buildSongs(t: (k: string) => string): SongData[] {
     author: t(`stage.song.${m.id}.author`),
     description: t(`stage.song.${m.id}.desc`),
     tag: t(`stage.song.${m.id}.tag`),
-    lyrics: [0, 3, 6, 9, 12].map((time, i) => ({
-      time,
-      text: t(`stage.song.${m.id}.ly${i + 1}`),
-    })),
   }));
 }
 
@@ -63,26 +59,87 @@ const StageMode: React.FC<StageModeProps> = () => {
   const [activeSong, setActiveSong] = useState<SongData | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.8);
+  const [isMuted, setIsMuted] = useState(false);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const bannerRef = useRef<HTMLDivElement>(null);
-  const duration = 15;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
 
+  // Initialize audio element once
+  useEffect(() => {
+    const audio = new Audio();
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+    const onLoadedMetadata = () => setDuration(audio.duration);
+    const onEnded = () => playNext();
+    const onError = () => { setIsPlaying(false); };
+
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('ended', onEnded);
+    audio.addEventListener('error', onError);
+
+    return () => {
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('error', onError);
+      audio.pause();
+      audio.src = '';
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync volume
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  // Sync i18n changes — preserve runtime fields (likes, liked, coverUrl, ID3 overrides)
   useEffect(() => {
     setSongs(prev => {
       const next = buildSongs(t);
       return next.map(s => {
         const old = prev.find(o => o.id === s.id);
-        return old ? { ...s, likes: old.likes, liked: old.liked } : s;
+        if (!old) return s;
+        return {
+          ...s,
+          likes: old.likes,
+          liked: old.liked,
+          coverUrl: old.coverUrl,
+          // Keep ID3-overridden title/author if they differ from i18n defaults
+          title: old.coverUrl ? old.title : s.title,
+          author: old.coverUrl ? old.author : s.author,
+        };
       });
     });
     if (activeSong) {
-      const updated = buildSongs(t).find(s => s.id === activeSong.id);
-      if (updated) setActiveSong(prev => prev ? { ...updated, likes: prev.likes, liked: prev.liked } : null);
+      setActiveSong(prev => {
+        if (!prev) return null;
+        const fresh = buildSongs(t).find(s => s.id === prev.id);
+        if (!fresh) return prev;
+        return {
+          ...fresh,
+          likes: prev.likes,
+          liked: prev.liked,
+          coverUrl: prev.coverUrl,
+          title: prev.coverUrl ? prev.title : fresh.title,
+          author: prev.coverUrl ? prev.author : fresh.author,
+        };
+      });
     }
-  }, [t]);
+  }, [t]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Banner auto-rotate
   useEffect(() => {
     const timer = setInterval(() => {
       setBannerIndex(prev => (prev + 1) % BANNER_META.length);
@@ -90,13 +147,50 @@ const StageMode: React.FC<StageModeProps> = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Load ID3 metadata (cover art, title, artist) from MP3 files
   useEffect(() => {
-    if (!isPlaying || !activeSong) return;
-    const interval = setInterval(() => {
-      setCurrentTime(prev => (prev >= duration ? 0 : prev + 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isPlaying, activeSong]);
+    let cancelled = false;
+    const blobUrls: string[] = [];
+
+    async function loadMeta() {
+      const results = await Promise.all(
+        SONG_META.map(m => readID3(m.src))
+      );
+      if (cancelled) return;
+
+      setSongs(prev => prev.map((song, i) => {
+        const meta = results[i];
+        if (!meta) return song;
+        const updated = { ...song };
+        if (meta.title) updated.title = meta.title;
+        if (meta.artist) updated.author = meta.artist;
+        if (meta.coverUrl) {
+          updated.coverUrl = meta.coverUrl;
+          blobUrls.push(meta.coverUrl);
+        }
+        return updated;
+      }));
+
+      // Also update activeSong if it's currently set
+      setActiveSong(prev => {
+        if (!prev) return null;
+        const idx = SONG_META.findIndex(m => m.id === prev.id);
+        const meta = idx >= 0 ? results[idx] : null;
+        if (!meta) return prev;
+        const updated = { ...prev };
+        if (meta.title) updated.title = meta.title;
+        if (meta.artist) updated.author = meta.artist;
+        if (meta.coverUrl) updated.coverUrl = meta.coverUrl;
+        return updated;
+      });
+    }
+
+    loadMeta();
+    return () => {
+      cancelled = true;
+      blobUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const toggleLike = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -108,36 +202,130 @@ const StageMode: React.FC<StageModeProps> = () => {
     }
   };
 
-  const handlePlay = (song: SongData) => {
-    if (activeSong?.id === song.id) { setIsPlaying(p => !p); }
-    else { setActiveSong(song); setIsPlaying(true); setCurrentTime(0); }
-  };
+  const handlePlay = useCallback((song: SongData) => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-  const playNext = () => {
+    if (activeSong?.id === song.id) {
+      if (isPlaying) { audio.pause(); setIsPlaying(false); }
+      else { audio.play().then(() => setIsPlaying(true)).catch(() => {}); }
+    } else {
+      audio.pause();
+      audio.src = song.src;
+      audio.load();
+      audio.play().then(() => {
+        setActiveSong(song);
+        setIsPlaying(true);
+        setCurrentTime(0);
+      }).catch(() => {
+        setActiveSong(song);
+        setIsPlaying(false);
+        setCurrentTime(0);
+      });
+    }
+  }, [activeSong, isPlaying]);
+
+  const playNext = useCallback(() => {
     if (!activeSong) return;
     const idx = songs.findIndex(s => s.id === activeSong.id);
     const next = songs[(idx + 1) % songs.length];
-    setActiveSong(next); setIsPlaying(true); setCurrentTime(0);
-  };
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.src = next.src;
+    audio.load();
+    audio.play().then(() => {
+      setActiveSong(next);
+      setIsPlaying(true);
+      setCurrentTime(0);
+    }).catch(() => {
+      setActiveSong(next);
+      setIsPlaying(false);
+    });
+  }, [activeSong, songs]);
 
-  const playPrev = () => {
+  const playPrev = useCallback(() => {
     if (!activeSong) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    // If more than 3s in, restart current song
+    if (audio.currentTime > 3) {
+      audio.currentTime = 0;
+      setCurrentTime(0);
+      return;
+    }
     const idx = songs.findIndex(s => s.id === activeSong.id);
     const prev = songs[(idx - 1 + songs.length) % songs.length];
-    setActiveSong(prev); setIsPlaying(true); setCurrentTime(0);
+    audio.pause();
+    audio.src = prev.src;
+    audio.load();
+    audio.play().then(() => {
+      setActiveSong(prev);
+      setIsPlaying(true);
+      setCurrentTime(0);
+    }).catch(() => {
+      setActiveSong(prev);
+      setIsPlaying(false);
+    });
+  }, [activeSong, songs]);
+
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !activeSong) return;
+    if (isPlaying) { audio.pause(); setIsPlaying(false); }
+    else { audio.play().then(() => setIsPlaying(true)).catch(() => {}); }
+  }, [isPlaying, activeSong]);
+
+  const seekTo = useCallback((fraction: number) => {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+    const time = fraction * duration;
+    audio.currentTime = time;
+    setCurrentTime(time);
+  }, [duration]);
+
+  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    seekTo(fraction);
+  }, [seekTo]);
+
+  const formatTime = (s: number) => {
+    if (!isFinite(s) || s < 0) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2, '0')}`;
   };
 
-  const getCurrentLyric = () => {
-    if (!activeSong) return '';
-    const line = [...activeSong.lyrics].reverse().find(l => currentTime >= l.time);
-    return line ? line.text : activeSong.lyrics[0].text;
-  };
-
-  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const hotSongs = [...songs].sort((a, b) => b.likes - a.likes).slice(0, 5);
   const newSongs = songs.slice(0, 4);
   const likedSong = (id: string) => songs.find(s => s.id === id)!;
+
+  // Cover art renderer — shows album art from ID3 or falls back to Music icon
+  const CoverArt = ({ song, size = 'sm', spinning = false }: { song: SongData; size?: 'sm' | 'md' | 'lg' | 'xl'; spinning?: boolean }) => {
+    const sizeMap = { sm: 'w-8 h-8 rounded-lg', md: 'w-9 h-9 rounded-lg', lg: 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl', xl: 'w-44 h-44 sm:w-56 sm:h-56 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)]' };
+    const iconSize = { sm: 14, md: 16, lg: 18, xl: 48 };
+    if (spinning) {
+      return (
+        <div className={`${sizeMap[size]} flex items-center justify-center flex-shrink-0 bg-slate-50 overflow-hidden`}>
+          <Disc3 size={iconSize[size]} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
+        </div>
+      );
+    }
+    if (song.coverUrl) {
+      return (
+        <div className={`${sizeMap[size]} flex-shrink-0 overflow-hidden`}>
+          <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+        </div>
+      );
+    }
+    return (
+      <div className={`${sizeMap[size]} flex items-center justify-center flex-shrink-0 bg-slate-50`}>
+        <Music size={iconSize[size]} className="text-slate-300" />
+      </div>
+    );
+  };
 
   return (
     <div className="relative bg-[#F5F7FA] overflow-hidden">
@@ -188,12 +376,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                           className="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all hover:bg-slate-50"
                           style={isActive ? { background: '#F1F5F9' } : {}}
                         >
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 bg-slate-100">
-                            {isActive && isPlaying
-                              ? <Disc3 size={14} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
-                              : <span>{song.icon}</span>
-                            }
-                          </div>
+                          <CoverArt song={song} size="sm" spinning={isActive && isPlaying} />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-slate-800 truncate">{song.title}</p>
                             <p className="text-[10px] font-medium text-slate-400 truncate">{song.author} · {song.description}</p>
@@ -319,12 +502,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                   >
                     {idx + 1}
                   </span>
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-slate-50">
-                    {isActive && isPlaying
-                      ? <Disc3 size={16} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
-                      : <span>{song.icon}</span>
-                    }
-                  </div>
+                  <CoverArt song={song} size="md" spinning={isActive && isPlaying} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">{song.title}</p>
                     <p className="text-[10px] font-medium text-slate-400 truncate">{song.author}</p>
@@ -365,8 +543,14 @@ const StageMode: React.FC<StageModeProps> = () => {
                   onClick={() => handlePlay(song)}
                   className="group bg-white rounded-xl overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_6px_rgba(0,0,0,0.03)]"
                 >
-                  <div className="relative flex items-center justify-center text-3xl aspect-square bg-slate-50">
-                    <span className={isActive && isPlaying ? 'animate-pulse' : ''}>{song.icon}</span>
+                  <div className="relative aspect-square bg-slate-50 overflow-hidden">
+                    {song.coverUrl ? (
+                      <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Music size={32} className="text-slate-300" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/40 backdrop-blur-sm transition-opacity">
                       {isActive && isPlaying
                         ? <Pause size={24} className="text-slate-700" />
@@ -374,7 +558,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                       }
                     </div>
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 h-0.5 bg-slate-800 transition-all duration-1000" style={{ width: `${(currentTime / duration) * 100}%` }} />
+                      <div className="absolute bottom-0 left-0 h-0.5 bg-slate-800 transition-all duration-300" style={{ width: `${progress}%` }} />
                     )}
                   </div>
                   <div className="p-2.5 sm:p-3">
@@ -398,25 +582,20 @@ const StageMode: React.FC<StageModeProps> = () => {
           >
             <div className="h-0.5 bg-slate-100">
               <div
-                className="h-full bg-slate-800 transition-all duration-1000"
-                style={{ width: `${(currentTime / duration) * 100}%` }}
+                className="h-full bg-slate-800 transition-all duration-300"
+                style={{ width: `${progress}%` }}
               />
             </div>
             <div className="px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-slate-50">
-                {isPlaying
-                  ? <Disc3 size={16} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
-                  : activeSong.icon
-                }
-              </div>
+              <CoverArt song={activeSong} size="md" spinning={isPlaying} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-800 truncate">{activeSong.title}</p>
                 <p className="text-xs sm:text-[10px] font-semibold text-slate-500 truncate">
-                  {getCurrentLyric()}
+                  {activeSong.author} · {activeSong.description}
                 </p>
               </div>
               <button
-                onClick={e => { e.stopPropagation(); setIsPlaying(p => !p); }}
+                onClick={e => { e.stopPropagation(); togglePlayPause(); }}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0 bg-[#1e293b]"
               >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
@@ -456,38 +635,61 @@ const StageMode: React.FC<StageModeProps> = () => {
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8">
-            <div
-              className={`w-44 h-44 sm:w-56 sm:h-56 rounded-2xl flex items-center justify-center text-6xl sm:text-8xl bg-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-95'}`}
-            >
-              <span className={isPlaying ? 'animate-pulse' : ''}>{activeSong.icon}</span>
-            </div>
+            <CoverArt song={activeSong} size="xl" spinning={false} />
             <div className="mt-6 sm:mt-8 text-center h-16">
               <p className="text-base sm:text-lg font-bold text-slate-800 transition-all duration-500">
-                {getCurrentLyric()}
+                {activeSong.description}
               </p>
-              <p className="text-xs font-medium text-slate-400 mt-1">{activeSong.description}</p>
             </div>
           </div>
 
           <div className="px-6 sm:px-8 pb-8 sm:pb-12">
+            {/* Progress bar - clickable */}
             <div className="mb-4">
-              <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                ref={progressRef}
+                className="h-1.5 bg-slate-100 rounded-full overflow-hidden cursor-pointer relative group"
+                onClick={handleProgressClick}
+              >
                 <div
-                  className="h-full rounded-full bg-slate-800 transition-all duration-1000"
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
-                />
+                  className="h-full rounded-full bg-slate-800 transition-[width] duration-300 relative"
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
               <div className="flex justify-between mt-1.5">
                 <span className="text-[10px] font-semibold text-slate-300">{formatTime(currentTime)}</span>
                 <span className="text-[10px] font-semibold text-slate-300">{formatTime(duration)}</span>
               </div>
             </div>
+
+            {/* Volume control */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <button
+                onClick={() => setIsMuted(m => !m)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 transition-all"
+              >
+                {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </button>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={isMuted ? 0 : volume}
+                onChange={e => { setVolume(parseFloat(e.target.value)); setIsMuted(false); }}
+                className="w-24 h-1 accent-slate-800 cursor-pointer"
+              />
+            </div>
+
+            {/* Playback controls */}
             <div className="flex items-center justify-center gap-8">
               <button onClick={playPrev} className="p-3 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95">
                 <SkipBack size={20} />
               </button>
               <button
-                onClick={() => setIsPlaying(p => !p)}
+                onClick={togglePlayPause}
                 className="w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95 bg-[#1e293b]"
               >
                 {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-1" />}

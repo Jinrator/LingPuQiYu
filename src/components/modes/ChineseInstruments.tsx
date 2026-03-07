@@ -16,13 +16,15 @@ interface Instrument {
 }
 
 const INSTRUMENTS: Instrument[] = [
-  { id: 'erhu', nameKey: 'lab.cnInst.erhu', descKey: 'lab.cnInst.erhu.desc', category: 'strings', color: 'pink', sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav' },
-  { id: 'guqin', nameKey: 'lab.cnInst.guqin', descKey: 'lab.cnInst.guqin.desc', category: 'strings', color: 'blue', sampleUrl: '/samples/china/Loops/Strings/Guqin/120_F_Guqin_01_541.wav' },
-  { id: 'pipa', nameKey: 'lab.cnInst.pipa', descKey: 'lab.cnInst.pipa.desc', category: 'strings', color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav' },
-  { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings', color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav' },
-  { id: 'dizi', nameKey: 'lab.cnInst.dizi', descKey: 'lab.cnInst.dizi.desc', category: 'woodwind', color: 'green', sampleUrl: '/samples/china/Loops/Woodwind/Dizi/120_G_Dizi_01_541.wav' },
-  { id: 'hulusi', nameKey: 'lab.cnInst.hulusi', descKey: 'lab.cnInst.hulusi.desc', category: 'woodwind', color: 'pink', sampleUrl: '/samples/china/Loops/Woodwind/Hulusi/120_F_Hulusi_01_541.wav' },
-  { id: 'xiao', nameKey: 'lab.cnInst.xiao', descKey: 'lab.cnInst.xiao.desc', category: 'woodwind', color: 'blue', sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav' },
+  // 可弹奏乐器排前
+  { id: 'pipa',    nameKey: 'lab.cnInst.pipa',    descKey: 'lab.cnInst.pipa.desc',    category: 'strings',   color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav' },
+  { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings',   color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav' },
+  { id: 'hulusi',  nameKey: 'lab.cnInst.hulusi',  descKey: 'lab.cnInst.hulusi.desc',  category: 'woodwind',  color: 'pink',   sampleUrl: '/samples/china/Loops/Woodwind/Hulusi/120_F_Hulusi_01_541.wav' },
+  { id: 'xiao',    nameKey: 'lab.cnInst.xiao',    descKey: 'lab.cnInst.xiao.desc',    category: 'woodwind',  color: 'blue',   sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav' },
+  // 仅试听乐器
+  { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav' },
+  { id: 'guqin',   nameKey: 'lab.cnInst.guqin',   descKey: 'lab.cnInst.guqin.desc',   category: 'strings',   color: 'blue',   sampleUrl: '/samples/china/Loops/Strings/Guqin/120_F_Guqin_01_541.wav' },
+  { id: 'dizi',    nameKey: 'lab.cnInst.dizi',    descKey: 'lab.cnInst.dizi.desc',    category: 'woodwind',  color: 'green',  sampleUrl: '/samples/china/Loops/Woodwind/Dizi/120_G_Dizi_01_541.wav' },
 ];
 
 const ChineseInstruments: React.FC = () => {

@@ -145,7 +145,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
               <p className="text-xs font-medium text-slate-500 leading-relaxed">
                 <span style={{ color: PALETTE.blue.accent }} className="font-semibold">向上</span> 让每个音升高一级，
                 <span style={{ color: PALETTE.orange.accent }} className="font-semibold"> 向下</span> 让每个音降低一级，
-                <span style={{ color: PALETTE.green.accent }} className="font-semibold"> 翻转</span> 把旋律顺序倒过来——观察答句的变化。
+                <span style={{ color: PALETTE.green.accent }} className="font-semibold"> 镜像</span> 把旋律顺序倒过来——观察答句的变化。
               </p>
             </div>
             <button onClick={() => setShowExplanation(false)} className="p-1 text-slate-300 hover:text-slate-500 transition-colors">
@@ -164,7 +164,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
           {([
             { type: 'up' as const, icon: ArrowUp, label: '向上', color: PALETTE.blue },
             { type: 'down' as const, icon: ArrowDown, label: '向下', color: PALETTE.orange },
-            { type: 'mirror' as const, icon: ArrowRightLeft, label: '翻转', color: PALETTE.green },
+            { type: 'mirror' as const, icon: ArrowRightLeft, label: '镜像', color: PALETTE.green },
           ]).map(({ type, icon: Icon, label, color }) => (
             <button
               key={type}
