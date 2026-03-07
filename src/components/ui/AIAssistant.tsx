@@ -83,9 +83,9 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
   return (
     <div className="fixed bottom-20 md:bottom-8 right-3 sm:right-8 z-[150]">
       {isOpen ? (
-        <div className="w-[calc(100vw-1.5rem)] sm:w-[400px] h-[70vh] sm:h-[560px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden">
+        <div className="w-[calc(100vw-1.5rem)] sm:w-[400px] h-[70vh] sm:h-[560px] bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100" style={{ background: PALETTE.blue.bg }}>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4" style={{ background: PALETTE.blue.bg }}>
             <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.accent }}>
                 <Cpu size={16} className="text-white" />
@@ -97,7 +97,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-slate-600 transition-all"
+              className="p-2 rounded-xl bg-white text-slate-400 hover:text-slate-600 transition-all"
             >
               <X size={14} />
             </button>
@@ -135,7 +135,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
               <button
                 key={q}
                 onClick={() => handleSend(q)}
-                className="text-xs sm:text-[10px] font-semibold px-2.5 sm:px-3 py-1.5 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
+                className="text-xs sm:text-[10px] font-semibold px-2.5 sm:px-3 py-1.5 rounded-full text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all"
               >
                 {q}
               </button>
@@ -149,7 +149,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
               placeholder={t('ai.placeholder')}
-              className="flex-1 pl-4 pr-3 py-2.5 sm:py-3 rounded-xl border border-slate-200 text-sm font-medium outline-none transition-all bg-white text-slate-800 placeholder:text-slate-300 focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10"
+              className="flex-1 pl-4 pr-3 py-2.5 sm:py-3 rounded-xl text-sm font-medium outline-none transition-all bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)] focus:ring-2 focus:ring-[#5BA4F5]/10"
             />
             <button
               onClick={() => handleSend()}
@@ -163,7 +163,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg border border-slate-200 bg-white transition-all hover:scale-[1.05] active:scale-95 relative"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.04)] bg-white transition-all hover:scale-[1.05] active:scale-95 relative"
         >
           <Cpu size={22} style={{ color: PALETTE.blue.accent }} />
           <span

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { Library, Music4, BookOpen, Drum, PenTool, Radio, Headphones, Mic2 } from 'lucide-react';
+import { Library, Music4, BookOpen, Drum, PenTool, Radio, Flower2 } from 'lucide-react';
 import { Note } from '../../types';
 import { audioService } from '../../services/audioService';
 import { Music, Volume2, Clock } from 'lucide-react';
@@ -11,9 +11,11 @@ import PianoRoll from '../music/PianoRoll';
 import DrumSequencer from '../music/DrumSequencer';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
+import PageDecoration from '../ui/PageDecoration';
+import ChineseInstruments from './ChineseInstruments';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
-type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE';
+type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE' | 'CHINESE_INST';
 
 const createSynth = () => {
   const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -110,8 +112,8 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   );
 
   const Card = ({ title, icon, children }: { title: string; icon: React.ReactNode; children?: React.ReactNode }) => (
-    <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-      <div className="flex items-center gap-2.5 mb-2.5 pb-2.5 sm:gap-3 sm:mb-3 sm:pb-3" style={{ borderBottom: '1px solid #F1F5F9' }}>
+    <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+      <div className="flex items-center gap-2.5 mb-2.5 pb-2.5 sm:gap-3 sm:mb-3 sm:pb-3">
         <div className="p-1.5 sm:p-2 rounded-xl" style={{ background: PALETTE.blue.bg }}>
           {icon}
         </div>
@@ -138,7 +140,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         return (
           <div className="space-y-4 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <Card title={t('lab.pitch')} icon={<Music size={16} style={{ color: PALETTE.pink.accent }} />}>
+              <Card title={t('lab.pitch')} icon={<Music size={16} style={{ color: PALETTE.blue.accent }} />}>
                 <div className="flex flex-col gap-3 sm:gap-4 items-center">
                   <p className="text-sm text-slate-500 text-center">{t('lab.pitchDesc')}</p>
                   <div className="flex gap-3">
@@ -184,7 +186,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                         if (note) await audioService.playPianoNote(note, 1.5, 0.8);
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-                      style={{ background: PALETTE.pink.accent }}
+                      style={{ background: PALETTE.blue.accent }}
                     >
                       {t('lab.long')}
                     </button>
@@ -192,7 +194,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                 </div>
               </Card>
 
-              <Card title={t('lab.dynamics')} icon={<Volume2 size={16} style={{ color: PALETTE.green.accent }} />}>
+              <Card title={t('lab.dynamics')} icon={<Volume2 size={16} style={{ color: PALETTE.blue.accent }} />}>
                 <div className="flex flex-col gap-3 sm:gap-4 items-center">
                   <p className="text-sm text-slate-500 text-center">{t('lab.dynamicsDesc')}</p>
                   <div className="flex gap-3">
@@ -211,7 +213,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                         if (note) await audioService.playPianoNote(note, 0.5, 1.0);
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-                      style={{ background: PALETTE.orange.accent }}
+                      style={{ background: PALETTE.blue.accent }}
                     >
                       {t('lab.loud')}
                     </button>
@@ -220,7 +222,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
               </Card>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="bg-white rounded-2xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold text-slate-800">{t('lab.tryIt')}</h3>
                 <ClearBtn />
@@ -233,15 +235,15 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       case 'THEORY':
         return (
           <div className="space-y-4 animate-fade-in">
-            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col items-center gap-3">
+            <div className="bg-white rounded-2xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col items-center gap-3">
               <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
 
               <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#F8FAFC]">
                 {[
                   { label: t('lab.noteName'), value: lastPlayedNote?.name ?? '-', color: PALETTE.blue.accent },
-                  { label: t('lab.notation'), value: lastPlayedNote ? renderJianpuWithDots(lastPlayedNote) : '-', color: PALETTE.green.accent },
-                  { label: t('lab.pitchLabel'), value: lastPlayedNote?.full ?? '-', color: PALETTE.orange.accent },
-                  { label: t('lab.solfege'), value: lastPlayedNote ? SOLFEGE_MAP[lastPlayedNote.name] : '-', color: PALETTE.pink.accent },
+                  { label: t('lab.notation'), value: lastPlayedNote ? renderJianpuWithDots(lastPlayedNote) : '-', color: PALETTE.blue.accent },
+                  { label: t('lab.pitchLabel'), value: lastPlayedNote?.full ?? '-', color: PALETTE.blue.accent },
+                  { label: t('lab.solfege'), value: lastPlayedNote ? SOLFEGE_MAP[lastPlayedNote.name] : '-', color: PALETTE.blue.accent },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="text-center p-1.5 sm:p-2">
                     <span className="text-[10px] sm:text-[10px] font-semibold uppercase tracking-widest block mb-1 text-slate-400">{label}</span>
@@ -264,7 +266,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         return (
           <div className="space-y-3 animate-fade-in">
             {/* Staff + Chord selector: side by side on desktop, stacked on mobile */}
-            <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 lg:gap-4 items-center">
                 {/* Left: Staff */}
                 <div className="min-w-0">
@@ -287,7 +289,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                               const rootNote = ALL_NOTES.find(n => n.name === root && n.octave === 4);
                               if (rootNote) playChord(rootNote, chord.intervals);
                             }}
-                            className="w-[30px] h-[30px] sm:w-8 sm:h-8 flex items-center justify-center text-[11px] sm:text-xs font-semibold rounded-lg bg-white text-slate-600 hover:text-white transition-all active:scale-95 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                            className="w-[30px] h-[30px] sm:w-8 sm:h-8 flex items-center justify-center text-[11px] sm:text-xs font-semibold rounded-lg bg-white text-slate-600 hover:text-white transition-all active:scale-95 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
                             onMouseEnter={e => (e.currentTarget.style.background = PALETTE.blue.accent)}
                             onMouseLeave={e => (e.currentTarget.style.background = '')}
                           >
@@ -301,7 +303,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
               </div>
             </div>
             {/* Piano full width */}
-            <div className="bg-white rounded-2xl px-4 pt-3 pb-1 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="bg-white rounded-2xl px-4 pt-3 pb-1 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
             </div>
           </div>
@@ -311,7 +313,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         return (
           <div className="space-y-3 sm:space-y-4 animate-fade-in">
             <DrumSequencer {...{ theme_type: false } as any} />
-            <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <h4 className="text-sm font-bold text-slate-800 mb-1">{t('lab.instrumentInfo')}</h4>
               <p className="text-sm text-slate-500">{t('lab.instrumentDesc')}</p>
             </div>
@@ -326,6 +328,9 @@ const FreeLab: React.FC<FreeLabProps> = () => {
             }} />
           </div>
         );
+
+      case 'CHINESE_INST':
+        return <ChineseInstruments />;
     }
   };
 
@@ -337,6 +342,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
     { id: 'HARMONY', label: t('lab.harmony'), icon: Radio },
     { id: 'RHYTHM',  label: t('lab.rhythm'), icon: Drum },
     { id: 'COMPOSE', label: t('lab.compose'), icon: PenTool },
+    { id: 'CHINESE_INST', label: t('lab.cnInst'), icon: Flower2 },
   ] as const;
 
   const MODULE_SUBTITLES: Record<SubModule, string> = {
@@ -345,26 +351,13 @@ const FreeLab: React.FC<FreeLabProps> = () => {
     HARMONY: t('lab.sub.harmony'),
     RHYTHM:  t('lab.sub.rhythm'),
     COMPOSE: t('lab.sub.compose'),
+    CHINESE_INST: t('lab.sub.cnInst'),
   };
 
   return (
     <div className="relative bg-[#F5F7FA] overflow-hidden">
       {/* ── Page-level decorative background ── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Music size={120} className="absolute top-[6%] right-[25%] opacity-[0.06] rotate-12 text-slate-400" />
-        <Headphones size={80} className="absolute top-[15%] right-[45%] opacity-[0.055] -rotate-6 text-slate-400" />
-        <Mic2 size={64} className="absolute top-[48%] right-[35%] opacity-[0.055] rotate-[20deg] text-slate-400" />
-        <Music size={48} className="absolute top-[66%] right-[45%] opacity-[0.05] rotate-45 text-slate-400" />
-        <Headphones size={44} className="absolute top-[36%] left-[8%] opacity-[0.045] rotate-[-15deg] text-slate-400" />
-        <Music size={56} className="absolute top-[80%] right-[78%] opacity-[0.04] -rotate-12 text-slate-400" />
-        <Mic2 size={40} className="absolute top-[10%] left-[22%] opacity-[0.04] rotate-6 text-slate-400" />
-        {/* Staff lines hint */}
-        <div className="absolute right-[22%] top-[10%] w-[36%] hidden sm:flex flex-col gap-3 opacity-[0.07]">
-          {[0,1,2,3,4].map(i => (
-            <div key={i} className="h-px bg-slate-400 rounded-full" />
-          ))}
-        </div>
-      </div>
+      <PageDecoration />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 

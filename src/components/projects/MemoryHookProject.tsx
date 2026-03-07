@@ -1,44 +1,35 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Check, Fish, Sparkles, MessageCircle, Play, Pause, Trash2, Repeat, Zap, Waves, Volume2, Music } from 'lucide-react';
+import { Fish, Play, Pause, X, Repeat, Zap } from 'lucide-react';
 import { audioService } from '../../services/audioService';
 import { NOTES } from '../../utils/musicNotes';
+import { PALETTE } from '../../constants/palette';
+import ProjectShell from './ProjectShell';
 
 interface MelodyFragment {
-  id: string;
-  name: string;
-  notes: any[]; // 简化类型
-  color: string;
-  emoji: string;
+  id: string; name: string; notes: number[]; paletteKey: keyof typeof PALETTE; emoji: string;
 }
 
-// 简洁的音阶定义 - 使用统一的音符系统
 const SCALE_NOTES = [
-  NOTES.C4, NOTES.D4, NOTES.E4, NOTES.F4, 
-  NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5
+  NOTES.C4, NOTES.D4, NOTES.E4, NOTES.F4,
+  NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5,
 ];
 
 const MOCK_FRAGMENTS: MelodyFragment[] = [
-  { id: 'f1', name: '夏日闪闪', notes: [SCALE_NOTES[0], SCALE_NOTES[2], SCALE_NOTES[4], SCALE_NOTES[7]], color: 'bg-yellow-400', emoji: '✨' },
-  { id: 'f2', name: '深夜电波', notes: [SCALE_NOTES[7], SCALE_NOTES[5], SCALE_NOTES[4], SCALE_NOTES[0]], color: 'bg-indigo-500', emoji: '🌙' },
-  { id: 'f3', name: '彩虹阶梯', notes: [SCALE_NOTES[0], SCALE_NOTES[1], SCALE_NOTES[2], SCALE_NOTES[3]], color: 'bg-rose-400', emoji: '🌈' },
-  { id: 'f4', name: '心跳加速', notes: [SCALE_NOTES[0], SCALE_NOTES[0], SCALE_NOTES[7], SCALE_NOTES[7]], color: 'bg-emerald-500', emoji: '💓' },
+  { id: 'f1', name: '夏日闪闪', notes: [SCALE_NOTES[0], SCALE_NOTES[2], SCALE_NOTES[4], SCALE_NOTES[7]], paletteKey: 'yellow', emoji: '✨' },
+  { id: 'f2', name: '深夜电波', notes: [SCALE_NOTES[7], SCALE_NOTES[5], SCALE_NOTES[4], SCALE_NOTES[0]], paletteKey: 'blue', emoji: '🌙' },
+  { id: 'f3', name: '彩虹阶梯', notes: [SCALE_NOTES[0], SCALE_NOTES[1], SCALE_NOTES[2], SCALE_NOTES[3]], paletteKey: 'pink', emoji: '🌈' },
+  { id: 'f4', name: '心跳加速', notes: [SCALE_NOTES[0], SCALE_NOTES[0], SCALE_NOTES[7], SCALE_NOTES[7]], paletteKey: 'green', emoji: '💓' },
 ];
 
-const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark' }> = ({ onComplete, onBack, theme = 'dark' }) => {
+const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark' }> = ({ onComplete, onBack }) => {
   const [hookSlots, setHookSlots] = useState<(MelodyFragment | null)[]>([null, null, null, null]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [showAITip, setShowAITip] = useState(false);
-  const isDark = theme === 'dark';
-
   const timerRef = useRef<number | null>(null);
 
   const playFragment = useCallback((fragment: MelodyFragment) => {
     for (let i = 0; i < fragment.notes.length; i++) {
-      setTimeout(() => {
-        audioService.playPianoNote(fragment.notes[i], 0.3, 0.6);
-      }, i * 150);
+      setTimeout(() => { audioService.playPianoNote(fragment.notes[i], 0.3, 0.6); }, i * 150);
     }
   }, []);
 
@@ -66,15 +57,10 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
       newSlots[firstEmpty] = fragment;
       setHookSlots(newSlots);
       playFragment(fragment);
-      
-      if (newSlots.filter(s => s !== null).length === 1) {
-        setShowAITip(true);
-      }
     }
   };
 
   const duplicateHook = () => {
-    initAudio();
     const firstFrag = hookSlots.find(s => s !== null);
     if (firstFrag) {
       setHookSlots([firstFrag, firstFrag, firstFrag, firstFrag]);
@@ -88,122 +74,98 @@ const MemoryHookProject: React.FC<{ onComplete: () => void; onBack: () => void; 
     setHookSlots(newSlots);
   };
 
+  const hasAny = hookSlots.some(s => s !== null);
+
   return (
-    <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-1000 overflow-hidden ${isDark ? 'bg-slate-950' : 'bg-blue-50'}`}>
-      <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
-        <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400 hover:text-white' : 'bg-white border border-blue-100 text-blue-600'}`}>
-            <X size={24} />
-          </button>
+    <ProjectShell lessonId={12} title="记忆钩子 (Hook)" subtitle="CATCHY MELODY REPETITION" color="pink"
+      actionLabel="这就是我的 Hook" actionEnabled={hasAny} onAction={onComplete} onBack={onBack} footerText="Hook Generation Engine · L12">
+
+      {/* Section title + duplicate button */}
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Zap size={16} style={{ color: PALETTE.yellow.accent }} /> 副歌高潮区
+        </h3>
+        <button onClick={duplicateHook} disabled={!hasAny}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all ${hasAny
+            ? 'border border-slate-200 text-slate-600 hover:bg-slate-50 bg-white hover:scale-[1.02] active:scale-95'
+            : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-40'
+          }`}>
+          <Repeat size={14} /> 一键洗脑
+        </button>
+      </div>
+
+      {/* Hook slots */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        {hookSlots.map((slot, idx) => {
+          const slotColor = slot ? PALETTE[slot.paletteKey] : null;
+          return (
+            <div key={idx}
+              className="relative h-28 sm:h-36 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 overflow-hidden"
+              style={slot && slotColor
+                ? { background: slotColor.bg, borderColor: slotColor.accent, borderStyle: 'solid' }
+                : { background: '#F8FAFC', borderColor: '#E2E8F0' }
+              }>
+              {slot && slotColor ? (
+                <>
+                  <span className="text-3xl sm:text-4xl">{slot.emoji}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: slotColor.accent }}>{slot.name}</span>
+                  <button onClick={() => clearSlot(idx)}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-600">
+                    <X size={12} />
+                  </button>
+                  {currentStep === idx && (
+                    <div className="absolute inset-0 border-2 rounded-2xl pointer-events-none" style={{ borderColor: slotColor.accent }} />
+                  )}
+                </>
+              ) : (
+                <div className="text-slate-300 flex flex-col items-center gap-1">
+                  <Fish size={20} />
+                  <span className="text-[10px] font-semibold uppercase tracking-widest">等待垂钓</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Play button */}
+      <div className="flex justify-center mb-4 sm:mb-6">
+        <button onClick={() => setIsPlaying(!isPlaying)}
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center transition-all text-white active:scale-95"
+          style={{ background: isPlaying ? PALETTE.pink.accent : PALETTE.blue.accent }}>
+          {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-0.5" />}
+        </button>
+      </div>
+
+      {/* Inspiration pool */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: PALETTE.blue.accent }}>
+            <Fish size={18} />
+          </div>
           <div>
-            <h2 className={`text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-blue-950'}`}>L12 · 记忆钩子 (Hook)</h2>
-            <p className={`text-[10px] font-black uppercase tracking-[0.3em] mt-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>CATCHY MELODY REPETITION</p>
+            <h4 className="text-sm font-bold text-slate-800">灵感池</h4>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Your Inspiration Pool</p>
           </div>
         </div>
-        <button 
-          disabled={hookSlots.every(s => s === null)}
-          onClick={onComplete}
-          className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${!hookSlots.every(s => s === null) ? 'bg-emerald-600 scale-105 hover:bg-emerald-500' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
-        >
-          这就是我的 Hook! <Check size={18} className="ml-2 inline" />
-        </button>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-12">
-        <div className="w-full max-w-5xl flex flex-col gap-8">
-           <div className="flex items-center justify-between px-4">
-              <h3 className={`text-xl font-black flex items-center gap-3 ${isDark ? 'text-white' : 'text-blue-950'}`}>
-                 <Zap className="text-yellow-400" /> 副歌高潮区
-              </h3>
-              <button 
-                onClick={duplicateHook}
-                disabled={!hookSlots.some(s => s !== null)}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest transition-all ${hookSlots.some(s => s !== null) ? 'bg-blue-600 text-white hover:scale-105' : 'bg-slate-400 opacity-30 cursor-not-allowed'}`}
-              >
-                 <Repeat size={14} /> 一键洗脑 (重复填充)
-              </button>
-           </div>
-           
-           <div className="grid grid-cols-4 gap-6 h-64">
-              {hookSlots.map((slot, idx) => (
-                <div 
-                  key={idx}
-                  className={`relative rounded-[3rem] border-4 border-dashed transition-all duration-500 flex flex-col items-center justify-center gap-4 overflow-hidden ${slot ? `${slot.color} border-white scale-105` : isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100'}`}
-                >
-                   {slot ? (
-                     <>
-                        <span className="text-6xl animate-bounce-subtle">{slot.emoji}</span>
-                        <span className="text-xs font-black text-white/80 uppercase">{slot.name}</span>
-                        <button 
-                          onClick={() => clearSlot(idx)}
-                          className="absolute top-4 right-4 p-2 bg-black/20 text-white rounded-full hover:bg-black/40"
-                        >
-                          <X size={14} />
-                        </button>
-                        {currentStep === idx && (
-                          <div className="absolute inset-0 border-8 border-white animate-pulse pointer-events-none" />
-                        )}
-                     </>
-                   ) : (
-                     <div className="text-slate-400 flex flex-col items-center gap-2">
-                        <Fish size={32} className="opacity-20" />
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">等待垂钓</span>
-                     </div>
-                   )}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          {MOCK_FRAGMENTS.map(frag => {
+            const fc = PALETTE[frag.paletteKey];
+            return (
+              <button key={frag.id} onClick={() => addToSlot(frag)}
+                className="p-3 sm:p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 hover:scale-[1.02] active:scale-95"
+                style={{ background: '#F8FAFC', borderColor: '#E2E8F0' }}>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-2xl sm:text-3xl"
+                  style={{ background: fc.bg }}>
+                  {frag.emoji}
                 </div>
-              ))}
-           </div>
-
-           <div className="flex justify-center">
-              <button 
-                onClick={() => { initAudio(); setIsPlaying(!isPlaying); }}
-                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-rose-500' : 'bg-blue-600'} text-white`}
-              >
-                 {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+                <span className="text-xs font-semibold text-slate-700">{frag.name}</span>
               </button>
-           </div>
+            );
+          })}
         </div>
-
-        <div className={`w-full max-w-5xl p-10 rounded-[4rem] border transition-all duration-700 relative overflow-hidden ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-blue-100'}`}>
-           <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
-              <Waves className="absolute bottom-4 right-4 text-blue-500/10" size={120} />
-           </div>
-
-           <div className="relative z-10 flex flex-col gap-8">
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center"><Fish size={24} /></div>
-                 <div>
-                    <h4 className={`text-xl font-black ${isDark ? 'text-white' : 'text-blue-900'}`}>灵感池</h4>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Your Inspiration Pool</p>
-                 </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-6">
-                 {MOCK_FRAGMENTS.map(frag => (
-                   <button 
-                     key={frag.id}
-                     onClick={() => addToSlot(frag)}
-                     className={`group p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 hover:scale-105 active:scale-95 ${isDark ? 'bg-white/5 border-white/5 hover:border-blue-500/50' : 'bg-slate-50 border-slate-100 hover:border-blue-400'}`}
-                   >
-                      <div className={`w-20 h-20 rounded-full ${frag.color} flex items-center justify-center text-4xl transition-transform group-hover:rotate-12`}>
-                         {frag.emoji}
-                      </div>
-                      <span className={`font-black text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{frag.name}</span>
-                   </button>
-                 ))}
-              </div>
-           </div>
-        </div>
-      </main>
-
-      <footer className={`h-14 flex items-center justify-center transition-colors border-t ${isDark ? 'bg-black/40 border-white/5' : 'bg-white border-blue-100'}`}>
-         <div className="flex items-center gap-3 opacity-30">
-            <Volume2 size={14} />
-            <p className="text-[9px] font-black uppercase tracking-[0.8em]">Hook Generation Engine v1.2 · Memory Persistence Active</p>
-         </div>
-      </footer>
-    </div>
+      </div>
+    </ProjectShell>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Play, Pause, Heart, ChevronLeft, ChevronRight, SkipBack, SkipForward, Disc3, Search, X } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
+import PageDecoration from '../ui/PageDecoration';
 
 interface StageModeProps { theme?: 'light' | 'dark'; }
 interface LyricLine { time: number; text: string; }
@@ -37,6 +38,9 @@ const PLAYLIST_META = [
   { id: 'party', nameKey: 'stage.pl.party', icon: '🎉', colorKey: 'yellow' as const, count: 6 },
 ];
 
+// Top3 rank badge grays: #1 darkest → #3 lightest
+const RANK_COLORS = ['#1E293B', '#475569', '#94A3B8'];
+
 function buildSongs(t: (k: string) => string): SongData[] {
   return SONG_META.map(m => ({
     ...m,
@@ -65,7 +69,6 @@ const StageMode: React.FC<StageModeProps> = () => {
   const bannerRef = useRef<HTMLDivElement>(null);
   const duration = 15;
 
-  // Sync songs when language changes
   useEffect(() => {
     setSongs(prev => {
       const next = buildSongs(t);
@@ -80,7 +83,6 @@ const StageMode: React.FC<StageModeProps> = () => {
     }
   }, [t]);
 
-  // Auto-rotate banner
   useEffect(() => {
     const timer = setInterval(() => {
       setBannerIndex(prev => (prev + 1) % BANNER_META.length);
@@ -88,7 +90,6 @@ const StageMode: React.FC<StageModeProps> = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Playback timer
   useEffect(() => {
     if (!isPlaying || !activeSong) return;
     const interval = setInterval(() => {
@@ -139,19 +140,20 @@ const StageMode: React.FC<StageModeProps> = () => {
   const likedSong = (id: string) => songs.find(s => s.id === id)!;
 
   return (
-    <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-36">
+    <div className="relative bg-[#F5F7FA] overflow-hidden">
+      <PageDecoration />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-36">
 
         {/* ── Search ── */}
         <div className="relative pt-4 sm:pt-6 pb-2 sm:pb-3">
           <div className="relative z-20">
-            <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+            <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={t('stage.search')}
-              className="w-full pl-11 pr-10 py-2.5 sm:py-3 rounded-xl border text-sm font-medium outline-none transition-all bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10"
+              className="w-full pl-11 pr-10 py-2.5 sm:py-3 rounded-xl text-sm font-medium outline-none transition-all bg-white text-slate-800 placeholder:text-slate-300 focus:ring-2 focus:ring-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
             />
             {searchQuery && (
               <button
@@ -163,7 +165,7 @@ const StageMode: React.FC<StageModeProps> = () => {
             )}
           </div>
 
-          {/* Search results — floating overlay */}
+          {/* Search results */}
           {searchQuery.trim() && (() => {
             const q = searchQuery.trim().toLowerCase();
             const results = songs.filter(s =>
@@ -175,24 +177,20 @@ const StageMode: React.FC<StageModeProps> = () => {
             return (
               <div className="absolute left-0 right-0 z-30 px-4 sm:px-6 mt-2">
                 {results.length > 0 ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] overflow-hidden max-h-[320px] overflow-y-auto">
-                    {results.map((song, idx) => {
-                      const color = PALETTE[song.accentKey];
+                  <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05)] overflow-hidden max-h-[320px] overflow-y-auto">
+                    {results.map(song => {
                       const isActive = activeSong?.id === song.id;
                       const ls = likedSong(song.id);
                       return (
                         <div
                           key={song.id}
                           onClick={() => { handlePlay(song); setSearchQuery(''); }}
-                          className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all hover:bg-slate-50 ${idx < results.length - 1 ? 'border-b border-slate-50' : ''}`}
-                          style={isActive ? { background: color.bg + '66' } : {}}
+                          className="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all hover:bg-slate-50"
+                          style={isActive ? { background: '#F1F5F9' } : {}}
                         >
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-                            style={{ background: color.bg }}
-                          >
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 bg-slate-100">
                             {isActive && isPlaying
-                              ? <Disc3 size={14} className="animate-spin" style={{ color: color.accent, animationDuration: '3s' }} />
+                              ? <Disc3 size={14} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
                               : <span>{song.icon}</span>
                             }
                           </div>
@@ -201,10 +199,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                             <p className="text-[10px] font-medium text-slate-400 truncate">{song.author} · {song.description}</p>
                           </div>
                           {song.tag && (
-                            <span
-                              className="hidden sm:inline text-[9px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                              style={{ background: color.bg, color: color.accent }}
-                            >
+                            <span className="hidden sm:inline text-[9px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 bg-slate-100 text-slate-500">
                               {song.tag}
                             </span>
                           )}
@@ -220,7 +215,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                     })}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] text-center py-8">
+                  <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-center py-8">
                     <Search size={20} className="text-slate-200 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-400">{t('stage.noResults')} "{searchQuery}" {t('stage.relatedWorks')}</p>
                   </div>
@@ -237,31 +232,26 @@ const StageMode: React.FC<StageModeProps> = () => {
               className="flex transition-transform duration-500"
               style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
             >
-              {BANNER_META.map(item => {
-                const color = PALETTE[item.colorKey];
-                return (
-                  <div
-                    key={item.id}
-                    className="w-full flex-shrink-0 p-5 sm:p-8 relative overflow-hidden"
-                    style={{ background: color.bg }}
-                  >
-                    <div className="relative z-10">
-                      <span className="text-2xl sm:text-4xl mb-2 sm:mb-3 block">{item.icon}</span>
-                      <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-800 mb-0.5 sm:mb-1">{t(item.titleKey)}</h2>
-                      <p className="text-sm font-medium text-slate-500">{t(item.subtitleKey)}</p>
-                    </div>
-                    <div className="absolute top-[-20px] right-[-20px] w-32 h-32 rounded-3xl rotate-12 opacity-40" style={{ background: color.accent + '22' }} />
-                    <div className="absolute bottom-[-10px] right-[40px] w-20 h-20 rounded-2xl rotate-6 opacity-30" style={{ background: color.accent + '33' }} />
+              {BANNER_META.map(item => (
+                <div
+                  key={item.id}
+                  className="w-full flex-shrink-0 p-6 sm:p-10 relative overflow-hidden bg-[#F1F5F9]"
+                >
+                  <div className="relative z-10">
+                    <span className="text-3xl sm:text-5xl mb-2 sm:mb-3 block">{item.icon}</span>
+                    <h2 className="text-xl sm:text-3xl font-black tracking-tight text-slate-800 mb-0.5 sm:mb-1">{t(item.titleKey)}</h2>
+                    <p className="text-sm font-medium text-slate-500">{t(item.subtitleKey)}</p>
                   </div>
-                );
-              })}
+                  <div className="absolute top-[-30px] right-[-30px] w-44 h-44 rounded-3xl rotate-12 opacity-[0.06] bg-slate-400" />
+                  <div className="absolute bottom-[-16px] right-[30px] w-28 h-28 rounded-2xl rotate-6 opacity-[0.04] bg-slate-400" />
+                </div>
+              ))}
             </div>
           </div>
-          {/* Controls below banner */}
           <div className="flex items-center justify-center gap-3 mt-2">
             <button
               onClick={() => setBannerIndex(prev => (prev - 1 + BANNER_META.length) % BANNER_META.length)}
-              className="w-7 h-7 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
+              className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
             >
               <ChevronLeft size={14} />
             </button>
@@ -277,7 +267,7 @@ const StageMode: React.FC<StageModeProps> = () => {
             </div>
             <button
               onClick={() => setBannerIndex(prev => (prev + 1) % BANNER_META.length)}
-              className="w-7 h-7 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all"
+              className="w-7 h-7 rounded-xl bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
             >
               <ChevronRight size={14} />
             </button>
@@ -288,24 +278,18 @@ const StageMode: React.FC<StageModeProps> = () => {
         <div className="mb-3.5 sm:mb-4">
           <p className="text-sm font-bold tracking-tight text-slate-700 mb-2.5 sm:mb-3">{t('stage.playlists')}</p>
           <div className="flex gap-2 sm:gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-            {PLAYLIST_META.map(pl => {
-              const color = PALETTE[pl.colorKey];
-              return (
-                <div
-                  key={pl.id}
-                  className="flex-shrink-0 w-24 sm:w-28 bg-white rounded-xl border border-slate-100 p-2.5 sm:p-3 text-center transition-all hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer"
-                >
-                  <div
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl mx-auto mb-1.5 sm:mb-2"
-                    style={{ background: color.bg }}
-                  >
-                    {pl.icon}
-                  </div>
-                  <p className="text-xs font-bold text-slate-700 truncate">{t(pl.nameKey)}</p>
-                  <p className="text-[10px] font-medium text-slate-400">{pl.count}{t('stage.songs')}</p>
+            {PLAYLIST_META.map(pl => (
+              <div
+                key={pl.id}
+                className="flex-shrink-0 w-24 sm:w-28 rounded-xl p-2.5 sm:p-3 text-center transition-all hover:-translate-y-0.5 cursor-pointer bg-white shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_6px_rgba(0,0,0,0.03)]"
+              >
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl mx-auto mb-1.5 sm:mb-2 bg-slate-50">
+                  {pl.icon}
                 </div>
-              );
-            })}
+                <p className="text-xs font-bold text-slate-700 truncate">{t(pl.nameKey)}</p>
+                <p className="text-[10px] font-semibold text-slate-400">{pl.count}{t('stage.songs')}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -314,27 +298,30 @@ const StageMode: React.FC<StageModeProps> = () => {
           <div className="flex items-center justify-between mb-2.5 sm:mb-3">
             <p className="text-sm font-bold tracking-tight text-slate-700">{t('stage.hotChart')}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+          <div className="rounded-2xl overflow-hidden space-y-1.5">
             {hotSongs.map((song, idx) => {
-              const color = PALETTE[song.accentKey];
               const isActive = activeSong?.id === song.id;
               const ls = likedSong(song.id);
+              const isTop3 = idx < 3;
               return (
                 <div
                   key={song.id}
                   onClick={() => handlePlay(song)}
-                  className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer transition-all hover:bg-slate-50 ${idx < hotSongs.length - 1 ? 'border-b border-slate-50' : ''}`}
-                  style={isActive ? { background: color.bg + '66' } : {}}
+                  className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer transition-all rounded-xl bg-white shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+                  style={isActive ? { background: '#F1F5F9' } : {}}
                 >
-                  <span className={`w-5 flex-shrink-0 text-center text-xs font-black ${idx < 3 ? '' : 'text-slate-300'}`} style={idx < 3 ? { color: color.accent } : {}}>
+                  <span
+                    className="w-6 h-6 flex-shrink-0 rounded-lg flex items-center justify-center text-[10px] font-black"
+                    style={isTop3
+                      ? { background: RANK_COLORS[idx], color: 'white' }
+                      : { background: '#F1F5F9', color: '#94A3B8' }
+                    }
+                  >
                     {idx + 1}
                   </span>
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ background: color.bg }}
-                  >
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-slate-50">
                     {isActive && isPlaying
-                      ? <Disc3 size={16} className="animate-spin" style={{ color: color.accent, animationDuration: '3s' }} />
+                      ? <Disc3 size={16} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
                       : <span>{song.icon}</span>
                     }
                   </div>
@@ -346,7 +333,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                     {song.tag && (
                       <span
                         className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: color.bg, color: color.accent }}
+                        style={{ background: PALETTE[song.accentKey].bg, color: PALETTE[song.accentKey].accent }}
                       >
                         {song.tag}
                       </span>
@@ -355,7 +342,7 @@ const StageMode: React.FC<StageModeProps> = () => {
                   <button
                     onClick={e => toggleLike(song.id, e)}
                     className="flex-shrink-0 transition-all hover:scale-110"
-                    style={{ color: ls.liked ? PALETTE.pink.accent : '#E2E8F0' }}
+                    style={{ color: ls.liked ? PALETTE.pink.accent : '#CBD5E1' }}
                   >
                     <Heart size={14} fill={ls.liked ? 'currentColor' : 'none'} />
                   </button>
@@ -371,32 +358,28 @@ const StageMode: React.FC<StageModeProps> = () => {
           <p className="text-sm font-bold tracking-tight text-slate-700 mb-2.5 sm:mb-3">{t('stage.newReleases')}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
             {newSongs.map(song => {
-              const color = PALETTE[song.accentKey];
               const isActive = activeSong?.id === song.id;
               return (
                 <div
                   key={song.id}
                   onClick={() => handlePlay(song)}
-                  className="group bg-white rounded-xl border border-slate-100 overflow-hidden cursor-pointer transition-all hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5"
+                  className="group bg-white rounded-xl overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_1px_4px_rgba(0,0,0,0.02)] hover:shadow-[0_1px_6px_rgba(0,0,0,0.03)]"
                 >
-                  <div
-                    className="relative flex items-center justify-center text-3xl aspect-square"
-                    style={{ background: color.bg }}
-                  >
+                  <div className="relative flex items-center justify-center text-3xl aspect-square bg-slate-50">
                     <span className={isActive && isPlaying ? 'animate-pulse' : ''}>{song.icon}</span>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-white/40 backdrop-blur-sm transition-opacity">
                       {isActive && isPlaying
-                        ? <Pause size={24} style={{ color: color.accent }} />
-                        : <Play size={24} style={{ color: color.accent }} />
+                        ? <Pause size={24} className="text-slate-700" />
+                        : <Play size={24} className="text-slate-700" />
                       }
                     </div>
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 h-0.5 transition-all duration-1000" style={{ width: `${(currentTime / duration) * 100}%`, background: color.accent }} />
+                      <div className="absolute bottom-0 left-0 h-0.5 bg-slate-800 transition-all duration-1000" style={{ width: `${(currentTime / duration) * 100}%` }} />
                     )}
                   </div>
                   <div className="p-2.5 sm:p-3">
                     <p className="text-xs font-bold text-slate-800 truncate">{song.title}</p>
-                    <p className="text-[10px] font-medium text-slate-400 truncate">{song.author}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 truncate">{song.author}</p>
                   </div>
                 </div>
               );
@@ -410,35 +393,31 @@ const StageMode: React.FC<StageModeProps> = () => {
       {activeSong && !showFullPlayer && (
         <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[110] px-3 sm:px-4 pb-2">
           <div
-            className="max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden cursor-pointer"
+            className="max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] overflow-hidden cursor-pointer"
             onClick={() => setShowFullPlayer(true)}
           >
             <div className="h-0.5 bg-slate-100">
               <div
-                className="h-full transition-all duration-1000"
-                style={{ width: `${(currentTime / duration) * 100}%`, background: PALETTE[activeSong.accentKey].accent }}
+                className="h-full bg-slate-800 transition-all duration-1000"
+                style={{ width: `${(currentTime / duration) * 100}%` }}
               />
             </div>
             <div className="px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                style={{ background: PALETTE[activeSong.accentKey].bg }}
-              >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-slate-50">
                 {isPlaying
-                  ? <Disc3 size={16} className="animate-spin" style={{ color: PALETTE[activeSong.accentKey].accent, animationDuration: '3s' }} />
+                  ? <Disc3 size={16} className="animate-spin text-slate-500" style={{ animationDuration: '3s' }} />
                   : activeSong.icon
                 }
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-800 truncate">{activeSong.title}</p>
-                <p className="text-xs sm:text-[10px] font-semibold truncate" style={{ color: PALETTE[activeSong.accentKey].accent }}>
+                <p className="text-xs sm:text-[10px] font-semibold text-slate-500 truncate">
                   {getCurrentLyric()}
                 </p>
               </div>
               <button
                 onClick={e => { e.stopPropagation(); setIsPlaying(p => !p); }}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
-                style={{ background: '#1e293b' }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95 flex-shrink-0 bg-[#1e293b]"
               >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
               </button>
@@ -456,7 +435,6 @@ const StageMode: React.FC<StageModeProps> = () => {
       {/* ── Full-screen player ── */}
       {activeSong && showFullPlayer && (
         <div className="fixed inset-0 z-[120] bg-white flex flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4">
             <button
               onClick={() => setShowFullPlayer(false)}
@@ -477,16 +455,12 @@ const StageMode: React.FC<StageModeProps> = () => {
             </button>
           </div>
 
-          {/* Cover art */}
           <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8">
             <div
-              className={`w-44 h-44 sm:w-56 sm:h-56 rounded-2xl flex items-center justify-center text-6xl sm:text-8xl shadow-[0_8px_40px_rgba(0,0,0,0.06)] transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-95'}`}
-              style={{ background: PALETTE[activeSong.accentKey].bg }}
+              className={`w-44 h-44 sm:w-56 sm:h-56 rounded-2xl flex items-center justify-center text-6xl sm:text-8xl bg-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-1000 ${isPlaying ? 'scale-100' : 'scale-95'}`}
             >
               <span className={isPlaying ? 'animate-pulse' : ''}>{activeSong.icon}</span>
             </div>
-
-            {/* Lyrics */}
             <div className="mt-6 sm:mt-8 text-center h-16">
               <p className="text-base sm:text-lg font-bold text-slate-800 transition-all duration-500">
                 {getCurrentLyric()}
@@ -495,14 +469,12 @@ const StageMode: React.FC<StageModeProps> = () => {
             </div>
           </div>
 
-          {/* Controls */}
           <div className="px-6 sm:px-8 pb-8 sm:pb-12">
-            {/* Progress bar */}
             <div className="mb-4">
               <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-1000"
-                  style={{ width: `${(currentTime / duration) * 100}%`, background: PALETTE[activeSong.accentKey].accent }}
+                  className="h-full rounded-full bg-slate-800 transition-all duration-1000"
+                  style={{ width: `${(currentTime / duration) * 100}%` }}
                 />
               </div>
               <div className="flex justify-between mt-1.5">
@@ -510,26 +482,17 @@ const StageMode: React.FC<StageModeProps> = () => {
                 <span className="text-[10px] font-semibold text-slate-300">{formatTime(duration)}</span>
               </div>
             </div>
-
-            {/* Playback buttons */}
             <div className="flex items-center justify-center gap-8">
-              <button
-                onClick={playPrev}
-                className="p-3 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95"
-              >
+              <button onClick={playPrev} className="p-3 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95">
                 <SkipBack size={20} />
               </button>
               <button
                 onClick={() => setIsPlaying(p => !p)}
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95"
-                style={{ background: '#1e293b' }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-all hover:opacity-90 active:scale-95 bg-[#1e293b]"
               >
                 {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-1" />}
               </button>
-              <button
-                onClick={playNext}
-                className="p-3 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95"
-              >
+              <button onClick={playNext} className="p-3 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95">
                 <SkipForward size={20} />
               </button>
             </div>

@@ -184,7 +184,7 @@ style={{ background: color.bg, borderColor: color.accent, color: color.accent }}
 - 右侧：内容面板，`bg-white`，放表单/操作区
 - 比例：`grid-cols-[1.1fr_1fr]`
 - 卡片固定高度：`h-[580px]`，避免内容变化导致跳动
-- 卡片整体：`rounded-2xl shadow-xl border border-slate-200`
+- 卡片整体：`rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-200`
 
 ### 页面背景
 ```tsx
@@ -194,6 +194,30 @@ style={{ background: color.bg, borderColor: color.accent, color: color.accent }}
 ### 内容区 padding
 - 主面板内边距：`px-10 py-10`
 - 品牌面板内边距：`p-12`
+
+---
+
+## 阴影规范
+
+整体克制，阴影仅用于区分层级，不做装饰。不使用 Tailwind 预设的 `shadow-lg`、`shadow-xl`、`shadow-2xl`，统一用自定义值控制透明度。
+
+| 层级 | 类名 | 用途 |
+|------|------|------|
+| 微弱 | `shadow-[0_1px_2px_rgba(0,0,0,0.02)]` | 小按钮、输入框 |
+| 基础卡片 | `shadow-[0_1px_4px_rgba(0,0,0,0.02)]` | 内容卡片、列表项 |
+| 中等 | `shadow-[0_1px_6px_rgba(0,0,0,0.03)]` | 设置面板、导航栏 |
+| 浮层 | `shadow-[0_2px_12px_rgba(0,0,0,0.04)]` | 页面级卡片、浮动面板、登录卡片 |
+| 弹窗 | `shadow-[0_4px_24px_rgba(0,0,0,0.06)]` | 模态框、底部抽屉 |
+
+hover 态阴影同样克制：
+```tsx
+// 卡片 hover 提升
+'hover:shadow-[0_1px_6px_rgba(0,0,0,0.03)] hover:-translate-y-0.5'
+// 搜索下拉
+'shadow-[0_4px_16px_rgba(0,0,0,0.05)]'
+```
+
+> ⚠️ 禁止使用 `shadow-lg`、`shadow-xl`、`shadow-2xl` 等 Tailwind 预设阴影。所有阴影透明度不超过 `0.06`（弹窗除外）。
 
 ---
 

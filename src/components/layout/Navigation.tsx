@@ -29,7 +29,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
             className="flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-5 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-semibold transition-all md:hover:scale-[1.03] active:scale-95"
             style={
               isActive
-                ? { background: PALETTE.blue.bg, color: PALETTE.blue.accent }
+                ? { background: '#1e293b', color: '#ffffff' }
                 : { color: '#475569' }
             }
           >

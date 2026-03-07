@@ -1,71 +1,42 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Check, Music2, Play, Pause, Sparkles, Zap, Flame, Headphones, MessageCircle, Info } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { audioService } from '../../services/audioService';
 import { NOTES } from '../../utils/musicNotes';
+import { PALETTE } from '../../constants/palette';
+import ProjectShell from './ProjectShell';
 
 interface MusicStyle {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  color: string;
-  accent: string;
-  bgGradient: string;
-  bpm: number;
-  aiTip: string;
+  id: string; name: string; icon: string; description: string;
+  paletteKey: keyof typeof PALETTE; bpm: number; aiTip: string;
 }
 
 const STYLES: MusicStyle[] = [
-  { id: 'rock', name: '热血摇滚', icon: '⚡', description: '强有力的重音与失真感。', color: 'bg-rose-600', accent: 'text-rose-500', bgGradient: 'from-rose-900/40 to-black', bpm: 130, aiTip: '摇滚乐的核心是“强弱强弱”，重音通常落在第 2、4 拍上！' },
-  { id: 'jazz', name: '摇摆爵士', icon: '🎷', description: '慵懒的切分音与华丽和弦。', color: 'bg-indigo-600', accent: 'text-indigo-400', bgGradient: 'from-indigo-900/40 to-slate-900', bpm: 90, aiTip: '爵士乐喜欢“摇摆（Swing）”，节奏富有弹性。' },
-  { id: 'electronic', name: '未来电子', icon: '🎹', description: '精准的节奏与合成器魅力。', color: 'bg-emerald-500', accent: 'text-emerald-400', bgGradient: 'from-emerald-900/40 to-[#020617]', bpm: 128, aiTip: '电子乐追求极高的精准度，底鼓通常是“咚咚咚咚”。' },
+  { id: 'rock', name: '热血摇滚', icon: '⚡', description: '强有力的重音与失真感', paletteKey: 'pink', bpm: 130, aiTip: '摇滚乐的核心是"强弱强弱"，重音通常落在第 2、4 拍上！' },
+  { id: 'jazz', name: '摇摆爵士', icon: '🎷', description: '慵懒的切分音与华丽和弦', paletteKey: 'blue', bpm: 90, aiTip: '爵士乐喜欢"摇摆（Swing）"，节奏富有弹性。' },
+  { id: 'electronic', name: '未来电子', icon: '🎹', description: '精准的节奏与合成器魅力', paletteKey: 'green', bpm: 128, aiTip: '电子乐追求极高的精准度，底鼓通常是"咚咚咚咚"。' },
 ];
 
-const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark' }> = ({ onComplete, onBack, theme = 'dark' }) => {
+const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark' }> = ({ onComplete, onBack }) => {
   const [activeStyle, setActiveStyle] = useState<MusicStyle>(STYLES[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const timerRef = useRef<number | null>(null);
-  const isDark = theme === 'dark';
 
-  // 简洁的旋律音符 - 使用统一的音符系统
-  const melodyNotes = [
-    NOTES.C4, // Do
-    NOTES.E4, // Mi
-    NOTES.G4, // Sol
-    NOTES.C4, // Do
-  ];
+  const melodyNotes = [NOTES.C4, NOTES.E4, NOTES.G4, NOTES.C4];
 
   const runSequence = useCallback(() => {
     const step = (currentStep + 1) % 8;
     setCurrentStep(step);
-    
     if (activeStyle.id === 'rock') {
-      // 摇滚风格：强劲的鼓点 + 失真吉他感
-      if (step % 2 === 0) {
-        audioService.playDrum('kick');
-      }
-      if (step % 2 === 1) {
-        audioService.playDrum('snare');
-      }
-      if (step % 2 === 0) {
-        audioService.playPianoNote(melodyNotes[step % 4], 0.5, 0.8);
-      }
+      if (step % 2 === 0) audioService.playDrum('kick');
+      if (step % 2 === 1) audioService.playDrum('snare');
+      if (step % 2 === 0) audioService.playPianoNote(melodyNotes[step % 4], 0.5, 0.8);
     } else if (activeStyle.id === 'jazz') {
-      // 爵士风格：摇摆节奏 + 柔和钢琴
-      if (step % 4 === 0) {
-        audioService.playDrum('kick');
-      }
-      if (step % 4 !== 1) {
-        audioService.playPianoNote(melodyNotes[step % 4], 0.8, 0.4);
-      }
+      if (step % 4 === 0) audioService.playDrum('kick');
+      if (step % 4 !== 1) audioService.playPianoNote(melodyNotes[step % 4], 0.8, 0.4);
     } else {
-      // 电子风格：精准节拍 + 合成器音色
       audioService.playDrum('kick');
-      if (step % 1 === 0) {
-        audioService.playPianoNote(melodyNotes[step % 4], 0.1, 0.6);
-      }
+      if (step % 1 === 0) audioService.playPianoNote(melodyNotes[step % 4], 0.1, 0.6);
     }
   }, [activeStyle, currentStep, melodyNotes]);
 
@@ -79,48 +50,79 @@ const StyleTransformProject: React.FC<{ onComplete: () => void; onBack: () => vo
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isPlaying, activeStyle, runSequence]);
 
-  const handleTogglePlay = () => {
-    setIsPlaying(!isPlaying);
+  const handleStyleChange = (style: MusicStyle) => {
+    setActiveStyle(style); setCurrentStep(-1);
   };
 
-  const handleStyleChange = (style: MusicStyle) => {
-    setActiveStyle(style);
-    setCurrentStep(-1);
-  };
+  const color = PALETTE[activeStyle.paletteKey];
 
   return (
-    <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-1000 overflow-hidden ${activeStyle.bgGradient}`}>
-      <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
-        <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
-            <X size={24} />
-          </button>
-          <h2 className={`text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-blue-950'}`}>L10 · 风格大变身</h2>
+    <ProjectShell lessonId={10} title="风格大变身" subtitle="MUSIC STYLE TRANSFORM" color={activeStyle.paletteKey}
+      actionLabel="掌握风格徽章" actionEnabled onAction={onComplete} onBack={onBack} footerText="Style Transform Engine · L10">
+
+      {/* AI tip */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5 mb-4"
+        style={{ borderLeftColor: color.accent, borderLeftWidth: 3 }}>
+        <div className="flex gap-3 items-start">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: color.bg }}>🤖</div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 mb-1">AI 助教：{activeStyle.name}</h3>
+            <p className="text-xs font-medium text-slate-500 leading-relaxed">{activeStyle.aiTip}</p>
+          </div>
         </div>
-        <button onClick={onComplete} className="px-10 py-4 rounded-2xl font-black text-sm text-white bg-emerald-600">
-          掌握风格徽章 <Check size={18} className="ml-2 inline" />
+      </div>
+
+      {/* Style icon display */}
+      <div className="flex justify-center mb-4 sm:mb-6">
+        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl flex items-center justify-center text-7xl sm:text-8xl bg-white border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all"
+          style={{ borderColor: color.accent + '33' }}>
+          {activeStyle.icon}
+        </div>
+      </div>
+
+      {/* Style selector */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        {STYLES.map(style => {
+          const sc = PALETTE[style.paletteKey];
+          const isSelected = activeStyle.id === style.id;
+          return (
+            <button key={style.id} onClick={() => handleStyleChange(style)}
+              className="p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 text-center hover:scale-[1.02] active:scale-95"
+              style={isSelected
+                ? { background: sc.bg, borderColor: sc.accent, color: sc.accent }
+                : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
+              }>
+              <span className="text-4xl">{style.icon}</span>
+              <h4 className="text-sm font-bold">{style.name}</h4>
+              <p className="text-[10px] font-semibold uppercase tracking-widest">{style.bpm} BPM</p>
+              <p className="text-xs font-medium" style={{ color: isSelected ? sc.accent : '#94A3B8' }}>{style.description}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Step visualizer + play button */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        <button onClick={() => setIsPlaying(!isPlaying)}
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center transition-all text-white flex-shrink-0 active:scale-95"
+          style={{ background: isPlaying ? PALETTE.pink.accent : color.accent }}>
+          {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-0.5" />}
         </button>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-16">
-        <div className={`relative w-64 h-64 rounded-[5rem] flex items-center justify-center text-[10rem] ${isDark ? 'bg-slate-800' : 'bg-white'}`}>
-              {activeStyle.icon}
+        <div className="flex-1 flex gap-1.5 sm:gap-2">
+          {[0,1,2,3,4,5,6,7].map(s => (
+            <div key={s} className={`flex-1 h-10 sm:h-14 rounded-xl border transition-all ${currentStep === s ? 'scale-105' : 'opacity-30'}`}
+              style={currentStep === s
+                ? { background: color.bg, borderColor: color.accent }
+                : { background: '#F8FAFC', borderColor: '#E2E8F0' }
+              }>
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full transition-all" style={{ background: currentStep === s ? color.accent : '#E2E8F0' }} />
+              </div>
+            </div>
+          ))}
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
-           {STYLES.map((style) => (
-             <button key={style.id} onClick={() => handleStyleChange(style)} className={`group p-8 rounded-[3.5rem] border-4 transition-all ${activeStyle.id === style.id ? `${style.color} border-white scale-105 text-white` : 'bg-white/5 border-white/5 text-slate-500'}`}>
-                <span className="text-5xl">{style.icon}</span>
-                <h4 className="text-2xl font-black mt-4">{style.name}</h4>
-             </button>
-           ))}
-        </div>
-
-        <button onClick={handleTogglePlay} className={`w-28 h-28 rounded-[3rem] flex items-center justify-center transition-all border-4 ${isPlaying ? 'bg-rose-500 border-rose-400' : 'bg-blue-600 border-blue-400'} text-white active:scale-90`}>
-           {isPlaying ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" className="ml-2" />}
-        </button>
-      </main>
-    </div>
+      </div>
+    </ProjectShell>
   );
 };
 

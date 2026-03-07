@@ -86,7 +86,7 @@ const AppLayout: React.FC = () => {
     >
       {/* Navbar — floating island (desktop) */}
       <div className="hidden md:flex sticky top-0 z-30 justify-center px-6 pt-3 pb-0 pointer-events-none">
-        <nav className="pointer-events-auto flex items-center justify-between gap-8 px-5 py-2.5 rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] transition-all duration-300 w-full max-w-7xl">
+        <nav className="pointer-events-auto flex items-center justify-between gap-8 px-5 py-2.5 rounded-3xl bg-white shadow-[0_1px_8px_rgba(0,0,0,0.03)] transition-all duration-300 w-full max-w-7xl">
           {/* Left: Logo */}
           <button
             onClick={() => handleViewChange(ViewMode.FREE_LAB)}
@@ -108,9 +108,9 @@ const AppLayout: React.FC = () => {
             <button
               onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-all"
-              style={currentView === ViewMode.USER_PROFILE ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
+              style={currentView === ViewMode.USER_PROFILE ? { color: '#ffffff', background: '#1e293b' } : {}}
             >
-              <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
+              <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-white">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
               </div>
               {t('nav.profile')}
@@ -118,7 +118,7 @@ const AppLayout: React.FC = () => {
             <button
               onClick={() => navigate('/settings')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
-              style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
+              style={location.pathname === '/settings' ? { color: '#ffffff', background: '#1e293b' } : {}}
             >
               <Settings size={16} />
             </button>
@@ -127,7 +127,7 @@ const AppLayout: React.FC = () => {
       </div>
 
       {/* Mobile top bar */}
-      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_6px_rgba(0,0,0,0.03)]">
         <button
           onClick={() => handleViewChange(ViewMode.FREE_LAB)}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -141,14 +141,14 @@ const AppLayout: React.FC = () => {
           <button
             onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
             className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
-            style={currentView === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
+            style={currentView === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px #1e293b` } : {}}
           >
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
           </button>
           <button
             onClick={() => navigate('/settings')}
             className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
-            style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
+            style={location.pathname === '/settings' ? { color: '#ffffff', background: '#1e293b' } : {}}
           >
             <Settings size={16} />
           </button>
@@ -156,7 +156,7 @@ const AppLayout: React.FC = () => {
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-slate-100 px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md px-2 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around py-2">
           <Navigation currentView={currentView} onViewChange={handleViewChange} theme="light" />
         </div>

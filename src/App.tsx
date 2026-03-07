@@ -60,7 +60,7 @@ const App: React.FC = () => {
     >
       {/* ── Floating island navbar (desktop) ── */}
       <div className="hidden md:flex flex-shrink-0 items-center justify-center pt-4 px-6 z-30 pointer-events-none">
-        <nav className="pointer-events-auto flex items-center gap-1 px-2 py-2 rounded-2xl bg-white/90 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-all duration-300">
+        <nav className="pointer-events-auto flex items-center gap-1 px-2 py-2 rounded-2xl bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300">
           {/* Logo */}
           <button
             onClick={() => setView(ViewMode.FREE_LAB)}
@@ -85,7 +85,7 @@ const App: React.FC = () => {
                 onClick={() => setView(id)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-[1.03] active:scale-95"
                 style={active
-                  ? { background: accent.bg, color: accent.accent }
+                  ? { background: '#1e293b', color: '#ffffff' }
                   : { color: '#94A3B8' }
                 }
               >
@@ -121,7 +121,7 @@ const App: React.FC = () => {
       </div>
 
       {/* ── Mobile top bar ── */}
-      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] z-30">
+      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white/90 backdrop-blur-md shadow-[0_1px_6px_rgba(0,0,0,0.03)] z-30">
         <button
           onClick={() => setView(ViewMode.FREE_LAB)}
           className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
@@ -165,7 +165,7 @@ const App: React.FC = () => {
               key={id}
               onClick={() => setView(id)}
               className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all"
-              style={active ? { color: accent.accent } : { color: '#94A3B8' }}
+              style={active ? { color: '#1e293b' } : { color: '#94A3B8' }}
             >
               <Icon size={20} />
               {t(labelKey)}

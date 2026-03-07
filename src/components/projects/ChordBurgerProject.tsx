@@ -1,290 +1,179 @@
-
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Check, Utensils, Sparkles, Music, Trash2, Info, Layers, CloudRain, Sun } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Info, Layers, Trash2, X } from 'lucide-react';
 import { audioService } from '../../services/audioService';
-import { NOTES, CHORDS } from '../../utils/musicNotes';
+import { NOTES } from '../../utils/musicNotes';
+import { PALETTE } from '../../constants/palette';
+import ProjectShell from './ProjectShell';
 
-interface ChordBurgerProjectProps {
-  onComplete: () => void;
-  onBack: () => void;
-  theme?: 'light' | 'dark';
-}
+interface ChordBurgerProjectProps { onComplete: () => void; onBack: () => void; theme?: 'light' | 'dark'; }
 
-// 简洁的音阶定义 - 使用统一的音符系统
 const SCALE = [
-  { name: 'C', note: NOTES.C4, label: '1' },
-  { name: 'D', note: NOTES.D4, label: '2' },
-  { name: 'E', note: NOTES.E4, label: '3' },
-  { name: 'F', note: NOTES.F4, label: '4' },
-  { name: 'G', note: NOTES.G4, label: '5' },
-  { name: 'A', note: NOTES.A4, label: '6' },
-  { name: 'B', note: NOTES.B4, label: '7' },
-  { name: 'C5', note: NOTES.C5, label: '8' },
+  { name: 'C', note: NOTES.C4, label: '1' }, { name: 'D', note: NOTES.D4, label: '2' },
+  { name: 'E', note: NOTES.E4, label: '3' }, { name: 'F', note: NOTES.F4, label: '4' },
+  { name: 'G', note: NOTES.G4, label: '5' }, { name: 'A', note: NOTES.A4, label: '6' },
+  { name: 'B', note: NOTES.B4, label: '7' }, { name: 'C5', note: NOTES.C5, label: '8' },
 ];
 
-const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onBack, theme = 'dark' }) => {
+const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onBack }) => {
   const [bottomNote, setBottomNote] = useState<number | null>(null);
   const [middleNote, setMiddleNote] = useState<number | null>(null);
   const [topNote, setTopNote] = useState<number | null>(null);
   const [isMajor, setIsMajor] = useState(true);
   const [showExplanation, setShowExplanation] = useState(true);
-  
-  const isDark = theme === 'dark';
 
   const playChord = useCallback(() => {
     if (bottomNote === null) return;
-    
-    // 汉堡和弦：每一层对应和弦中的单个音符
-    const chordNotes = [];
-    
-    // 底层：根音（面包底）
-    chordNotes.push(SCALE[bottomNote].note);
-    
-    // 中层：三度音（配料）
+    const chordNotes = [SCALE[bottomNote].note];
     if (middleNote !== null) {
-      if (isMajor) {
-        // 大三和弦的三度音
-        const majorThirds = [NOTES.E4, NOTES.Fs4, NOTES.Gs4, NOTES.A4]; // C-E, D-F#, E-G#, F-A
-        chordNotes.push(majorThirds[bottomNote]);
-      } else {
-        // 小三和弦的三度音
-        const minorThirds = [NOTES.Ds4, NOTES.F4, NOTES.G4, NOTES.Gs4]; // C-Eb, D-F, E-G, F-Ab
-        chordNotes.push(minorThirds[bottomNote]);
-      }
+      const majorThirds = [NOTES.E4, NOTES.Fs4, NOTES.Gs4, NOTES.A4];
+      const minorThirds = [NOTES.Ds4, NOTES.F4, NOTES.G4, NOTES.Gs4];
+      chordNotes.push(isMajor ? majorThirds[bottomNote] : minorThirds[bottomNote]);
     }
-    
-    // 顶层：五度音（生菜盖）
     if (topNote !== null) {
-      const fifths = [NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5]; // C-G, D-A, E-B, F-C
+      const fifths = [NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5];
       chordNotes.push(fifths[bottomNote]);
     }
-    
-    // 播放组合的音符（不是完整和弦，而是选中的层级音符）
     audioService.playPianoChord(chordNotes, 1.5, 0.7);
   }, [bottomNote, middleNote, topNote, isMajor]);
 
-  useEffect(() => {
-    if (bottomNote !== null) {
-      playChord();
-    }
-  }, [bottomNote, middleNote, topNote, playChord]);
+  useEffect(() => { if (bottomNote !== null) playChord(); }, [bottomNote, middleNote, topNote, playChord]);
 
-  const resetBurger = () => {
-    setBottomNote(null);
-    setMiddleNote(null);
-    setTopNote(null);
-  };
-
+  const resetBurger = () => { setBottomNote(null); setMiddleNote(null); setTopNote(null); };
   const isComplete = bottomNote !== null && middleNote !== null && topNote !== null;
 
   return (
-    <div className={`fixed inset-0 z-[200] flex flex-col transition-all duration-1000 overflow-hidden ${isComplete ? (isMajor ? 'bg-amber-50' : 'bg-blue-50') : isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
-      
-      {/* 动态氛围背景 */}
-      <div className="absolute inset-0 pointer-events-none">
-         {isComplete && isMajor && (
-           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.2)_0%,transparent_70%)] animate-pulse" />
-         )}
-         {isComplete && !isMajor && (
-           <div className="absolute inset-0">
-              {[...Array(20)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="absolute bg-blue-400/20 w-[1px] h-12 rounded-full animate-rain-drop"
-                  style={{ left: `${Math.random() * 100}%`, top: `-10%`, animationDelay: `${Math.random() * 2}s` }}
-                />
-              ))}
-           </div>
-         )}
-      </div>
+    <ProjectShell lessonId={8} title="和弦叠叠乐" subtitle="CHORD BURGER LAB" color="orange"
+      actionLabel="提交和弦汉堡" actionEnabled={isComplete} onAction={onComplete} onBack={onBack} footerText="Harmonic Stacking · Triad Mod 1.0">
 
-      <header className={`relative z-10 p-8 flex items-center justify-between transition-colors border-b backdrop-blur-xl ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white/60 border-blue-100'}`}>
-        <div className="flex items-center gap-6">
-          <button onClick={onBack} className={`p-4 rounded-2xl transition-all ${isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-blue-600'}`}>
-            <X size={24} />
-          </button>
-          <div>
-            <h2 className={`text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-blue-950'}`}>L8 · 和弦叠叠乐</h2>
-            <p className={`text-[10px] font-black uppercase tracking-[0.3em] mt-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>CHORD BURGER LAB</p>
+      {/* Explanation */}
+      {showExplanation && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5 mb-4 relative"
+          style={{ borderLeftColor: PALETTE.orange.accent, borderLeftWidth: 3 }}>
+          <div className="flex gap-3 items-start">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: PALETTE.orange.bg }}>🍔</div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-slate-800 mb-1">声音的"叠罗汉"</h3>
+              <p className="text-xs font-medium text-slate-500 leading-relaxed">
+                一个音符是单薄的小人。排队走是旋律，叠罗汉就是和弦。让我们亲手叠一个"和弦汉堡"：底层是面包，中间是灵魂配料，顶层合拢。
+              </p>
+            </div>
+            <button onClick={() => setShowExplanation(false)} className="p-1 text-slate-300 hover:text-slate-500"><X size={14} /></button>
           </div>
         </div>
-        
-        <div className="flex items-center gap-6">
-           <button onClick={() => setShowExplanation(!showExplanation)} className={`p-4 rounded-2xl transition-all ${showExplanation ? 'bg-blue-600 text-white' : isDark ? 'bg-white/5 text-slate-400' : 'bg-white border border-blue-100 text-slate-400'}`}>
-             <Info size={24} />
-           </button>
-           <button 
-             disabled={!isComplete}
-             onClick={onComplete} 
-             className={`px-10 py-4 rounded-2xl font-black text-sm text-white transition-all ${isComplete ? 'bg-emerald-600 scale-105 active:scale-95' : 'bg-slate-400 opacity-50 cursor-not-allowed'}`}
-           >
-             提交和弦汉堡 <Check size={18} className="ml-2 inline" />
-           </button>
-        </div>
-      </header>
+      )}
 
-      <main className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 gap-12">
-        
-        {showExplanation && (
-          <div className={`max-w-3xl w-full p-8 rounded-[3rem] border animate-in slide-in-from-top-10 duration-500 relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
-            <div className="flex gap-8 items-start">
-              <div className="w-20 h-20 rounded-3xl bg-amber-500 flex flex-col items-center justify-center text-4xl border-4 border-white/10 flex-shrink-0">🍔</div>
-              <div>
-                <h3 className={`text-xl font-black mb-2 ${isDark ? 'text-white' : 'text-blue-950'}`}>声音的“叠罗汉”</h3>
-                <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                  一个音符是单薄的小人。排队走是旋律，<b>叠罗汉</b>就是和弦！<br/>
-                  让我们亲手叠一个“和弦汉堡”：底层是面包，中间是灵魂配料，顶层合拢。看看到底是“金黄芝士”开心，还是“忧郁蓝莓”伤心？
-                </p>
-              </div>
-              <button onClick={() => setShowExplanation(false)} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-rose-500 transition-colors"><X size={20} /></button>
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        {/* Left: ingredient shelf */}
+        <div className="flex-1 space-y-4">
+          {/* Bottom: Root */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>底层：面包底 (Root)</span>
+            <div className="grid grid-cols-4 gap-2">
+              {SCALE.slice(0, 4).map((n, i) => (
+                <button key={i} onClick={() => setBottomNote(i)}
+                  className="h-10 rounded-xl font-bold text-sm border transition-all hover:scale-[1.02] active:scale-95"
+                  style={bottomNote === i
+                    ? { background: PALETTE.orange.accent, borderColor: PALETTE.orange.accent, color: '#fff' }
+                    : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#475569' }
+                  }>{n.label}</button>
+              ))}
             </div>
           </div>
-        )}
 
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-24 w-full max-w-7xl">
-           
-           {/* 左侧：配料架 */}
-           <div className="flex flex-col gap-8 w-80">
-              {/* 底层：面包 */}
-              <div className="space-y-4">
-                 <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">底层：面包底 (Root)</span>
-                 <div className="grid grid-cols-4 gap-2">
-                    {SCALE.slice(0, 4).map((n, i) => (
-                      <button 
-                        key={i} 
-                        onClick={() => setBottomNote(i)}
-                        className={`h-12 rounded-xl font-black border-2 transition-all ${bottomNote === i ? 'bg-orange-600 text-white border-orange-400' : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-slate-100 text-slate-600'}`}
-                      >
-                        {n.label}
-                      </button>
-                    ))}
-                 </div>
-              </div>
-
-              {/* 中层：灵魂配料 */}
-              <div className="space-y-4">
-                 <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">中层：灵魂配料 (3rd)</span>
-                 <div className="flex gap-4">
-                    <button 
-                      onClick={() => { setIsMajor(true); setMiddleNote(1); }}
-                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && isMajor ? 'bg-amber-400 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
-                    >
-                       <span className="text-2xl">🧀</span>
-                       <span className="text-[9px] font-black uppercase tracking-tighter mt-1">金黄芝士</span>
-                    </button>
-                    <button 
-                      onClick={() => { setIsMajor(false); setMiddleNote(1); }}
-                      className={`flex-1 h-20 rounded-2xl flex flex-col items-center justify-center border-4 transition-all ${middleNote !== null && !isMajor ? 'bg-blue-500 border-white scale-105' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
-                    >
-                       <span className="text-2xl">🫐</span>
-                       <span className="text-[9px] font-black uppercase tracking-tighter mt-1">忧郁蓝莓</span>
-                    </button>
-                 </div>
-              </div>
-
-              {/* 顶层：生菜 */}
-              <div className="space-y-4">
-                 <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4">顶层：生菜盖 (5th)</span>
-                 <button 
-                   onClick={() => setTopNote(1)}
-                   className={`w-full h-16 rounded-2xl flex items-center justify-center gap-3 border-4 transition-all ${topNote !== null ? 'bg-emerald-500 border-white' : 'bg-slate-200/20 border-transparent grayscale opacity-40'}`}
-                 >
-                    <span className="text-2xl">🥬</span>
-                    <span className="text-sm font-black text-white">新鲜生菜</span>
-                 </button>
-              </div>
-
-              <button onClick={resetBurger} className="mt-4 flex items-center justify-center gap-2 text-slate-500 hover:text-rose-500 transition-colors font-black text-xs uppercase">
-                 <Trash2 size={16} /> 重置汉堡
+          {/* Middle: 3rd */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>中层：灵魂配料 (3rd)</span>
+            <div className="flex gap-3">
+              <button onClick={() => { setIsMajor(true); setMiddleNote(1); }}
+                className="flex-1 h-16 rounded-xl flex flex-col items-center justify-center border-2 transition-all hover:scale-[1.02]"
+                style={middleNote !== null && isMajor
+                  ? { background: PALETTE.yellow.bg, borderColor: PALETTE.yellow.accent, color: PALETTE.yellow.accent }
+                  : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
+                }>
+                <span className="text-xl">🧀</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest mt-1">金黄芝士</span>
               </button>
-           </div>
+              <button onClick={() => { setIsMajor(false); setMiddleNote(1); }}
+                className="flex-1 h-16 rounded-xl flex flex-col items-center justify-center border-2 transition-all hover:scale-[1.02]"
+                style={middleNote !== null && !isMajor
+                  ? { background: PALETTE.blue.bg, borderColor: PALETTE.blue.accent, color: PALETTE.blue.accent }
+                  : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
+                }>
+                <span className="text-xl">🫐</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest mt-1">忧郁蓝莓</span>
+              </button>
+            </div>
+          </div>
 
-           {/* 中间：汉堡可视化 */}
-           <div className="relative flex flex-col items-center justify-center min-h-[400px] w-[300px]">
-              
-              {/* 叠罗汉的人 (视觉层) */}
-              <div className={`absolute -bottom-10 transition-all duration-700 ${isComplete ? 'scale-110' : 'scale-90 opacity-20'}`}>
-                 <div className="flex flex-col items-center">
-                    {/* Top Person */}
-                    <div className={`w-12 h-12 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-xl transition-all duration-500 ${topNote !== null ? 'translate-y-0 opacity-100' : '-translate-y-20 opacity-0'}`}>🥕</div>
-                    {/* Middle Person */}
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl border-4 border-white transition-all duration-500 ${middleNote !== null ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'} ${isMajor ? 'bg-amber-400' : 'bg-blue-500'}`}>🥩</div>
-                    {/* Bottom Person */}
-                    <div className={`w-20 h-20 rounded-3xl bg-orange-600 border-4 border-white flex items-center justify-center text-3xl transition-all duration-500 ${bottomNote !== null ? 'opacity-100' : 'opacity-0 scale-50'}`}>🥯</div>
-                 </div>
-              </div>
+          {/* Top: 5th */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>顶层：生菜盖 (5th)</span>
+            <button onClick={() => setTopNote(1)}
+              className="w-full h-12 rounded-xl flex items-center justify-center gap-2 border-2 transition-all hover:scale-[1.02]"
+              style={topNote !== null
+                ? { background: PALETTE.green.bg, borderColor: PALETTE.green.accent, color: PALETTE.green.accent }
+                : { background: '#F8FAFC', borderColor: '#E2E8F0', color: '#94A3B8' }
+              }>
+              <span className="text-lg">🥬</span>
+              <span className="text-xs font-semibold">新鲜生菜</span>
+            </button>
+          </div>
 
-              {/* 汉堡层 (叠加层) */}
-              <div className="flex flex-col items-center gap-1 z-10">
-                 {/* Top Bun */}
-                 <div className={`w-48 h-12 bg-orange-200 rounded-t-full border-b-4 border-orange-800/10 transition-all duration-500 ${topNote !== null ? 'translate-y-0 opacity-100' : '-translate-y-40 opacity-0'}`} />
-                 
-                 {/* Lettuce */}
-                 <div className={`w-52 h-4 bg-emerald-400 rounded-full transition-all duration-500 delay-75 ${topNote !== null ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`} />
-
-                 {/* Middle Ingredient */}
-                 <div className={`w-44 h-8 rounded-lg transition-all duration-500 ${middleNote !== null ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} ${isMajor ? 'bg-amber-300' : 'bg-blue-600'}`}>
-                    {middleNote !== null && isMajor && <div className="absolute inset-0 bg-white/20 animate-pulse rounded-lg" />}
-                 </div>
-
-                 {/* Bottom Bun */}
-                 <div className={`w-48 h-16 bg-orange-300 rounded-b-3xl transition-all duration-500 ${bottomNote !== null ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                    {bottomNote !== null && <div className="absolute inset-0 flex items-center justify-center font-black text-orange-900/40 text-2xl">{SCALE[bottomNote].label}</div>}
-                 </div>
-              </div>
-
-              {isComplete && (
-                <div className="absolute -top-12 animate-bounce">
-                  <div className={`px-6 py-2 rounded-2xl font-black text-sm border-2 ${isMajor ? 'bg-amber-400 text-amber-900 border-white' : 'bg-blue-600 text-white border-blue-400'}`}>
-                    {isMajor ? '快乐大三和弦！✨' : '忧郁小三和弦... 🌧️'}
-                  </div>
-                </div>
-              )}
-           </div>
-
-           {/* 右侧：知识卡片 */}
-           <div className={`w-80 p-8 rounded-[2.5rem] border transition-all ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-blue-100'}`}>
-              <div className="flex items-center gap-4 mb-6">
-                 <Layers className="text-blue-500" size={24} />
-                 <h4 className="font-black text-lg">和弦公式</h4>
-              </div>
-              
-              <div className="space-y-6">
-                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center text-white font-black">1</div>
-                    <span className="text-xs font-bold text-slate-500">主音：汉堡的根基</span>
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black ${isMajor ? 'bg-amber-400' : 'bg-blue-500'}`}>3</div>
-                    <span className="text-xs font-bold text-slate-500">三音：决定是哭还是笑</span>
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-black">5</div>
-                    <span className="text-xs font-bold text-slate-500">五音：让声音更丰满</span>
-                 </div>
-              </div>
-
-              <div className={`mt-10 p-4 rounded-2xl border-2 border-dashed transition-colors ${isMajor ? 'bg-amber-400/5 border-amber-400/20' : 'bg-blue-500/5 border-blue-500/20'}`}>
-                 <p className="text-[10px] font-medium leading-relaxed italic text-slate-400">
-                    和弦就像调色盘，不同的组合能画出不同的心情。大和弦是明亮的阳光，小和弦是静谧的雨天。
-                 </p>
-              </div>
-           </div>
+          <button onClick={resetBurger} className="flex items-center justify-center gap-2 text-slate-400 hover:text-red-400 transition-colors font-semibold text-xs">
+            <Trash2 size={14} /> 重置汉堡
+          </button>
         </div>
-      </main>
 
-      <footer className={`h-14 flex items-center justify-center transition-colors border-t ${isDark ? 'bg-black/40 border-white/5' : 'bg-white border-blue-100'}`}>
-         <div className="flex items-center gap-3 opacity-30">
-            <Utensils size={14} />
-            <p className="text-[9px] font-black uppercase tracking-[0.8em]">Harmonic Stacking Logic · Triad Mod 1.0</p>
-         </div>
-      </footer>
+        {/* Center: burger visualization */}
+        <div className="flex flex-col items-center justify-center min-h-[280px] w-full lg:w-64">
+          <div className="flex flex-col items-center gap-1">
+            <div className={`w-36 h-10 rounded-t-full transition-all duration-500 ${topNote !== null ? 'opacity-100' : 'opacity-10'}`}
+              style={{ background: PALETTE.orange.bg, border: `2px solid ${PALETTE.orange.accent}33` }} />
+            <div className={`w-40 h-3 rounded-full transition-all duration-500 ${topNote !== null ? 'opacity-100' : 'opacity-0'}`}
+              style={{ background: PALETTE.green.accent }} />
+            <div className={`w-32 h-7 rounded-lg transition-all duration-500 ${middleNote !== null ? 'opacity-100' : 'opacity-0'}`}
+              style={{ background: isMajor ? PALETTE.yellow.accent : PALETTE.blue.accent }} />
+            <div className={`w-36 h-12 rounded-b-2xl transition-all duration-500 flex items-center justify-center ${bottomNote !== null ? 'opacity-100' : 'opacity-10'}`}
+              style={{ background: PALETTE.orange.bg, border: `2px solid ${PALETTE.orange.accent}33` }}>
+              {bottomNote !== null && <span className="text-sm font-bold" style={{ color: PALETTE.orange.accent }}>{SCALE[bottomNote].label}</span>}
+            </div>
+          </div>
+          {isComplete && (
+            <span className="mt-4 px-3 py-1 rounded-full text-xs font-semibold border"
+              style={isMajor
+                ? { background: PALETTE.yellow.bg, color: PALETTE.yellow.accent, borderColor: PALETTE.yellow.accent + '33' }
+                : { background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: PALETTE.blue.accent + '33' }
+              }>{isMajor ? '快乐大三和弦 ✨' : '忧郁小三和弦 🌧️'}</span>
+          )}
+        </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes rain-drop { to { transform: translateY(110vh); } }
-        .animate-rain-drop { animation: rain-drop linear infinite; }
-      `}} />
-    </div>
+        {/* Right: knowledge card */}
+        <div className="w-full lg:w-64 bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <Layers size={18} style={{ color: PALETTE.blue.accent }} />
+            <h4 className="text-sm font-bold text-slate-700">和弦公式</h4>
+          </div>
+          <div className="space-y-3">
+            {[
+              { n: '1', label: '主音：汉堡的根基', color: PALETTE.orange },
+              { n: '3', label: '三音：决定哭还是笑', color: isMajor ? PALETTE.yellow : PALETTE.blue },
+              { n: '5', label: '五音：让声音更丰满', color: PALETTE.green },
+            ].map(item => (
+              <div key={item.n} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ background: item.color.accent }}>{item.n}</div>
+                <span className="text-xs font-medium text-slate-500">{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 rounded-xl border-2 border-dashed transition-colors"
+            style={{ background: (isMajor ? PALETTE.yellow : PALETTE.blue).bg, borderColor: (isMajor ? PALETTE.yellow : PALETTE.blue).accent + '33' }}>
+            <p className="text-[10px] font-medium leading-relaxed text-slate-400 italic">
+              和弦就像调色盘，不同的组合能画出不同的心情。大和弦是明亮的阳光，小和弦是静谧的雨天。
+            </p>
+          </div>
+        </div>
+      </div>
+    </ProjectShell>
   );
 };
 

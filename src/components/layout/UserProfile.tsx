@@ -42,16 +42,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-12 space-y-5 sm:space-y-8 pb-20 md:pb-12">
 
         {/* Profile card */}
-        <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+        <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-[0_1px_6px_rgba(0,0,0,0.03)]">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
                 <img src={userData.avatar} alt="Avatar" className="w-full h-full object-cover" />
               </div>
               <span
-                className="absolute -bottom-2 -right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full border text-white"
-                style={{ background: PALETTE.blue.accent, borderColor: 'white' }}
+                className="absolute -bottom-2 -right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+                style={{ background: PALETTE.blue.accent }}
               >
                 LV.{userData.level}
               </span>
@@ -62,8 +62,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800">{userData.name}</h2>
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full border w-fit mx-auto sm:mx-0"
-                  style={{ background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: PALETTE.blue.accent + '33' }}
+                  className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1 rounded-full w-fit mx-auto sm:mx-0"
+                  style={{ background: PALETTE.blue.bg, color: PALETTE.blue.accent }}
                 >
                   {userData.id}
                 </span>
@@ -91,8 +91,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
               <div className="hidden sm:block w-px bg-slate-100 self-stretch" />
               {[
                 { label: t('profile.works'), val: userData.stats.works,  icon: Music, palette: PALETTE.blue  },
-                { label: t('profile.likes'), val: userData.stats.likes,  icon: Heart, palette: PALETTE.pink  },
-                { label: t('profile.awards'), val: userData.stats.awards, icon: Award, palette: PALETTE.yellow },
+                { label: t('profile.likes'), val: userData.stats.likes,  icon: Heart, palette: PALETTE.blue  },
+                { label: t('profile.awards'), val: userData.stats.awards, icon: Award, palette: PALETTE.blue },
               ].map(s => (
                 <div key={s.label} className="flex flex-col items-center gap-0.5 sm:gap-1">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-0.5 sm:mb-1" style={{ background: s.palette.bg }}>
@@ -114,7 +114,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
             </h3>
             <div className="space-y-2.5 sm:space-y-3">
               {myCourses.map(c => (
-                <div key={c.id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5">
+                <div key={c.id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:-translate-y-0.5">
                   <div className="flex items-center gap-3 mb-3 sm:mb-4">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: c.palette.bg }}>
                       <c.icon size={16} style={{ color: c.palette.accent }} />
@@ -144,13 +144,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
           <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
-                <Star size={18} style={{ color: PALETTE.yellow.accent }} /> {t('profile.published')}
+                <Star size={18} style={{ color: PALETTE.blue.accent }} /> {t('profile.published')}
               </h3>
               <button className="text-xs font-semibold" style={{ color: PALETTE.blue.accent }}>{t('profile.viewAll')}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {myWorks.map(w => (
-                <div key={w.id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 flex items-center gap-3 sm:gap-4">
+                <div key={w.id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 flex items-center gap-3 sm:gap-4">
                   <div
                     className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-2xl flex-shrink-0"
                     style={{ background: PALETTE.blue.bg }}
@@ -161,15 +161,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
                     <p className="text-sm font-bold text-slate-800 truncate">{t(w.titleKey)}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
-                        style={{ background: PALETTE.orange.bg, color: PALETTE.orange.accent, borderColor: PALETTE.orange.accent + '33' }}
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: PALETTE.blue.bg, color: PALETTE.blue.accent }}
                       >
                         {t(w.styleKey)}
                       </span>
                       <span className="text-[10px] text-slate-400">{t(w.dateKey)}</span>
                     </div>
                     <div className="flex items-center gap-3 mt-2">
-                      <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: PALETTE.pink.accent }}>
+                      <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: PALETTE.blue.accent }}>
                         <Heart size={12} fill="currentColor" /> {w.likes}
                       </span>
                       <button className="text-slate-300 hover:text-slate-500 transition-colors">
@@ -213,7 +213,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
       {/* Exit confirm modal */}
       {showExitConfirm && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-6 sm:p-8 flex flex-col items-center text-center gap-5 sm:gap-6">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6 sm:p-8 flex flex-col items-center text-center gap-5 sm:gap-6">
             <div
               className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center"
               style={showExitConfirm === 'logout'
