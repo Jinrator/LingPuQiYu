@@ -126,7 +126,7 @@
 - **构建工具**: Vite
 - **样式**: Tailwind CSS
 - **音频**: Web Audio API + Tone.js
-- **AI**: Google Gemini API
+- **AI**: qwen-plus API
 - **图标**: Lucide React
 - **认证**: 自定义认证服务（支持手机号、微信、QQ）
 
