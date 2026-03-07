@@ -5,21 +5,21 @@
 ```
 ├── src/
 │   ├── index.tsx                  # React 渲染入口
-│   ├── App.tsx                    # 旧版应用入口（已废弃）
+│   ├── App.tsx                    # 应用入口组件
+│   ├── index.css                  # 全局样式
+│   ├── vite-env.d.ts              # Vite 类型声明
 │   │
 │   ├── router/                    # 路由配置
 │   │   └── index.tsx             # React Router 配置
 │   │
-│   ├── pages/                     # 页面组件（类似 Next.js）
+│   ├── pages/                     # 页面组件
 │   │   ├── FreeLab.tsx           # 自由实验室页面
 │   │   ├── Adventure.tsx         # 冒险模式页面
 │   │   ├── Stage.tsx             # 舞台模式页面
 │   │   ├── Profile.tsx           # 用户档案页面
 │   │   ├── Login.tsx             # 登录页面
-│   │   ├── NotFound.tsx          # 404 页面
-│   │   └── lab/                  # 实验室子页面
-│   │       ├── ProjectDetail.tsx # 项目详情页
-│   │       └── CreateProject.tsx # 创建项目页
+│   │   ├── Settings.tsx          # 设置页面
+│   │   └── NotFound.tsx          # 404 页面
 │   │
 │   ├── components/                # 组件目录
 │   │   ├── layout/               # 布局组件
@@ -56,15 +56,22 @@
 │   │   ├── music/                # 音乐相关组件
 │   │   │   ├── Piano.tsx         # 钢琴键盘
 │   │   │   ├── PianoRoll.tsx     # 钢琴卷帘
+│   │   │   ├── TranscriptionPianoRoll.tsx # 曲转谱钢琴卷帘
 │   │   │   ├── MusicStaff.tsx    # 五线谱
 │   │   │   └── DrumSequencer.tsx # 鼓机音序器
 │   │   │
-│   │   └── ui/                   # UI 组件
-│   │       ├── AIAssistant.tsx   # AI 助手（灵感精灵）
-│   │       └── ExitConfirmation.tsx # 退出确认提示
+│   │   ├── ui/                   # UI 组件
+│   │   │   ├── AIAssistant.tsx   # AI 助手（灵感精灵）
+│   │   │   ├── ExitConfirmation.tsx # 退出确认提示
+│   │   │   └── MelodyDecoderModal.tsx # 旋律解码弹窗
+│   │   │
+│   │   └── demo/                 # 演示组件
+│   │       └── RouterDemo.tsx    # 路由演示
 │   │
 │   ├── contexts/                 # React Context
-│   │   └── AuthContext.tsx       # 认证上下文
+│   │   ├── AuthContext.tsx       # 认证上下文
+│   │   ├── SettingsContext.tsx   # 设置上下文
+│   │   └── i18n.ts               # 国际化配置
 │   │
 │   ├── hooks/                    # 自定义 Hooks
 │   │   ├── useAuth.ts           # 认证 Hook
@@ -75,13 +82,16 @@
 │   │   ├── audioService.ts       # 音频服务（Web Audio API）
 │   │   ├── authService.ts        # 认证服务
 │   │   ├── drumSynthesizer.ts    # 鼓机合成器
-│   │   └── instrumentConfig.ts   # 乐器配置
+│   │   ├── instrumentConfig.ts   # 乐器配置
+│   │   ├── midiExportService.ts  # MIDI 导出服务
+│   │   └── pitchDetectionService.ts # 音高检测服务（YIN算法）
 │   │
 │   ├── types/                    # TypeScript 类型定义
 │   │   └── index.ts              # 全局类型
 │   │
 │   ├── constants/                # 常量配置
-│   │   └── index.ts              # 音符、和弦、关卡等配置
+│   │   ├── index.ts              # 音符、和弦、关卡等配置
+│   │   └── palette.ts            # 调色板配置
 │   │
 │   ├── utils/                    # 工具函数
 │   │   └── musicNotes.ts         # 音乐理论工具
@@ -90,18 +100,13 @@
 │       └── logo.jpg              # Logo 图片
 │
 ├── public/                       # 公共资源
+│   ├── logo/                     # Logo 文件
+│   │   └── logo.png
 │   └── samples/                  # 音频样本
-│       ├── piano/                # 钢琴音色
+│       ├── piano/                # 钢琴音色（C3-C5, A3-A5 等）
 │       └── drums/                # 鼓组音色
 │           ├── acoustic/         # 原声鼓
 │           └── electronic/       # 电子鼓
-│
-├── server/                       # 后端服务（可选）
-│   ├── index.js                  # Express 服务器
-│   └── package.json              # 后端依赖
-│
-├── scripts/                      # 工具脚本
-│   └── generate-samples.html     # 音频样本生成工具
 │
 ├── docs/                         # 文档目录
 │   ├── AUTHING_LOGIN_GUIDE.md    # 技术文档
