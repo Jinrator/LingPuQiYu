@@ -173,9 +173,9 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                 <div className="relative p-4 sm:p-5" style={{ background: phaseColor.bg }}>
                   {/* Decorative blocks */}
                   <div className="absolute top-[-16px] right-[-16px] w-24 h-24 rounded-2xl rotate-12 opacity-40 hidden sm:block"
-                    style={{ background: phaseColor.accent + '15', border: `1.5px solid ${phaseColor.accent}22` }} />
+                    style={{ background: phaseColor.accent + '22', border: `1.5px solid ${phaseColor.accent}22` }} />
                   <div className="absolute bottom-[-8px] right-[40px] w-14 h-14 rounded-xl rotate-6 opacity-30 hidden sm:block"
-                    style={{ background: phaseColor.accent + '20', border: `1.5px solid ${phaseColor.accent}22` }} />
+                    style={{ background: phaseColor.accent + '22', border: `1.5px solid ${phaseColor.accent}22` }} />
 
                   <div className="relative flex items-start gap-3 sm:gap-4">
                     {/* Phase icon */}
@@ -250,7 +250,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[9px] font-bold text-slate-300">L{level.id}</span>
+                              <span className="text-[10px] font-semibold text-slate-300">L{level.id}</span>
                               {isCompleted && <Star size={8} fill="currentColor" style={{ color: PALETTE.yellow.accent }} />}
                             </div>
                             <p className="text-xs font-bold text-slate-700 truncate max-w-[110px] sm:max-w-[140px]">{t(level.titleKey)}</p>
@@ -288,13 +288,13 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
               <div className="relative p-5 sm:p-6" style={{ background: modalColor.bg }}>
                 {/* Decorative blocks */}
                 <div className="absolute top-[-20px] right-[-20px] w-28 h-28 rounded-3xl rotate-12 opacity-50"
-                  style={{ background: modalColor.accent + '12', border: `1.5px solid ${modalColor.accent}22` }} />
+                  style={{ background: modalColor.accent + '22', border: `1.5px solid ${modalColor.accent}22` }} />
                 <div className="absolute bottom-[-10px] right-[30px] w-16 h-16 rounded-2xl rotate-6 opacity-40"
-                  style={{ background: modalColor.accent + '18', border: `1.5px solid ${modalColor.accent}22` }} />
+                  style={{ background: modalColor.accent + '22', border: `1.5px solid ${modalColor.accent}22` }} />
 
                 <button
                   onClick={() => setSelectedLevel(null)}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/70 text-slate-400 hover:text-slate-600 transition-all z-10"
+                  className="absolute top-4 right-4 p-1.5 rounded-lg bg-white text-slate-400 hover:text-slate-600 transition-all z-10"
                 >
                   <X size={14} />
                 </button>

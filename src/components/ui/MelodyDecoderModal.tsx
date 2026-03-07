@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { X, Check, Upload, Play, Pause, Wand2, Music2, Sparkles, FileAudio, Trash2, Download, AlertCircle, Volume2, VolumeX, SkipBack, SkipForward } from 'lucide-react';
+import { X, Upload, Play, Pause, Wand2, Music2, Sparkles, FileAudio, Trash2, Download, AlertCircle, Volume2, VolumeX, SkipBack, SkipForward, Loader2 } from 'lucide-react';
 import { pitchDetectionService, PitchDetectionResult } from '../../services/pitchDetectionService';
 import { exportToMidi, downloadMidi } from '../../services/midiExportService';
+import { PALETTE } from '../../constants/palette';
 import TranscriptionPianoRoll from '../music/TranscriptionPianoRoll';
 
 interface MelodyDecoderModalProps {
@@ -211,249 +212,185 @@ const MelodyDecoderModal: React.FC<MelodyDecoderModalProps> = ({ isOpen, onClose
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
-      <div className="relative w-full max-w-5xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-        <header className="p-6 flex items-center justify-between border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={onClose} 
-              className="p-3 rounded-2xl transition-all bg-white border border-blue-100 text-blue-600 hover:border-blue-300 hover:bg-blue-50"
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-6">
+      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative w-full sm:max-w-5xl max-h-[90vh] bg-white rounded-t-2xl sm:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
+        {/* Header */}
+        <header className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200" style={{ background: PALETTE.blue.bg }}>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all"
             >
-              <X size={20} />
+              <X size={14} />
             </button>
             <div>
-              <h2 className="text-xl font-black tracking-tight text-blue-950">旋律解码</h2>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-0.5 text-blue-600">MELODY DECODER</p>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800">旋律解码</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mt-0.5" style={{ color: PALETTE.blue.accent }}>MELODY DECODER</p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-            {detectionResult && detectionResult.notes.length > 0 && (
-              <button
-                onClick={handleExportMidi}
-                className="px-6 py-3 rounded-2xl font-bold text-sm text-white transition-all flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600"
-              >
-                <Download size={16} />
-                导出 MIDI
-              </button>
-            )}
-          </div>
+
+          {detectionResult && detectionResult.notes.length > 0 && (
+            <button
+              onClick={handleExportMidi}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+              style={{ background: '#1e293b' }}
+            >
+              <Download size={16} />
+              导出 MIDI
+            </button>
+          )}
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {!audioFile ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div 
-                className="w-full max-w-2xl aspect-[21/9] rounded-[3rem] border-4 border-dashed flex flex-col items-center justify-center gap-6 transition-all group relative overflow-hidden bg-white border-blue-100 hover:border-blue-300 cursor-pointer"
+            /* Upload zone */
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+              <div
+                className="w-full max-w-2xl rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#5BA4F5] bg-[#F8FAFC] hover:bg-[#E8F4FF] transition-all cursor-pointer flex flex-col items-center justify-center gap-5 py-12 sm:py-16"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-6 transition-all shadow-lg">
-                  <Upload size={36} />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white transition-all group-hover:scale-110" style={{ background: PALETTE.blue.accent }}>
+                  <Upload size={28} />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-2xl font-black mb-2 text-blue-900">上传你的哼唱灵感</h3>
-                  <p className="text-sm font-bold text-slate-500">支持 WAV / MP3 / M4A 等音频格式</p>
-                  <p className="text-xs text-slate-400 mt-2">建议录制清晰的哼唱或乐器演奏</p>
+                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-1.5">上传你的哼唱灵感</h3>
+                  <p className="text-sm font-medium text-slate-500">支持 WAV / MP3 / M4A 等音频格式</p>
+                  <p className="text-xs text-slate-400 mt-1.5">建议录制清晰的哼唱或乐器演奏</p>
                 </div>
-                <input 
-                  ref={fileInputRef}
-                  type="file" 
-                  accept="audio/*" 
-                  onChange={handleFileUpload} 
-                  className="hidden" 
-                />
+                <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-6">
-              <div className="p-6 rounded-[2rem] border bg-white border-blue-50">
+            <div className="space-y-4">
+              {/* File card */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                      <FileAudio size={28} />
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background: PALETTE.blue.accent }}>
+                      <FileAudio size={20} />
                     </div>
                     <div>
-                      <h4 className="text-lg font-black text-blue-900">{audioFileName || '灵感已捕捉'}</h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Inspiration Captured</p>
+                      <h4 className="text-sm font-bold text-slate-800 truncate max-w-[200px] sm:max-w-xs">{audioFileName || '灵感已捕捉'}</h4>
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mt-0.5">Inspiration Captured</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-2">
                     {!detectionResult && !isConverting && (
-                      <button 
+                      <button
                         onClick={startConversion}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl font-black flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+                        style={{ background: PALETTE.blue.accent }}
                       >
-                        <Wand2 size={18} />
-                        开始 AI 音高分析
+                        <Wand2 size={16} />
+                        开始 AI 分析
                       </button>
                     )}
-                    <button onClick={resetAll} className="p-3 text-slate-500 hover:text-rose-500 transition-colors">
-                      <Trash2 size={20} />
+                    <button onClick={resetAll} className="p-2 text-slate-300 hover:text-red-400 transition-colors">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
-                
-                <div className="p-4 rounded-2xl bg-slate-100">
-                  <div className="flex items-center gap-4 mb-3">
-                    <button
-                      onClick={skipBackward}
-                      className="p-2 rounded-xl transition-all hover:bg-black/5 text-slate-500"
-                    >
-                      <SkipBack size={18} />
+
+                {/* Audio player */}
+                <div className="bg-[#F8FAFC] rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center gap-3">
+                    <button onClick={skipBackward} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white transition-all">
+                      <SkipBack size={16} />
                     </button>
-                    
                     <button
                       onClick={toggleAudioPlayback}
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all shadow-lg ${
-                        isPlayingAudio ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'
-                      }`}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all active:scale-95"
+                      style={{ background: isPlayingAudio ? '#ef4444' : PALETTE.blue.accent }}
                     >
-                      {isPlayingAudio ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                      {isPlayingAudio ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
                     </button>
-                    
-                    <button
-                      onClick={skipForward}
-                      className="p-2 rounded-xl transition-all hover:bg-black/5 text-slate-500"
-                    >
-                      <SkipForward size={18} />
+                    <button onClick={skipForward} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white transition-all">
+                      <SkipForward size={16} />
                     </button>
-                    
-                    <div className="flex-1 flex items-center gap-3">
-                      <span className="text-xs font-bold font-mono w-12 text-right text-slate-500">
-                        {formatTime(currentTime)}
-                      </span>
-                      
-                      <div className="flex-1 relative group">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={audioProgress}
-                          onChange={handleAudioSeek}
-                          className="w-full h-2 rounded-full appearance-none cursor-pointer bg-slate-200"
-                          style={{
-                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${audioProgress}%, #e2e8f0 ${audioProgress}%, #e2e8f0 100%)`
-                          }}
-                        />
-                      </div>
-                      
-                      <span className="text-xs font-bold font-mono w-12 text-slate-500">
-                        {formatTime(audioDuration)}
-                      </span>
+
+                    <span className="text-xs font-semibold font-mono text-slate-400 w-10 text-right">{formatTime(currentTime)}</span>
+                    <div className="flex-1">
+                      <input
+                        type="range" min="0" max="100" value={audioProgress} onChange={handleAudioSeek}
+                        className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                        style={{ background: `linear-gradient(to right, ${PALETTE.blue.accent} 0%, ${PALETTE.blue.accent} ${audioProgress}%, #E2E8F0 ${audioProgress}%, #E2E8F0 100%)` }}
+                      />
                     </div>
-                    
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-200/50">
-                      <button
-                        onClick={() => setAudioVolume(Math.max(0, audioVolume - 0.1))}
-                        className="hover:scale-110 transition-transform"
-                      >
-                        {audioVolume < 0.1 ? (
-                          <VolumeX size={16} className="text-slate-500" />
-                        ) : (
-                          <Volume2 size={16} className="text-slate-500" />
-                        )}
+                    <span className="text-xs font-semibold font-mono text-slate-400 w-10">{formatTime(audioDuration)}</span>
+
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200">
+                      <button onClick={() => setAudioVolume(Math.max(0, audioVolume - 0.1))}>
+                        {audioVolume < 0.1 ? <VolumeX size={14} className="text-slate-400" /> : <Volume2 size={14} className="text-slate-400" />}
                       </button>
                       <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={audioVolume}
+                        type="range" min="0" max="1" step="0.05" value={audioVolume}
                         onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                        className="w-16 h-1 rounded-full appearance-none cursor-pointer bg-slate-300"
-                        style={{
-                          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${audioVolume * 100}%, #cbd5e1 ${audioVolume * 100}%, #cbd5e1 100%)`
-                        }}
+                        className="w-14 h-1 rounded-full appearance-none cursor-pointer"
+                        style={{ background: `linear-gradient(to right, ${PALETTE.blue.accent} 0%, ${PALETTE.blue.accent} ${audioVolume * 100}%, #E2E8F0 ${audioVolume * 100}%, #E2E8F0 100%)` }}
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <audio
-                ref={audioRef}
-                src={audioFile}
-                onTimeUpdate={handleAudioTimeUpdate}
-                onEnded={handleAudioEnded}
-                onLoadedMetadata={handleAudioLoaded}
-                className="hidden"
-              />
+              <audio ref={audioRef} src={audioFile} onTimeUpdate={handleAudioTimeUpdate} onEnded={handleAudioEnded} onLoadedMetadata={handleAudioLoaded} className="hidden" />
 
+              {/* Error */}
               {error && (
-                <div className="p-4 rounded-2xl border flex items-center gap-3 bg-rose-50 border-rose-200">
-                  <AlertCircle className="text-rose-500" size={20} />
-                  <p className="text-sm font-bold text-rose-500">{error}</p>
+                <div className="flex items-center gap-3 p-4 rounded-2xl border border-red-100 bg-red-50">
+                  <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
+                  <p className="text-sm font-medium text-red-500">{error}</p>
                 </div>
               )}
 
+              {/* Converting progress */}
               {isConverting && (
-                <div className="p-6 rounded-[2rem] border bg-white border-blue-50">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-black text-blue-500 uppercase tracking-[0.2em] animate-pulse">{conversionStatus}</span>
-                    <span className="font-fredoka text-blue-500">{conversionProgress}%</span>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Loader2 size={14} className="animate-spin" style={{ color: PALETTE.blue.accent }} />
+                      <span className="text-xs font-semibold text-slate-500">{conversionStatus}</span>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: PALETTE.blue.accent }}>{conversionProgress}%</span>
                   </div>
-                  <div className="w-full h-3 rounded-full overflow-hidden bg-slate-200">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-300" style={{ width: `${conversionProgress}%` }} />
+                  <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-300" style={{ width: `${conversionProgress}%`, background: PALETTE.blue.accent }} />
                   </div>
-                  <p className="text-xs mt-3 text-slate-400">
-                    正在使用 YIN 算法提取音高信息...
-                  </p>
                 </div>
               )}
 
+              {/* Results */}
               {detectionResult && detectionResult.notes.length > 0 && (
-                <div className="animate-in zoom-in-95 duration-700">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Sparkles className="text-blue-500" size={24} />
-                    <h3 className="text-xl font-black text-blue-900">音高分析结果</h3>
-                    <span className="text-xs px-3 py-1 rounded-full font-bold bg-blue-100 text-blue-600">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} style={{ color: PALETTE.blue.accent }} />
+                    <h3 className="text-sm font-bold tracking-tight text-slate-700">音高分析结果</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                      style={{ background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: PALETTE.blue.accent + '33' }}>
                       {detectionResult.notes.length} 个音符
                     </span>
                   </div>
-                  
-                  <div className="p-6 rounded-[2rem] border mb-6 bg-white border-blue-50">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div className="p-4 rounded-xl bg-slate-50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">音频时长</div>
-                        <div className="text-lg font-black font-mono text-blue-900">
-                          {formatTime(detectionResult.duration)}
+
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {[
+                        { label: '音频时长', value: formatTime(detectionResult.duration) },
+                        { label: '音符数', value: String(detectionResult.notes.length) },
+                        { label: '速度', value: `${detectionResult.bpm} BPM` },
+                        { label: '拍号', value: `${detectionResult.timeSignature[0]}/${detectionResult.timeSignature[1]}` },
+                        { label: '声部类型', value: '单声部' },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="p-3 rounded-xl bg-[#F8FAFC]">
+                          <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">{label}</div>
+                          <div className="text-base font-bold font-mono text-slate-800">{value}</div>
                         </div>
-                      </div>
-                      
-                      <div className="p-4 rounded-xl bg-slate-50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">检测到的音符数</div>
-                        <div className="text-lg font-black font-mono text-blue-900">
-                          {detectionResult.notes.length}
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 rounded-xl bg-slate-50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">速度</div>
-                        <div className="text-lg font-black font-mono text-blue-900">
-                          {detectionResult.bpm} BPM
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 rounded-xl bg-slate-50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">拍号</div>
-                        <div className="text-lg font-black font-mono text-blue-900">
-                          {detectionResult.timeSignature[0]}/{detectionResult.timeSignature[1]}
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 rounded-xl bg-slate-50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">声部类型</div>
-                        <div className="text-lg font-black text-blue-900">
-                          单声部
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                  
-                  <div className="rounded-[2rem] border bg-white border-blue-50 overflow-hidden">
+
+                  <div className="rounded-2xl border border-slate-200 overflow-hidden">
                     <TranscriptionPianoRoll
                       detectedNotes={detectionResult.notes}
                       duration={detectionResult.duration}
@@ -465,21 +402,20 @@ const MelodyDecoderModal: React.FC<MelodyDecoderModalProps> = ({ isOpen, onClose
               )}
 
               {detectionResult && detectionResult.notes.length === 0 && (
-                <div className="p-8 rounded-[2rem] border text-center bg-white border-blue-50">
-                  <AlertCircle className="mx-auto text-yellow-500 mb-4" size={48} />
-                  <h3 className="text-xl font-black mb-2 text-blue-900">未检测到有效音符</h3>
-                  <p className="text-sm text-slate-600">
-                    请尝试上传更清晰的音频，或确保音频中包含明显的音高变化
-                  </p>
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                  <AlertCircle className="mx-auto mb-3" size={32} style={{ color: PALETTE.yellow.accent }} />
+                  <h3 className="text-base font-bold text-slate-800 mb-1">未检测到有效音符</h3>
+                  <p className="text-sm font-medium text-slate-400">请尝试上传更清晰的音频，或确保音频中包含明显的音高变化</p>
                 </div>
               )}
             </div>
           )}
 
-          <div className="flex items-center gap-4 p-5 rounded-[2rem] border backdrop-blur-md mt-6 bg-white border-blue-50">
-            <Music2 className="text-blue-500 flex-shrink-0" size={28} />
-            <p className="text-sm font-medium leading-relaxed text-slate-600">
-              <b>关于 AI 音高分析:</b> 系统使用 YIN 音高检测算法提取音频中的音高信息，支持人声哼唱、乐器演奏等多种音源。分析结果以钢琴卷帘形式展示，你可以试听并导出为 MIDI 文件。
+          {/* Footer note */}
+          <div className="flex items-start gap-3 p-4 rounded-2xl border border-slate-200 bg-white">
+            <Music2 size={16} className="flex-shrink-0 mt-0.5" style={{ color: PALETTE.blue.accent }} />
+            <p className="text-xs font-medium text-slate-500 leading-relaxed">
+              关于 AI 音高分析: 系统使用 YIN 音高检测算法提取音频中的音高信息，支持人声哼唱、乐器演奏等多种音源。分析结果以钢琴卷帘形式展示，你可以试听并导出为 MIDI 文件。
             </p>
           </div>
         </main>

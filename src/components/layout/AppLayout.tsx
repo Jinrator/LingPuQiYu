@@ -110,7 +110,7 @@ const AppLayout: React.FC = () => {
             <button
               onClick={() => setShowMelodyDecoder(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' }}
+              style={{ background: PALETTE.blue.accent }}
             >
               <Sparkles size={14} />
               旋律解码
@@ -150,8 +150,8 @@ const AppLayout: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowMelodyDecoder(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all"
-            style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: PALETTE.blue.accent }}
           >
             <Sparkles size={12} />
             旋律解码
