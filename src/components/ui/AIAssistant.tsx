@@ -87,8 +87,8 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
           {/* Header */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100" style={{ background: PALETTE.blue.bg }}>
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.accent }}>
-                <Cpu size={16} className="text-white" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: PALETTE.blue.accent }}>
+                <img src="/images/AI_avatar.png" alt="AI Avatar" className="w-full h-full object-cover" />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-800">Jin-Bot AI</p>
@@ -163,9 +163,10 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg border border-slate-200 bg-white transition-all hover:scale-[1.05] active:scale-95 relative"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg border border-slate-200 bg-white transition-all hover:scale-[1.05] active:scale-95 relative p-0"
+          style={{ boxShadow: '0 0 15px rgba(91, 164, 245, 0.5)' }}  // 添加这一行，蓝色柔光
         >
-          <Cpu size={22} style={{ color: PALETTE.blue.accent }} />
+          <img src="/images/AI_avatar_M.png" alt="AI" className="w-full h-full object-cover rounded-2xl" />
           <span
             className="absolute -top-1.5 -right-1.5 text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full"
             style={{ background: PALETTE.blue.accent }}
