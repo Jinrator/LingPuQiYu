@@ -2,12 +2,14 @@ import os
 import httpx
 from typing import Any, Dict, List, Optional
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv(".env.local", override=False)
+except ImportError:
+    pass  # Vercel 环境无需 dotenv，直接用平台注入的环境变量
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-# 本地开发时从 .env.local 读取；Vercel 上该文件不存在，直接用平台注入的环境变量
-load_dotenv(".env.local", override=False)
 
 app = FastAPI()
 
