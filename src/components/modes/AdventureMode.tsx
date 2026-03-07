@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ADVENTURE_LEVELS, AdventureLevel } from '../../constants';
-import { Lock, CheckCircle2, Gift, X, Zap, Star } from 'lucide-react';
+import { Lock, CheckCircle2, Gift, X, Zap, Star, Music, Headphones, Mic2 } from 'lucide-react';
 import SoundHuntingProject from '../projects/SoundHuntingProject';
 import RhythmColoringProject from '../projects/RhythmColoringProject';
 import RhythmLegoProject from '../projects/RhythmLegoProject';
@@ -83,10 +83,33 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
 
   // Group levels by phaseKey
   const phaseKeys = Array.from(new Set(categoryLevels.map(l => l.phaseKey)));
+  const progressPct = Math.round((completedCount / totalCount) * 100);
 
   return (
-    <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
+    <div className="relative min-h-screen bg-[#F5F7FA] overflow-hidden">
+      {/* ── Page-level decorative background ── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <Music size={120} className="absolute top-[6%] right-[25%] opacity-[0.06] rotate-12 text-slate-400" />
+        <Headphones size={80} className="absolute top-[15%] right-[45%] opacity-[0.055] -rotate-6 text-slate-400" />
+        <Mic2 size={64} className="absolute top-[48%] right-[35%] opacity-[0.055] rotate-[20deg] text-slate-400" />
+        <Music size={48} className="absolute top-[66%] right-[45%] opacity-[0.05] rotate-45 text-slate-400" />
+        <Headphones size={44} className="absolute top-[36%] left-[8%] opacity-[0.045] rotate-[-15deg] text-slate-400" />
+        <Music size={56} className="absolute top-[80%] right-[78%] opacity-[0.04] -rotate-12 text-slate-400" />
+        <Mic2 size={40} className="absolute top-[10%] left-[22%] opacity-[0.04] rotate-6 text-slate-400" />
+        {/* Staff lines hint */}
+        <div className="absolute right-[22%] top-[10%] w-[36%] hidden sm:flex flex-col gap-3 opacity-[0.07]">
+          {[0,1,2,3,4].map(i => (
+            <div key={i} className="h-px bg-slate-400 rounded-full" />
+          ))}
+        </div>
+        <div className="absolute right-[38%] top-[55%] w-[30%] hidden sm:flex flex-col gap-3 opacity-[0.06]">
+          {[0,1,2,3,4].map(i => (
+            <div key={`b${i}`} className="h-px bg-slate-400 rounded-full" />
+          ))}
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 
         {/* ── Hero ── */}
         <div className="pt-5 sm:pt-8 pb-3 sm:pb-4">
@@ -110,7 +133,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                 </div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{t('adv.completed')}</div>
               </div>
-              <div className="w-px h-7 sm:h-8 bg-slate-100" />
+              <div className="w-px h-7 sm:h-8 bg-slate-200/50" />
               <div className="text-center">
                 <div className="text-xl sm:text-3xl font-black leading-none mb-0.5" style={{ color: PALETTE.yellow.accent }}>
                   {completedCount * 100}
@@ -119,16 +142,16 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
               </div>
             </div>
           </div>
-          <div className="mt-3 sm:mt-4 h-1 bg-slate-100 rounded-full overflow-hidden max-w-sm">
+          <div className="mt-3 sm:mt-4 h-1 bg-white/50 rounded-full overflow-hidden max-w-sm">
             <div
               className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${(completedCount / totalCount) * 100}%`, background: PALETTE.green.accent }}
+              style={{ width: `${progressPct}%`, background: PALETTE.green.accent }}
             />
           </div>
         </div>
 
         {/* ── Category filter tabs ── */}
-        <div className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1.5 sm:gap-2 py-3 sm:py-4 mt-1 overflow-x-auto scrollbar-hide">
           {(Object.entries(CATEGORY_CONFIG) as [Category, typeof cfg][]).map(([cat, c]) => {
             const active = activeCategory === cat;
             const catKey = cat === '初级' ? 'adv.catBeginner' : cat === '中级' ? 'adv.catIntermediate' : 'adv.catAdvanced';
@@ -140,7 +163,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                 className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
                 style={active
                   ? { background: '#1e293b', color: '#fff' }
-                  : { background: 'white', color: '#94A3B8' }
+                  : { background: 'white', color: '#94A3B8', border: '1px solid #E2E8F0' }
                 }
               >
                 {c.locked && <Lock size={10} />}
@@ -153,15 +176,15 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
         </div>
 
         {/* ── Levels by phase ── */}
-        <div className="space-y-5 sm:space-y-6 mt-2">
+        <div className="space-y-5 sm:space-y-6 mt-1">
           {phaseKeys.map(pk => {
             const phaseLevels = categoryLevels.filter(l => l.phaseKey === pk);
             const phaseColorKey = PHASE_COLORS[pk] || 'blue';
             const phaseColor = PALETTE[phaseColorKey];
             const phaseCompleted = phaseLevels.filter(l => l.completed).length;
             return (
-              <div key={pk}>
-                <div className="flex items-center gap-2 mb-2 sm:mb-2.5">
+              <div key={pk} className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-3 sm:mb-3.5">
                   <span
                     className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full"
                     style={{ background: phaseColor.bg, color: phaseColor.accent }}
@@ -170,7 +193,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                   </span>
                   <span className="text-[10px] font-semibold text-slate-300">{phaseCompleted}/{phaseLevels.length}</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
                   {phaseLevels.map(level => {
                     const isCompleted = level.completed;
                     const isUnlocked = level.unlocked;
@@ -178,17 +201,17 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                       <div
                         key={level.id}
                         onClick={() => isUnlocked && setSelectedLevel(level)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white border transition-all ${
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all ${
                           isCompleted
-                            ? 'border-emerald-100'
+                            ? 'border-emerald-100 bg-[#F8FFF8]'
                             : isUnlocked
-                            ? 'border-slate-100 hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer'
-                            : 'border-slate-100 opacity-35 cursor-not-allowed'
+                            ? 'border-slate-100 bg-[#F8FAFC] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 cursor-pointer'
+                            : 'border-slate-100 bg-[#F8FAFC] opacity-35 cursor-not-allowed'
                         }`}
                       >
                         <div
                           className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
-                          style={{ background: isCompleted ? PALETTE.green.bg : isUnlocked ? phaseColor.bg : '#F8FAFC' }}
+                          style={{ background: isCompleted ? PALETTE.green.bg : isUnlocked ? phaseColor.bg : '#F0F2F5' }}
                         >
                           {isCompleted
                             ? <CheckCircle2 size={16} style={{ color: PALETTE.green.accent }} />
@@ -202,7 +225,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
                             <span className="text-[9px] font-bold text-slate-300">L{level.id}</span>
                             {isCompleted && <Star size={8} fill="currentColor" style={{ color: PALETTE.yellow.accent }} />}
                           </div>
-                          <p className="text-xs font-bold text-slate-700 truncate max-w-[110px] sm:max-w-[100px]">{t(level.titleKey)}</p>
+                          <p className="text-xs font-bold text-slate-700 truncate max-w-[110px] sm:max-w-[120px]">{t(level.titleKey)}</p>
                         </div>
                       </div>
                     );

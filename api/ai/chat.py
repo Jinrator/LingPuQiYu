@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-load_dotenv(".env.local")
+# 本地开发时从 .env.local 读取；Vercel 上该文件不存在，直接用平台注入的环境变量
+load_dotenv(".env.local", override=False)
 
 app = FastAPI()
 

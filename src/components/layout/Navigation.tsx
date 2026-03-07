@@ -26,15 +26,15 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
           <button
             key={id}
             onClick={() => onViewChange(id)}
-            className="flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-xs font-semibold transition-all md:hover:scale-[1.03] active:scale-95"
+            className="flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-5 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-semibold transition-all md:hover:scale-[1.03] active:scale-95"
             style={
               isActive
                 ? { background: PALETTE.blue.bg, color: PALETTE.blue.accent }
-                : { color: '#94A3B8' }
+                : { color: '#475569' }
             }
           >
-            <Icon size={18} className="md:hidden" />
-            <Icon size={14} className="hidden md:block" />
+            <Icon size={20} className="md:hidden" />
+            <Icon size={16} className="hidden md:block" />
             {label}
           </button>
         );

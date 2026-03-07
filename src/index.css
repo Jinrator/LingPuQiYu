@@ -8,10 +8,10 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* 手机端基础字号提升 */
+/* 手机端基础字号 — 随屏宽流式缩放，小屏 17px，大屏手机 ≈20px */
 @media (max-width: 639px) {
   html {
-    font-size: 17px;
+    font-size: clamp(17px, 4.8vw, 20px);
   }
 }
 
@@ -21,9 +21,9 @@ html.text-size-medium { font-size: 16px; }
 html.text-size-large { font-size: 18px; }
 
 @media (max-width: 639px) {
-  html.text-size-small { font-size: 15px; }
-  html.text-size-medium { font-size: 17px; }
-  html.text-size-large { font-size: 19px; }
+  html.text-size-small { font-size: clamp(15px, 4.2vw, 18px); }
+  html.text-size-medium { font-size: clamp(17px, 4.8vw, 20px); }
+  html.text-size-large { font-size: clamp(19px, 5.4vw, 22px); }
 }
 
 .font-fredoka {

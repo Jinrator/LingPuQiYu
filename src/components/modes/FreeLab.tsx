@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { Library, Music4, BookOpen, Drum, PenTool, Radio } from 'lucide-react';
+import { Library, Music4, BookOpen, Drum, PenTool, Radio, Headphones, Mic2 } from 'lucide-react';
 import { Note } from '../../types';
 import { audioService } from '../../services/audioService';
 import { Music, Volume2, Clock } from 'lucide-react';
@@ -26,7 +26,7 @@ const createSynth = () => {
         source.buffer = recordedBuffer;
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        source.connect(gain);
+        source.connect(gain)
         gain.connect(audioCtx.destination);
         source.start();
         return;
@@ -348,8 +348,25 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   };
 
   return (
-    <div className="bg-[#F5F7FA]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
+    <div className="relative bg-[#F5F7FA] overflow-hidden">
+      {/* ── Page-level decorative background ── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <Music size={120} className="absolute top-[6%] right-[25%] opacity-[0.06] rotate-12 text-slate-400" />
+        <Headphones size={80} className="absolute top-[15%] right-[45%] opacity-[0.055] -rotate-6 text-slate-400" />
+        <Mic2 size={64} className="absolute top-[48%] right-[35%] opacity-[0.055] rotate-[20deg] text-slate-400" />
+        <Music size={48} className="absolute top-[66%] right-[45%] opacity-[0.05] rotate-45 text-slate-400" />
+        <Headphones size={44} className="absolute top-[36%] left-[8%] opacity-[0.045] rotate-[-15deg] text-slate-400" />
+        <Music size={56} className="absolute top-[80%] right-[78%] opacity-[0.04] -rotate-12 text-slate-400" />
+        <Mic2 size={40} className="absolute top-[10%] left-[22%] opacity-[0.04] rotate-6 text-slate-400" />
+        {/* Staff lines hint */}
+        <div className="absolute right-[22%] top-[10%] w-[36%] hidden sm:flex flex-col gap-3 opacity-[0.07]">
+          {[0,1,2,3,4].map(i => (
+            <div key={i} className="h-px bg-slate-400 rounded-full" />
+          ))}
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-10">
 
         {/* ── Hero ── */}
         <div className="pt-5 sm:pt-8 pb-3">
