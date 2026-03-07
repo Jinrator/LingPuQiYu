@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { X, Send, Cpu } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -25,28 +24,59 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const handleSend = async (customInput?: string) => {
-    const userMessage = customInput || input;
-    if (!userMessage.trim()) return;
+    const userMessage = (customInput || input).trim();
+    if (!userMessage) return;
+
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { role: 'user', text: userMessage },
+    ];
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setMessages(nextMessages);
     setIsTyping(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: userMessage,
-        config: {
-          systemInstruction: t('ai.systemPrompt'),
-        },
+      const resp = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.text,
+          })),
+        }),
       });
-      setMessages(prev => [...prev, { role: 'assistant', text: response.text || t('ai.dataInterrupt') }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: t('ai.error') }]);
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${errText}`);
+      }
+      const data = await resp.json();
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: data.reply || t('ai.dataInterrupt') || '回复中断，请稍后再试。',
+        },
+      ]);
+    } catch (err) {
+      console.error('AI chat error:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: t('ai.error') || '抱歉，AI 暂时不可用。',
+        },
+      ]);
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isTyping) {
+      handleSend();
     }
   };
 
