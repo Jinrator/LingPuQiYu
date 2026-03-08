@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Play, Square, Music2, Piano } from 'lucide-react';
+import { Play, Square, Piano } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import InstrumentPlayer, { PLAYABLE_IDS } from './InstrumentPlayer';
@@ -13,19 +13,29 @@ interface Instrument {
   category: 'strings' | 'woodwind';
   color: keyof typeof PALETTE;
   sampleUrl: string;
+  iconUrl: string;
 }
 
 const INSTRUMENTS: Instrument[] = [
-  // 可弹奏乐器排前
-  { id: 'pipa',    nameKey: 'lab.cnInst.pipa',    descKey: 'lab.cnInst.pipa.desc',    category: 'strings',   color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav' },
-  { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings',   color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav' },
-  { id: 'hulusi',  nameKey: 'lab.cnInst.hulusi',  descKey: 'lab.cnInst.hulusi.desc',  category: 'woodwind',  color: 'pink',   sampleUrl: '/samples/china/Loops/Woodwind/Hulusi/120_F_Hulusi_01_541.wav' },
-  { id: 'xiao',    nameKey: 'lab.cnInst.xiao',    descKey: 'lab.cnInst.xiao.desc',    category: 'woodwind',  color: 'blue',   sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav' },
-  // 仅试听乐器
-  { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav' },
-  { id: 'guqin',   nameKey: 'lab.cnInst.guqin',   descKey: 'lab.cnInst.guqin.desc',   category: 'strings',   color: 'blue',   sampleUrl: '/samples/china/Loops/Strings/Guqin/120_F_Guqin_01_541.wav' },
-  { id: 'dizi',    nameKey: 'lab.cnInst.dizi',    descKey: 'lab.cnInst.dizi.desc',    category: 'woodwind',  color: 'green',  sampleUrl: '/samples/china/Loops/Woodwind/Dizi/120_G_Dizi_01_541.wav' },
+  { id: 'pipa',    nameKey: 'lab.cnInst.pipa',    descKey: 'lab.cnInst.pipa.desc',    category: 'strings',   color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav',    iconUrl: '/images/pipa.svg' },
+  { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings',   color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav', iconUrl: '/images/yangqin.svg' },
+  { id: 'hulusi',  nameKey: 'lab.cnInst.hulusi',  descKey: 'lab.cnInst.hulusi.desc',  category: 'woodwind',  color: 'pink',   sampleUrl: '/samples/china/Loops/Woodwind/Hulusi/120_F_Hulusi_01_541.wav',  iconUrl: '/images/hulusi.svg' },
+  { id: 'xiao',    nameKey: 'lab.cnInst.xiao',    descKey: 'lab.cnInst.xiao.desc',    category: 'woodwind',  color: 'blue',   sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav',    iconUrl: '/images/xiao.svg' },
+  { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav',    iconUrl: '/images/erhu.svg' },
+  { id: 'guqin',   nameKey: 'lab.cnInst.guqin',   descKey: 'lab.cnInst.guqin.desc',   category: 'strings',   color: 'blue',   sampleUrl: '/samples/china/Loops/Strings/Guqin/120_F_Guqin_01_541.wav',   iconUrl: '/images/guqin.svg' },
+  { id: 'dizi',    nameKey: 'lab.cnInst.dizi',    descKey: 'lab.cnInst.dizi.desc',    category: 'woodwind',  color: 'green',  sampleUrl: '/samples/china/Loops/Woodwind/Dizi/120_G_Dizi_01_541.wav',    iconUrl: '/images/dizi.svg' },
 ];
+
+const getIconFilter = (color: keyof typeof PALETTE): string => {
+  const filters: Record<keyof typeof PALETTE, string> = {
+    orange: 'invert(55%) sepia(85%) saturate(1000%) hue-rotate(340deg)',
+    yellow: 'invert(65%) sepia(90%) saturate(500%) hue-rotate(5deg)',
+    pink: 'invert(45%) sepia(80%) saturate(500%) hue-rotate(300deg)',
+    blue: 'invert(45%) sepia(90%) saturate(2000%) hue-rotate(200deg)',
+    green: 'invert(50%) sepia(90%) saturate(500%) hue-rotate(100deg)',
+  };
+  return filters[color];
+};
 
 const ChineseInstruments: React.FC = () => {
   const { t } = useSettings();
@@ -103,10 +113,10 @@ const ChineseInstruments: React.FC = () => {
               {/* Header */}
               <div className="flex items-center gap-3 mb-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 p-2"
                   style={{ background: pal.bg }}
                 >
-                  <Music2 size={18} style={{ color: pal.accent }} />
+                  <img src={inst.iconUrl} alt={t(inst.nameKey)} className="w-full h-full object-contain" style={{ filter: getIconFilter(inst.color) }} />
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-slate-800 truncate">{t(inst.nameKey)}</h3>
