@@ -375,9 +375,6 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                 {MODULE_SUBTITLES[activeModule]}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mb-1" style={{ background: PALETTE.blue.bg }}>
-              <Music4 size={20} style={{ color: PALETTE.blue.accent }} />
-            </div>
           </div>
         </div>
 
