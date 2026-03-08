@@ -225,9 +225,10 @@ const MelodyDecoderModal: React.FC<MelodyDecoderModalProps> = ({ isOpen, onClose
             >
               <X size={14} />
             </button>
+            <img src="/images/InspirationGenie.svg" alt="灵感精灵" className="w-11 h-11 rounded-full object-cover" />
             <div>
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800">旋律解码</h2>
-              <p className="text-[10px] font-semibold uppercase tracking-widest mt-0.5" style={{ color: PALETTE.blue.accent }}>MELODY DECODER</p>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800">灵感精灵</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-widest mt-0.5" style={{ color: PALETTE.blue.accent }}>INSPIRATION GENIE</p>
             </div>
           </div>
 
