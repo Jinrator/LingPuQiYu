@@ -162,7 +162,7 @@ return (
               stroke={themeColors.staffLine} strokeWidth="1" />
       ))}
       
-      <text x="30" y={trebleLines[4] + 10} fontSize="70" fontFamily="serif" 
+      <text x="30" y={trebleLines[4] + 10 - lineGap} fontSize="70" fontFamily="serif" 
             fill={themeColors.braceColor}>𝄞</text>
 
       
@@ -171,7 +171,7 @@ return (
               stroke={themeColors.staffLine} strokeWidth="1" />
       ))}
       
-      <text x="30" y={bassLines[1] + 15} fontSize="55" fontFamily="serif" 
+      <text x="30" y={bassLines[1] + 15 + lineGap} fontSize="55" fontFamily="serif" 
             fill={themeColors.braceColor}>𝄢</text>
 
     
