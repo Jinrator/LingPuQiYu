@@ -8,7 +8,7 @@ import AIAssistant from '../ui/AIAssistant';
 import ExitConfirmation from '../ui/ExitConfirmation';
 import MelodyDecoderModal from '../ui/MelodyDecoderModal';
 import { useExitConfirmation } from '../../hooks/useExitConfirmation';
-import { Music4, Settings, Sparkles } from 'lucide-react';
+import { Music4, Settings } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 
@@ -112,8 +112,8 @@ const AppLayout: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-95"
               style={{ background: PALETTE.blue.accent }}
             >
-              <Sparkles size={14} />
-              旋律解码
+              <img src="/images/InspirationGenie.svg" alt="灵感精灵" className="w-4 h-4 rounded-full object-cover" />
+              灵感精灵
             </button>
             <button
               onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
@@ -153,8 +153,8 @@ const AppLayout: React.FC = () => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-semibold text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: PALETTE.blue.accent }}
           >
-            <Sparkles size={12} />
-            旋律解码
+            <img src="/images/InspirationGenie.svg" alt="灵感精灵" className="w-3 h-3 rounded-full object-cover" />
+            灵感精灵
           </button>
           <button
             onClick={() => handleViewChange(ViewMode.USER_PROFILE)}
