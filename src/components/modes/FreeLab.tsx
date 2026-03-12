@@ -47,6 +47,9 @@ const createSynth = () => {
   };
 };
 
+const MAX_SEQUENCE_NOTES = 8;
+type StaffDisplayMode = 'sequence' | 'chord';
+
 interface FreeLabProps {
   theme?: 'light' | 'dark';
 }
@@ -55,6 +58,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const { t } = useSettings();
   const [activeModule, setActiveModule] = useState<SubModule>('BASIC');
   const [activeNotes, setActiveNotes] = useState<Note[]>([]);
+  const [staffDisplayMode, setStaffDisplayMode] = useState<StaffDisplayMode>('sequence');
   const [lastPlayedNote, setLastPlayedNote] = useState<Note | null>(null);
   const synthRef = useRef<any>(null);
 
@@ -64,19 +68,21 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   }, []);
 
   const toggleNote = useCallback((note: Note) => {
-    const isActive = activeNotes.some(n => n.full === note.full);
-    if (isActive) {
-      flushSync(() => setActiveNotes(prev => prev.filter(n => n.full !== note.full)));
-    } else {
-      flushSync(() => {
-        setActiveNotes(prev => [...prev, note]);
-        setLastPlayedNote(note);
+    flushSync(() => {
+      setStaffDisplayMode('sequence');
+      setActiveNotes(prev => {
+        const nextNotes = staffDisplayMode === 'chord' ? [note] : [...prev, note];
+        return nextNotes.slice(-MAX_SEQUENCE_NOTES);
       });
-      audioService.playPianoNote(note, 0.5, 0.8);
-    }
-  }, [activeNotes]);
+      setLastPlayedNote(note);
+    });
+    audioService.playPianoNote(note, 0.5, 0.8);
+  }, [staffDisplayMode]);
 
-  const clearActiveNotes = () => setActiveNotes([]);
+  const clearActiveNotes = () => {
+    setActiveNotes([]);
+    setStaffDisplayMode('sequence');
+  };
 
   const playChord = useCallback((rootNote: Note, intervals: number[]) => {
     const rootIndex = ALL_NOTES.findIndex(n => n.full === rootNote.full);
@@ -85,6 +91,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       .map(i => ALL_NOTES[rootIndex + i])
       .filter(Boolean);
     flushSync(() => {
+      setStaffDisplayMode('chord');
       setActiveNotes(notesToPlay);
       setLastPlayedNote(rootNote);
     });
@@ -236,7 +243,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         return (
           <div className="space-y-4 animate-fade-in">
             <div className="bg-white rounded-2xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col items-center gap-3">
-              <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[200px] w-full" />
+              <MusicStaff theme_type={false} activeNotes={activeNotes} displayMode={staffDisplayMode} className="h-[200px] w-full" />
 
               <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[#F8FAFC]">
                 {[
@@ -270,7 +277,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 lg:gap-4 items-center">
                 {/* Left: Staff */}
                 <div className="min-w-0">
-                  <MusicStaff {...{ theme_type: false } as any} activeNotes={activeNotes} className="h-[160px] sm:h-[200px] lg:h-[220px] w-full" />
+                  <MusicStaff theme_type={false} activeNotes={activeNotes} displayMode={staffDisplayMode} className="h-[160px] sm:h-[200px] lg:h-[220px] w-full" />
                 </div>
                 {/* Right: Chord selector */}
                 <div className="flex flex-col gap-1.5 sm:gap-2 lg:w-[440px]">
