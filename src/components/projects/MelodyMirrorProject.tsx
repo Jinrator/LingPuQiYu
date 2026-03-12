@@ -9,6 +9,7 @@ interface MelodyMirrorProjectProps { onComplete: () => void; onBack: () => void;
 
 const SCALE_NOTES = [NOTES.C4, NOTES.D4, NOTES.E4, NOTES.F4, NOTES.G4, NOTES.A4, NOTES.B4, NOTES.C5];
 const NOTE_LABELS = ['1','2','3','4','5','6','7','i'];
+const MAX_SCALE_INDEX = SCALE_NOTES.length - 1;
 
 const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, onBack }) => {
   const [questionGrid, setQuestionGrid] = useState<number[]>(new Array(4).fill(-1));
@@ -51,12 +52,9 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
     setActiveMagic(type); setTimeout(() => setActiveMagic(null), 800);
     if (!questionGrid.some(n => n !== -1)) return;
     let next = [...questionGrid];
-    if (type === 'up') next = next.map(n => n === -1 ? -1 : Math.min(n+1, 7));
-    else if (type === 'down') next = next.map(n => n === -1 ? -1 : Math.max(n-1, 0));
-    else next = [...questionGrid].reverse();
-    let last = -1;
-    for (let i = next.length-1; i >= 0; i--) { if (next[i] !== -1) { last = i; break; } }
-    if (last !== -1) next[last] = 0;
+    if (type === 'up') next = next.map(n => n === -1 ? -1 : Math.min(n + 1, MAX_SCALE_INDEX));
+    else if (type === 'down') next = next.map(n => n === -1 ? -1 : Math.max(n - 1, 0));
+    else next = [...next].reverse();
     setAnswerGrid(next);
     handleTogglePlay('answer');
   };
@@ -127,7 +125,7 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
 
       {/* Intro */}
       <div className="text-center mb-4 sm:mb-6">
-        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-1.5">旋律的镜像与重力</h3>
+        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 mb-1.5">旋律的镜像魔法</h3>
         <p className="text-sm font-medium text-slate-400 max-w-lg mx-auto">
           在左边写下你的"提问"，用中间的魔法工具让旋律变形，右边自动生成"答句"
         </p>
@@ -141,11 +139,11 @@ const MelodyMirrorProject: React.FC<MelodyMirrorProjectProps> = ({ onComplete, o
               <Wand2 size={16} style={{ color: PALETTE.blue.accent }} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-bold text-slate-800 mb-1">三种魔法变换</h4>
+              <h4 className="text-sm font-bold text-slate-800 mb-1">三种旋律变换</h4>
               <p className="text-xs font-medium text-slate-500 leading-relaxed">
                 <span style={{ color: PALETTE.blue.accent }} className="font-semibold">向上</span> 让每个音升高一级，
                 <span style={{ color: PALETTE.orange.accent }} className="font-semibold"> 向下</span> 让每个音降低一级，
-                <span style={{ color: PALETTE.green.accent }} className="font-semibold"> 镜像</span> 把旋律顺序倒过来——观察答句的变化。
+                <span style={{ color: PALETTE.green.accent }} className="font-semibold"> 镜像</span> 把旋律左右翻转，让答句的轮廓和问句形成镜面对照。
               </p>
             </div>
             <button onClick={() => setShowExplanation(false)} className="p-1 text-slate-300 hover:text-slate-500 transition-colors">
