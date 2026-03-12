@@ -355,7 +355,9 @@ const FreeLab: React.FC<FreeLabProps> = () => {
         return (
           <div className="space-y-6 animate-fade-in">
             <PianoRoll {...{ theme_type: false } as any} onPlay={(notes) => {
-              audioService.playPianoChord(notes, 0.2, 0.7);
+              notes.forEach(({ note, duration }) => {
+                audioService.playPianoNote(note, Math.max(0.12, duration * 0.95), 0.7);
+              });
             }} />
           </div>
         );
