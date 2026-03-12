@@ -4,8 +4,6 @@ import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import InstrumentPlayer, { PLAYABLE_IDS } from './InstrumentPlayer';
 
-type Category = 'all' | 'strings' | 'woodwind';
-
 interface Instrument {
   id: string;
   nameKey: string;
@@ -19,11 +17,8 @@ interface Instrument {
 const INSTRUMENTS: Instrument[] = [
   { id: 'pipa',    nameKey: 'lab.cnInst.pipa',    descKey: 'lab.cnInst.pipa.desc',    category: 'strings',   color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav',    iconUrl: '/images/pipa.svg' },
   { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings',   color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav', iconUrl: '/images/yangqin.svg' },
-  { id: 'hulusi',  nameKey: 'lab.cnInst.hulusi',  descKey: 'lab.cnInst.hulusi.desc',  category: 'woodwind',  color: 'pink',   sampleUrl: '/samples/china/Loops/Woodwind/Hulusi/120_F_Hulusi_01_541.wav',  iconUrl: '/images/hulusi.svg' },
   { id: 'xiao',    nameKey: 'lab.cnInst.xiao',    descKey: 'lab.cnInst.xiao.desc',    category: 'woodwind',  color: 'blue',   sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav',    iconUrl: '/images/xiao.svg' },
   { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav',    iconUrl: '/images/erhu.svg' },
-  { id: 'guqin',   nameKey: 'lab.cnInst.guqin',   descKey: 'lab.cnInst.guqin.desc',   category: 'strings',   color: 'blue',   sampleUrl: '/samples/china/Loops/Strings/Guqin/120_F_Guqin_01_541.wav',   iconUrl: '/images/guqin.svg' },
-  { id: 'dizi',    nameKey: 'lab.cnInst.dizi',    descKey: 'lab.cnInst.dizi.desc',    category: 'woodwind',  color: 'green',  sampleUrl: '/samples/china/Loops/Woodwind/Dizi/120_G_Dizi_01_541.wav',    iconUrl: '/images/dizi.svg' },
 ];
 
 const getIconFilter = (color: keyof typeof PALETTE): string => {
@@ -39,12 +34,9 @@ const getIconFilter = (color: keyof typeof PALETTE): string => {
 
 const ChineseInstruments: React.FC = () => {
   const { t } = useSettings();
-  const [filter, setFilter] = useState<Category>('all');
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [activePlayer, setActivePlayer] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const filtered = filter === 'all' ? INSTRUMENTS : INSTRUMENTS.filter(i => i.category === filter);
 
   const handlePlay = useCallback((inst: Instrument) => {
     if (playingId === inst.id) {
@@ -74,34 +66,11 @@ const ChineseInstruments: React.FC = () => {
     );
   }
 
-  const categories: { id: Category; label: string }[] = [
-    { id: 'all', label: t('lab.cnInst.all') },
-    { id: 'strings', label: t('lab.cnInst.strings') },
-    { id: 'woodwind', label: t('lab.cnInst.woodwind') },
-  ];
-
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Category filter */}
-      <div className="flex gap-2">
-        {categories.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setFilter(cat.id)}
-            className="px-3.5 py-2 rounded-full text-xs font-semibold transition-all"
-            style={filter === cat.id
-              ? { background: '#1e293b', color: '#fff' }
-              : { background: 'white', color: '#94A3B8' }
-            }
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
       {/* Instrument cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {filtered.map(inst => {
+        {INSTRUMENTS.map(inst => {
           const pal = PALETTE[inst.color];
           const isPlaying = playingId === inst.id;
           const hasOneShot = PLAYABLE_IDS.includes(inst.id);
