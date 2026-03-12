@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Play, Square, Piano } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
-import InstrumentPlayer, { PLAYABLE_IDS } from './InstrumentPlayer';
+import InstrumentPlayer, { PLAYABLE_IDS, preloadPlayableInstrumentSamples } from './InstrumentPlayer';
 
 interface Instrument {
   id: string;
@@ -21,6 +21,62 @@ const INSTRUMENTS: Instrument[] = [
   { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav',    iconUrl: '/images/erhu.svg' },
 ];
 
+const PREVIEW_PRELOAD_TIMEOUT_MS = 4000;
+const previewAudioCache = new Map<string, HTMLAudioElement>();
+let previewPreloadPromise: Promise<void> | null = null;
+
+function getPreviewAudio(inst: Instrument): HTMLAudioElement {
+  const cached = previewAudioCache.get(inst.id);
+  if (cached) return cached;
+
+  const audio = new Audio(inst.sampleUrl);
+  audio.preload = 'auto';
+  previewAudioCache.set(inst.id, audio);
+  return audio;
+}
+
+function primeAudioElement(audio: HTMLAudioElement): Promise<void> {
+  if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const cleanup = () => {
+      audio.removeEventListener('loadeddata', onReady);
+      audio.removeEventListener('canplaythrough', onReady);
+      audio.removeEventListener('error', onReady);
+    };
+
+    const onReady = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve();
+    };
+
+    audio.addEventListener('loadeddata', onReady);
+    audio.addEventListener('canplaythrough', onReady);
+    audio.addEventListener('error', onReady);
+    audio.load();
+    window.setTimeout(onReady, PREVIEW_PRELOAD_TIMEOUT_MS);
+  });
+}
+
+async function preloadPreviewSamples(): Promise<void> {
+  if (previewPreloadPromise) return previewPreloadPromise;
+
+  previewPreloadPromise = Promise.all(
+    INSTRUMENTS.map(async (inst) => {
+      const audio = getPreviewAudio(inst);
+      await primeAudioElement(audio);
+    }),
+  ).then(() => undefined);
+
+  return previewPreloadPromise;
+}
+
 const getIconFilter = (color: keyof typeof PALETTE): string => {
   const filters: Record<keyof typeof PALETTE, string> = {
     orange: 'invert(55%) sepia(85%) saturate(1000%) hue-rotate(340deg)',
@@ -38,18 +94,36 @@ const ChineseInstruments: React.FC = () => {
   const [activePlayer, setActivePlayer] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  useEffect(() => {
+    void preloadPreviewSamples();
+    void preloadPlayableInstrumentSamples();
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   const handlePlay = useCallback((inst: Instrument) => {
     if (playingId === inst.id) {
       audioRef.current?.pause();
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+      }
       audioRef.current = null;
       setPlayingId(null);
       return;
     }
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    const audio = new Audio(inst.sampleUrl);
+
+    const audio = getPreviewAudio(inst);
+    audio.currentTime = 0;
     audio.onended = () => { setPlayingId(null); audioRef.current = null; };
     audio.play().catch(() => setPlayingId(null));
     audioRef.current = audio;
@@ -123,6 +197,7 @@ const ChineseInstruments: React.FC = () => {
                       // Stop any loop playback first
                       if (audioRef.current) {
                         audioRef.current.pause();
+                        audioRef.current.currentTime = 0;
                         audioRef.current = null;
                         setPlayingId(null);
                       }

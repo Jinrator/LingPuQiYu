@@ -169,6 +169,105 @@ const PLAYABLE_INSTRUMENTS: Record<string, InstrumentDef> = {
 
 export const PLAYABLE_IDS = Object.keys(PLAYABLE_INSTRUMENTS);
 
+const AUDIO_POOL_SIZE = 3;
+const AUDIO_PRELOAD_TIMEOUT_MS = 4000;
+const audioPoolCache = new Map<string, Map<string, HTMLAudioElement[]>>();
+const audioPoolPromises = new Map<string, Promise<Map<string, HTMLAudioElement[]>>>();
+
+function getPoolCacheKey(instrumentId: string, articulation: 'Long' | 'Short' = 'Long'): string {
+  const instrument = PLAYABLE_INSTRUMENTS[instrumentId];
+  if (!instrument) return instrumentId;
+  return instrument.hasArticulation ? `${instrumentId}:${articulation}` : instrumentId;
+}
+
+function primeAudioElement(audio: HTMLAudioElement): Promise<void> {
+  if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const cleanup = () => {
+      audio.removeEventListener('loadeddata', onReady);
+      audio.removeEventListener('canplaythrough', onReady);
+      audio.removeEventListener('error', onReady);
+    };
+
+    const onReady = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve();
+    };
+
+    audio.addEventListener('loadeddata', onReady);
+    audio.addEventListener('canplaythrough', onReady);
+    audio.addEventListener('error', onReady);
+    audio.load();
+    window.setTimeout(onReady, AUDIO_PRELOAD_TIMEOUT_MS);
+  });
+}
+
+async function createAudioPool(notes: NoteKey[]): Promise<Map<string, HTMLAudioElement[]>> {
+  const entries = await Promise.all(notes.map(async (noteKey) => {
+    const audios = Array.from({ length: AUDIO_POOL_SIZE }, () => {
+      const audio = new Audio(noteKey.url);
+      audio.preload = 'auto';
+      audio.load();
+      return audio;
+    });
+
+    await primeAudioElement(audios[0]);
+    return [noteKey.label, audios] as const;
+  }));
+
+  return new Map(entries);
+}
+
+async function ensureAudioPool(
+  instrumentId: string,
+  notes: NoteKey[],
+  articulation: 'Long' | 'Short' = 'Long',
+): Promise<Map<string, HTMLAudioElement[]>> {
+  const cacheKey = getPoolCacheKey(instrumentId, articulation);
+  const cachedPool = audioPoolCache.get(cacheKey);
+  if (cachedPool) return cachedPool;
+
+  const pendingPool = audioPoolPromises.get(cacheKey);
+  if (pendingPool) return pendingPool;
+
+  const poolPromise = createAudioPool(notes)
+    .then((pool) => {
+      audioPoolCache.set(cacheKey, pool);
+      return pool;
+    })
+    .finally(() => {
+      audioPoolPromises.delete(cacheKey);
+    });
+
+  audioPoolPromises.set(cacheKey, poolPromise);
+  return poolPromise;
+}
+
+export async function preloadPlayableInstrumentSamples(instrumentId?: string): Promise<void> {
+  const targetIds = instrumentId ? [instrumentId] : PLAYABLE_IDS;
+
+  await Promise.all(targetIds.flatMap((id) => {
+    const instrument = PLAYABLE_INSTRUMENTS[id];
+    if (!instrument) return [];
+
+    if (instrument.hasArticulation) {
+      return [
+        ensureAudioPool(id, instrument.buildNotes('Long'), 'Long'),
+        ensureAudioPool(id, instrument.buildNotes('Short'), 'Short'),
+      ];
+    }
+
+    return [ensureAudioPool(id, instrument.buildNotes())];
+  }));
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 interface InstrumentPlayerProps {
@@ -185,30 +284,43 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
   const [volume, setVolume] = useState(0.8);
   const audioPoolRef = useRef<Map<string, HTMLAudioElement[]>>(new Map());
+  const volumeRef = useRef(volume);
 
   const notes = useMemo(() => {
     if (!config) return [];
     return config.buildNotes(config.hasArticulation ? articulation : undefined);
   }, [config, articulation]);
 
-  // Preload audio pool (3 per note for polyphony)
   useEffect(() => {
-    const pool = new Map<string, HTMLAudioElement[]>();
-    for (const nk of notes) {
-      const audios: HTMLAudioElement[] = [];
-      for (let i = 0; i < 3; i++) {
-        const a = new Audio(nk.url);
-        a.preload = 'auto';
-        a.volume = volume;
-        audios.push(a);
-      }
-      pool.set(nk.label, audios);
-    }
-    audioPoolRef.current = pool;
-    return () => { pool.forEach(arr => arr.forEach(a => { a.pause(); a.src = ''; })); };
-  }, [notes]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!config) return;
+
+    let cancelled = false;
+
+    const syncPool = async () => {
+      const pool = await ensureAudioPool(
+        instrumentId,
+        notes,
+        config.hasArticulation ? articulation : 'Long',
+      );
+      if (cancelled) return;
+
+      audioPoolRef.current = pool;
+      pool.forEach(arr => arr.forEach(a => { a.volume = volumeRef.current; }));
+    };
+
+    void syncPool();
+
+    return () => {
+      cancelled = true;
+      audioPoolRef.current.forEach(arr => arr.forEach(a => {
+        a.pause();
+        a.currentTime = 0;
+      }));
+    };
+  }, [config, instrumentId, notes, articulation]);
 
   useEffect(() => {
+    volumeRef.current = volume;
     audioPoolRef.current.forEach(arr => arr.forEach(a => { a.volume = volume; }));
   }, [volume]);
 
