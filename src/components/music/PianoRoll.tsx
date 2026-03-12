@@ -12,13 +12,39 @@ const STEPS = 32;
 const PIANO_KEY_WIDTH = 80;
 const ROLL_NOTES = [...ALL_NOTES].reverse();
 
+const DEFAULT_MELODY_PATTERN = [
+  { note: 'C4', step: 0 },
+  { note: 'D#4', step: 4 },
+  { note: 'G4', step: 8 },
+  { note: 'A#4', step: 12 },
+  { note: 'G4', step: 16 },
+  { note: 'F4', step: 20 },
+  { note: 'D#4', step: 24 },
+  { note: 'C4', step: 28 },
+];
+
+const createEmptyGrid = () => (
+  Array(ROLL_NOTES.length).fill(null).map(() => Array(STEPS).fill(false))
+);
+
+const createDefaultMelodyGrid = () => {
+  const nextGrid = createEmptyGrid();
+
+  DEFAULT_MELODY_PATTERN.forEach(({ note, step }) => {
+    const rowIndex = ROLL_NOTES.findIndex((item) => item.full === note);
+    if (rowIndex >= 0 && step < STEPS) {
+      nextGrid[rowIndex][step] = true;
+    }
+  });
+
+  return nextGrid;
+};
+
 const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
-  const [grid, setGrid] = useState<boolean[][]>(
-    Array(ROLL_NOTES.length).fill(null).map(() => Array(STEPS).fill(false))
-  );
+  const [grid, setGrid] = useState<boolean[][]>(() => createDefaultMelodyGrid());
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [bpm, setBpm] = useState(120);
+  const [bpm, setBpm] = useState(92);
 
   const isDark = theme_type;
   
@@ -36,7 +62,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
   };
 
   const clearGrid = () => {
-    setGrid(Array(ROLL_NOTES.length).fill(null).map(() => Array(STEPS).fill(false)));
+    setGrid(createEmptyGrid());
     stopSequencer();
   };
 
@@ -75,7 +101,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
             });
 
             if (notesToPlay.length > 0) {
-                audioService.playPianoChord(notesToPlay, 0.2, 0.7);
+              onPlay(notesToPlay);
             }
 
         }, interval);
@@ -83,7 +109,7 @@ const PianoRoll: React.FC<PianoRollProps> = ({ theme_type, onPlay }) => {
     return () => {
         if (timerRef.current) window.clearInterval(timerRef.current);
     };
-  }, [isPlaying, bpm, grid]); 
+  }, [isPlaying, bpm, grid, onPlay]); 
 
   return (
     <div className={`flex flex-col space-y-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>

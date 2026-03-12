@@ -6,6 +6,14 @@ import { Play, Square, Trash2 } from 'lucide-react';
 
 const STEPS = 16;
 
+const SIMPLE_RNB_PATTERN: Partial<Record<DrumType, number[]>> = {
+  kick: [0, 8, 10],
+  snare: [4, 12],
+  clap: [4, 12],
+  hihat: [0, 2, 4, 6, 8, 10, 12, 14],
+  openhat: [14],
+};
+
 // 不同鼓组套件的乐器标签
 const INSTRUMENT_LABELS: Record<DrumKitType, { id: DrumType; label: string; color: string }[]> = {
     acoustic: [
@@ -37,17 +45,36 @@ const INSTRUMENT_LABELS: Record<DrumKitType, { id: DrumType; label: string; colo
 
 };
 
+const createEmptyGrid = (instruments: { id: DrumType }[]) => (
+  instruments.map(() => Array(STEPS).fill(false))
+);
+
+const createPresetGrid = (instruments: { id: DrumType }[]) => {
+  const nextGrid = createEmptyGrid(instruments);
+
+  instruments.forEach((instrument, rowIndex) => {
+    const activeSteps = SIMPLE_RNB_PATTERN[instrument.id] ?? [];
+    activeSteps.forEach((step) => {
+      nextGrid[rowIndex][step] = true;
+    });
+  });
+
+  return nextGrid;
+};
+
 const DrumSequencer: React.FC = ({theme_type}) => {
     const isDark = theme_type;
-    const [drumKit, setDrumKit] = useState<DrumKitType>(audioService.getCurrentDrumKit());
+  const [drumKit, setDrumKit] = useState<DrumKitType>('electronic');
     const INSTRUMENTS = INSTRUMENT_LABELS[drumKit];
-    const [grid, setGrid] = useState<boolean[][]>(
-        INSTRUMENTS.map(() => Array(STEPS).fill(false))
-    );
+  const [grid, setGrid] = useState<boolean[][]>(() => createPresetGrid(INSTRUMENT_LABELS.electronic));
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentStep, setCurrentStep] = useState(-1);
-    const [bpm, setBpm] = useState(100);
+  const [bpm, setBpm] = useState(92);
     const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    audioService.switchDrumKit('electronic');
+  }, []);
 
     const toggleCell = (row: number, col: number) => {
         const newGrid = [...grid];
@@ -61,7 +88,7 @@ const DrumSequencer: React.FC = ({theme_type}) => {
     };
 
     const clearGrid = () => {
-        setGrid(INSTRUMENTS.map(() => Array(STEPS).fill(false)));
+      setGrid(createEmptyGrid(INSTRUMENTS));
         if(isPlaying) stop();
     };
 
@@ -146,8 +173,7 @@ const DrumSequencer: React.FC = ({theme_type}) => {
             onClick={() => {
               setDrumKit(kit.type);
               audioService.switchDrumKit(kit.type);
-              // 切换鼓组时重置网格
-              setGrid(INSTRUMENT_LABELS[kit.type].map(() => Array(STEPS).fill(false)));
+              setGrid(createPresetGrid(INSTRUMENT_LABELS[kit.type]));
               if (isPlaying) stop();
             }}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
