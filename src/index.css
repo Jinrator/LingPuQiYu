@@ -16,14 +16,14 @@ body {
 }
 
 /* 全局字体大小设置 */
-html.text-size-small { font-size: 14px; }
-html.text-size-medium { font-size: 16px; }
-html.text-size-large { font-size: 18px; }
+html.text-size-small { font-size: 17px; }
+html.text-size-default { font-size: 19px; }
+html.text-size-large { font-size: 21px; }
 
 @media (max-width: 639px) {
-  html.text-size-small { font-size: clamp(15px, 4.2vw, 18px); }
-  html.text-size-medium { font-size: clamp(17px, 4.8vw, 20px); }
-  html.text-size-large { font-size: clamp(19px, 5.4vw, 22px); }
+  html.text-size-small { font-size: clamp(18px, 5vw, 21px); }
+  html.text-size-default { font-size: clamp(20px, 5.6vw, 23px); }
+  html.text-size-large { font-size: clamp(22px, 6.2vw, 25px); }
 }
 
 .font-fredoka {

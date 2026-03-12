@@ -10,7 +10,7 @@ const dict: Dict = {
   'settings.fontSize': { 'zh-CN': '字体大小', 'zh-TW': '字體大小', en: 'Font Size' },
   'settings.fontSize.desc': { 'zh-CN': '调整全局文字大小', 'zh-TW': '調整全域文字大小', en: 'Adjust global text size' },
   'settings.fontSize.small': { 'zh-CN': '小', 'zh-TW': '小', en: 'Small' },
-  'settings.fontSize.medium': { 'zh-CN': '中', 'zh-TW': '中', en: 'Medium' },
+  'settings.fontSize.default': { 'zh-CN': '中', 'zh-TW': '中', en: 'Medium' },
   'settings.fontSize.large': { 'zh-CN': '大', 'zh-TW': '大', en: 'Large' },
   'settings.lang.zh-CN': { 'zh-CN': '简体中文', 'zh-TW': '簡體中文', en: '简体中文' },
   'settings.lang.zh-TW': { 'zh-CN': '繁體中文', 'zh-TW': '繁體中文', en: '繁體中文' },

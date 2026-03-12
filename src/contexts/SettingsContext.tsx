@@ -2,7 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import dict from './i18n';
 
 export type Language = 'zh-CN' | 'zh-TW' | 'en';
-export type FontSize = 'small' | 'medium' | 'large';
+export type FontSize = 'small' | 'default' | 'large';
+
+type StoredFontSize = FontSize | 'medium';
 
 interface SettingsContextValue {
   language: Language;
@@ -14,12 +16,31 @@ interface SettingsContextValue {
 
 const STORAGE_KEY = 'shenyin_settings';
 
-const defaults = { language: 'zh-CN' as Language, fontSize: 'medium' as FontSize };
+const defaults = { language: 'zh-CN' as Language, fontSize: 'default' as FontSize };
+
+function normalizeFontSize(fontSize?: StoredFontSize): FontSize {
+  switch (fontSize) {
+    case 'small':
+      return 'small';
+    case 'medium':
+      return 'default';
+    case 'large':
+      return 'large';
+    default:
+      return defaults.fontSize;
+  }
+}
 
 function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...defaults, ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw) as { language?: Language; fontSize?: StoredFontSize };
+      return {
+        language: parsed.language ?? defaults.language,
+        fontSize: normalizeFontSize(parsed.fontSize),
+      };
+    }
   } catch {}
   return defaults;
 }
@@ -38,7 +59,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // apply font size to <html>
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('text-size-small', 'text-size-medium', 'text-size-large');
+    root.classList.remove('text-size-small', 'text-size-default', 'text-size-large', 'text-size-medium');
     root.classList.add(`text-size-${fontSize}`);
   }, [fontSize]);
 

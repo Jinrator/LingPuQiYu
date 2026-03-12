@@ -10,15 +10,15 @@ const LANGUAGES: { id: Language; flag: string }[] = [
 ];
 
 const FONT_SIZES: { id: FontSize; preview: string }[] = [
-  { id: 'small',  preview: 'Aa' },
-  { id: 'medium', preview: 'Aa' },
-  { id: 'large',  preview: 'Aa' },
+  { id: 'small', preview: 'Aa' },
+  { id: 'default', preview: 'Aa' },
+  { id: 'large', preview: 'Aa' },
 ];
 
 const fontSizePreviewClass: Record<FontSize, string> = {
-  small: 'text-sm',
-  medium: 'text-base',
-  large: 'text-lg',
+  small: 'text-base',
+  default: 'text-lg',
+  large: 'text-xl',
 };
 
 const Settings: React.FC = () => {
