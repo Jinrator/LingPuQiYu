@@ -86,9 +86,9 @@ export const generateNotes = (): Note[] => {
 export const ALL_NOTES = generateNotes();
 
 export const CHORDS: ChordType[] = [
-  { name: 'Major (大三和弦)', intervals: [0, 4, 7] },
-  { name: 'Minor (小三和弦)', intervals: [0, 3, 7] },
-  { name: 'Diminished (减三和弦)', intervals: [0, 3, 6] },
+  { name: 'Major', symbol: '', description: '大三和弦', intervals: [0, 4, 7] },
+  { name: 'Minor', symbol: 'm', description: '小三和弦', intervals: [0, 3, 7] },
+  { name: 'Diminished', symbol: 'dim', description: '减三和弦', intervals: [0, 3, 6] },
 ];
 
 export const COLORS = {

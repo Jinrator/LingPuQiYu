@@ -27,6 +27,8 @@ export enum AppStage {
 
 export interface ChordType {
   name: string;
+  symbol: string;
+  description: string;
   intervals: number[]; // Semitones from root
 }
 

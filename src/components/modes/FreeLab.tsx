@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { Library, Music4, BookOpen, Drum, PenTool, Radio, Flower2 } from 'lucide-react';
-import { Note } from '../../types';
+import { Note, NoteName, ChordType } from '../../types';
 import { audioService } from '../../services/audioService';
 import { Music, Volume2, Clock } from 'lucide-react';
 import { ALL_NOTES, CHORDS, SOLFEGE_MAP, NUMBERED_NOTATION_MAP } from '../../constants';
@@ -16,6 +16,9 @@ import ChineseInstruments from './ChineseInstruments';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
 type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE' | 'CHINESE_INST';
+const HARMONY_ROOTS: NoteName[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+const formatPopChordName = (root: NoteName, chord: ChordType) => `${root}${chord.symbol}`;
 
 const createSynth = () => {
   const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -60,6 +63,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const [activeNotes, setActiveNotes] = useState<Note[]>([]);
   const [staffDisplayMode, setStaffDisplayMode] = useState<StaffDisplayMode>('sequence');
   const [lastPlayedNote, setLastPlayedNote] = useState<Note | null>(null);
+  const [selectedChordName, setSelectedChordName] = useState<string | null>(null);
   const synthRef = useRef<any>(null);
 
   useEffect(() => {
@@ -70,6 +74,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const toggleNote = useCallback((note: Note) => {
     flushSync(() => {
       setStaffDisplayMode('sequence');
+      setSelectedChordName(null);
       setActiveNotes(prev => {
         const nextNotes = staffDisplayMode === 'chord' ? [note] : [...prev, note];
         return nextNotes.slice(-MAX_SEQUENCE_NOTES);
@@ -82,18 +87,20 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const clearActiveNotes = () => {
     setActiveNotes([]);
     setStaffDisplayMode('sequence');
+    setSelectedChordName(null);
   };
 
-  const playChord = useCallback((rootNote: Note, intervals: number[]) => {
+  const playChord = useCallback((rootNote: Note, chord: ChordType) => {
     const rootIndex = ALL_NOTES.findIndex(n => n.full === rootNote.full);
     if (rootIndex === -1) return;
-    const notesToPlay = intervals
+    const notesToPlay = chord.intervals
       .map(i => ALL_NOTES[rootIndex + i])
       .filter(Boolean);
     flushSync(() => {
       setStaffDisplayMode('chord');
       setActiveNotes(notesToPlay);
       setLastPlayedNote(rootNote);
+      setSelectedChordName(formatPopChordName(rootNote.name, chord));
     });
     audioService.playPianoChord(notesToPlay, 1.0, 0.7);
   }, []);
@@ -133,7 +140,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const ClearBtn = () => (
     <button
       onClick={clearActiveNotes}
-      className="text-xs font-semibold text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full transition-all"
+      className="text-[11px] sm:text-xs font-semibold text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 sm:px-3 py-1 rounded-full transition-all"
     >
       {t('lab.clearHighlight')}
     </button>
@@ -271,38 +278,55 @@ const FreeLab: React.FC<FreeLabProps> = () => {
 
       case 'HARMONY':
         return (
-          <div className="space-y-3 animate-fade-in">
+          <div className="space-y-2 sm:space-y-3 animate-fade-in">
             {/* Staff + Chord selector: side by side on desktop, stacked on mobile */}
-            <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 lg:gap-4 items-center">
+            <div className="bg-white rounded-2xl p-2.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(560px,640px)] gap-3 sm:gap-4 lg:gap-6 items-stretch">
                 {/* Left: Staff */}
-                <div className="min-w-0">
-                  <MusicStaff theme_type={false} activeNotes={activeNotes} displayMode={staffDisplayMode} className="h-[160px] sm:h-[200px] lg:h-[220px] w-full" />
+                <div className="min-w-0 lg:flex lg:items-center lg:self-stretch">
+                  <MusicStaff theme_type={false} activeNotes={activeNotes} displayMode={staffDisplayMode} className="h-[140px] sm:h-[200px] lg:h-[220px] w-full" />
                 </div>
                 {/* Right: Chord selector */}
-                <div className="flex flex-col gap-1.5 sm:gap-2 lg:w-[440px]">
-                  <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+                <div className="min-w-0 w-full lg:max-w-[640px] lg:ml-auto flex flex-col gap-2 sm:gap-3">
+                  <div className="flex flex-wrap justify-between items-center gap-2 mb-0.5 sm:mb-1">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{t('lab.selectChord')}</span>
                     <ClearBtn />
                   </div>
-                  {CHORDS.map((chord, idx) => (
-                    <div key={idx} className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-[#F8FAFC]">
-                      <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex-shrink-0 leading-tight truncate max-w-[72px] sm:max-w-none sm:w-32">{chord.name}</span>
-                      <div className="flex gap-[3px] sm:gap-1.5 flex-nowrap">
-                        {['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(root => (
+                  {CHORDS.map((chord) => (
+                    <div key={chord.name} className="grid grid-cols-[92px_minmax(0,1fr)] sm:grid-cols-[124px_1fr] gap-2.5 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 rounded-[24px] sm:rounded-[28px] bg-[#F8FAFC] items-center">
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{chord.name}</div>
+                        <div className="text-[13px] sm:text-[15px] font-bold leading-tight text-slate-600">{chord.description}</div>
+                      </div>
+                      <div className="flex gap-2 sm:gap-3 min-w-0 overflow-x-auto scrollbar-hide pr-1 sm:grid sm:grid-cols-7 sm:overflow-visible sm:pr-0">
+                        {HARMONY_ROOTS.map(root => {
+                          const chordName = formatPopChordName(root, chord);
+                          const isActive = selectedChordName === chordName;
+                          return (
                           <button
-                            key={root}
+                            key={chordName}
                             onClick={() => {
                               const rootNote = ALL_NOTES.find(n => n.name === root && n.octave === 4);
-                              if (rootNote) playChord(rootNote, chord.intervals);
+                              if (rootNote) playChord(rootNote, chord);
                             }}
-                            className="w-[30px] h-[30px] sm:w-8 sm:h-8 flex items-center justify-center text-[11px] sm:text-xs font-semibold rounded-lg bg-white text-slate-600 hover:text-white transition-all active:scale-95 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
-                            onMouseEnter={e => (e.currentTarget.style.background = PALETTE.blue.accent)}
-                            onMouseLeave={e => (e.currentTarget.style.background = '')}
+                            className="h-12 w-12 sm:h-12 sm:w-auto sm:min-w-0 px-0 sm:px-3 flex-shrink-0 flex items-center justify-center text-[11px] sm:text-[15px] font-semibold tracking-tight rounded-[20px] sm:rounded-2xl transition-all active:scale-95"
+                            style={isActive
+                              ? {
+                                background: PALETTE.blue.accent,
+                                color: '#fff',
+                                boxShadow: '0 10px 24px rgba(59, 130, 246, 0.18)',
+                              }
+                              : {
+                                background: '#FFFFFF',
+                                color: '#475569',
+                                boxShadow: '0 4px 14px rgba(148, 163, 184, 0.08)',
+                              }
+                            }
                           >
-                            {root}
+                            {chordName}
                           </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
