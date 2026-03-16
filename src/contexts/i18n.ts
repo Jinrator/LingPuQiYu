@@ -341,6 +341,8 @@ const dict: Dict = {
   'lab.cnInst.stop': { 'zh-CN': '停止', 'zh-TW': '停止', en: 'Stop' },
   'lab.cnInst.erhu': { 'zh-CN': '二胡', 'zh-TW': '二胡', en: 'Erhu' },
   'lab.cnInst.erhu.desc': { 'zh-CN': '中国最具代表性的拉弦乐器，音色悠扬婉转，擅长表达深沉的情感。', 'zh-TW': '中國最具代表性的拉弦樂器，音色悠揚婉轉，擅長表達深沉的情感。', en: 'The most iconic Chinese bowed string instrument, known for its expressive and soulful tone.' },
+  'lab.cnInst.guzheng': { 'zh-CN': '古筝', 'zh-TW': '古箏', en: 'Guzheng' },
+  'lab.cnInst.guzheng.desc': { 'zh-CN': '中国传统弹拨乐器，音色清澈明亮，常以泛音与揉弦表现细腻意境。', 'zh-TW': '中國傳統彈撥樂器，音色清澈明亮，常以泛音與揉弦表現細膩意境。', en: 'A traditional Chinese plucked zither with bright, clear tones, expressive harmonics, and nuanced bends.' },
   'lab.cnInst.guqin': { 'zh-CN': '古琴', 'zh-TW': '古琴', en: 'Guqin' },
   'lab.cnInst.guqin.desc': { 'zh-CN': '三千年历史的七弦琴，被誉为"众器之首"，音色空灵深远。', 'zh-TW': '三千年歷史的七弦琴，被譽為「眾器之首」，音色空靈深遠。', en: 'A 3,000-year-old seven-string zither, revered as the instrument of sages with ethereal tones.' },
   'lab.cnInst.pipa': { 'zh-CN': '琵琶', 'zh-TW': '琵琶', en: 'Pipa' },
@@ -358,7 +360,7 @@ const dict: Dict = {
   'lab.cnInst.long': { 'zh-CN': '长音', 'zh-TW': '長音', en: 'Long' },
   'lab.cnInst.short': { 'zh-CN': '短音', 'zh-TW': '短音', en: 'Short' },
   'lab.cnInst.noOneshot': { 'zh-CN': '该乐器暂无弹奏采样', 'zh-TW': '該樂器暫無彈奏採樣', en: 'No playable samples for this instrument' },
-  'lab.cnInst.playHint': { 'zh-CN': '点击琴键弹奏，也可以用键盘 A-Z 快捷演奏', 'zh-TW': '點擊琴鍵彈奏，也可以用鍵盤 A-Z 快捷演奏', en: 'Click keys to play, or use keyboard A-Z for quick performance' },
+  'lab.cnInst.playHint': { 'zh-CN': '点击琴键弹奏，也可以使用琴键上标注的键盘按键快捷演奏', 'zh-TW': '點擊琴鍵彈奏，也可以使用琴鍵上標註的鍵盤按鍵快捷演奏', en: 'Click keys to play, or use the keyboard shortcuts shown on each key for quick performance' },
 };
 
 export default dict;

@@ -1,21 +1,34 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ViewMode } from '../types';
-import AppLayout from '../components/layout/AppLayout';
 import ProtectedRoute from '../components/router/ProtectedRoute';
-import FreeLabPage from '../pages/FreeLab';
-import AdventurePage from '../pages/Adventure';
-import StagePage from '../pages/Stage';
-import ProfilePage from '../pages/Profile';
-import LoginPage from '../pages/Login';
-import NotFoundPage from '../pages/NotFound';
-import SettingsPage from '../pages/Settings';
+
+const AppLayout = React.lazy(() => import('../components/layout/AppLayout'));
+const FreeLabPage = React.lazy(() => import('../pages/FreeLab'));
+const AdventurePage = React.lazy(() => import('../pages/Adventure'));
+const StagePage = React.lazy(() => import('../pages/Stage'));
+const ProfilePage = React.lazy(() => import('../pages/Profile'));
+const LoginPage = React.lazy(() => import('../pages/Login'));
+const NotFoundPage = React.lazy(() => import('../pages/NotFound'));
+const SettingsPage = React.lazy(() => import('../pages/Settings'));
+
+const RouteFallback: React.FC = () => (
+  <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
+    <p className="text-sm font-medium text-slate-400">Loading...</p>
+  </div>
+);
+
+const withRouteSuspense = (element: React.ReactElement) => (
+  <React.Suspense fallback={<RouteFallback />}>
+    {element}
+  </React.Suspense>
+);
 
 // 路由配置 - 支持多层级嵌套
 export const routes = [
   {
     path: '/',
-    element: <AppLayout />,
+    element: withRouteSuspense(<AppLayout />),
     children: [
       {
         path: '',
@@ -23,13 +36,13 @@ export const routes = [
       },
       {
         path: 'login',
-        element: <LoginPage />
+        element: withRouteSuspense(<LoginPage />)
       },
       {
         path: 'lab',
         element: (
           <ProtectedRoute>
-            <FreeLabPage />
+            {withRouteSuspense(<FreeLabPage />)}
           </ProtectedRoute>
         ),
         children: []
@@ -38,7 +51,7 @@ export const routes = [
         path: 'adventure',
         element: (
           <ProtectedRoute>
-            <AdventurePage />
+            {withRouteSuspense(<AdventurePage />)}
           </ProtectedRoute>
         ),
         children: [
@@ -93,7 +106,7 @@ export const routes = [
         path: 'stage',
         element: (
           <ProtectedRoute>
-            <StagePage />
+            {withRouteSuspense(<StagePage />)}
           </ProtectedRoute>
         ),
         children: [
@@ -132,7 +145,7 @@ export const routes = [
         path: 'profile',
         element: (
           <ProtectedRoute>
-            <ProfilePage />
+            {withRouteSuspense(<ProfilePage />)}
           </ProtectedRoute>
         ),
         children: [
@@ -215,13 +228,13 @@ export const routes = [
         path: 'settings',
         element: (
           <ProtectedRoute>
-            <SettingsPage />
+            {withRouteSuspense(<SettingsPage />)}
           </ProtectedRoute>
         )
       },
       {
         path: '*',
-        element: <NotFoundPage />
+        element: withRouteSuspense(<NotFoundPage />)
       }
     ]
   }

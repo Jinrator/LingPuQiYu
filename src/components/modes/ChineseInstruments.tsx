@@ -15,6 +15,7 @@ interface Instrument {
 }
 
 const INSTRUMENTS: Instrument[] = [
+  { id: 'guzheng', nameKey: 'lab.cnInst.guzheng', descKey: 'lab.cnInst.guzheng.desc', category: 'strings',   color: 'green',  sampleUrl: '/samples/china/Loops/Strings/Guzheng/SO_CG_90_melodic_loop_chengdu_Gm.wav', iconUrl: '/images/guqin.svg' },
   { id: 'pipa',    nameKey: 'lab.cnInst.pipa',    descKey: 'lab.cnInst.pipa.desc',    category: 'strings',   color: 'orange', sampleUrl: '/samples/china/Loops/Strings/Pipa/100_D_Pipa_01_541.wav',    iconUrl: '/images/pipa.svg' },
   { id: 'yangqin', nameKey: 'lab.cnInst.yangqin', descKey: 'lab.cnInst.yangqin.desc', category: 'strings',   color: 'yellow', sampleUrl: '/samples/china/Loops/Strings/Yangqin/100_D_Yangqin_01_541.wav', iconUrl: '/images/yangqin.svg' },
   { id: 'xiao',    nameKey: 'lab.cnInst.xiao',    descKey: 'lab.cnInst.xiao.desc',    category: 'woodwind',  color: 'blue',   sampleUrl: '/samples/china/Loops/Woodwind/Xiao/120_G_Xiao_01_541.wav',    iconUrl: '/images/xiao.svg' },

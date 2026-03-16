@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Note } from '../../types';
 import { ALL_NOTES } from '../../constants';
+import { createKeyboardShortcutMaps, EXTENDED_SHORTCUTS, isEditableTarget } from '../../utils/keyboardShortcuts';
 
 interface PianoProps {
   activeNotes: string[]; // List of note full names e.g. "C4"
@@ -12,6 +13,10 @@ interface PianoProps {
 const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, showLabels = true }) => {
   const isBlackKey = (name: string) => name.includes('#');
   const isDark = theme_type;
+  const { keyToItem: keyMap, idToShortcut: shortcutByNote } = useMemo(
+    () => createKeyboardShortcutMaps(ALL_NOTES, EXTENDED_SHORTCUTS, note => note.full),
+    [],
+  );
   
   // 本地状态用于立即响应按下事件
   const [pressedNote, setPressedNote] = useState<string | null>(null);
@@ -24,6 +29,34 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
   const handleNoteUp = () => {
     setPressedNote(null); // 释放时清除本地状态
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey || isEditableTarget(event.target)) {
+        return;
+      }
+
+      const note = keyMap[event.key.toLowerCase()];
+      if (!note) return;
+
+      handleNoteDown(note);
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const note = keyMap[event.key.toLowerCase()];
+      if (!note) return;
+
+      setPressedNote(currentPressed => currentPressed === note.full ? null : currentPressed);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [keyMap, onNotePlay]);
 
   return (
     <div 
@@ -44,6 +77,8 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                const hasBlackAfter = nextNote && isBlackKey(nextNote.name);
                const isActive = activeNotes.includes(note.full) || pressedNote === note.full;
                const isMiddleC = note.full === 'C4';
+               const whiteShortcut = shortcutByNote[note.full];
+               const blackShortcut = hasBlackAfter ? shortcutByNote[nextNote.full] : undefined;
 
                return (
                  <div key={note.full} className="relative h-full">
@@ -67,6 +102,11 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                     >
                       {showLabels && (
                           <div className="flex flex-col items-center gap-0.5">
+                              {whiteShortcut && (
+                                <span className={`text-[9px] font-black tracking-wide ${
+                                  isDark ? 'text-slate-500' : 'text-slate-300'
+                                }`}>{whiteShortcut}</span>
+                              )}
                               {isMiddleC && (
                                   <span className={`text-[9px] font-bold ${
                                       isDark ? 'text-indigo-500' : 'text-indigo-600'
@@ -101,6 +141,18 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                           }
                         `}
                       >
+                        {showLabels && (
+                          <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 flex-col items-center gap-0.5 leading-none">
+                            {blackShortcut && (
+                              <span className="text-[9px] font-black tracking-[0.08em] text-slate-300">
+                                {blackShortcut}
+                              </span>
+                            )}
+                            <span className="text-[9px] font-semibold tracking-[0.04em] text-white">
+                              {nextNote.name}
+                            </span>
+                          </div>
+                        )}
                       </button>
                     )}
                  </div>
