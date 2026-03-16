@@ -62,7 +62,12 @@ const createPresetGrid = (instruments: { id: DrumType }[]) => {
   return nextGrid;
 };
 
-const DrumSequencer: React.FC = ({theme_type}) => {
+interface DrumSequencerProps {
+    theme_type: boolean;
+    onBeat?: (activeDrums: DrumType[]) => void;
+}
+
+const DrumSequencer: React.FC<DrumSequencerProps> = ({ theme_type, onBeat }) => {
     const isDark = theme_type;
   const [drumKit, setDrumKit] = useState<DrumKitType>('electronic');
     const INSTRUMENTS = INSTRUMENT_LABELS[drumKit];
@@ -119,11 +124,17 @@ const DrumSequencer: React.FC = ({theme_type}) => {
                 step = (step + 1) % STEPS;
                 setCurrentStep(step);
 
+                const currentDrumHits: DrumType[] = [];
                 INSTRUMENTS.forEach((inst, idx) => {
                     if (grid[idx][step]) {
                         audioService.playDrum(inst.id);
+                        currentDrumHits.push(inst.id);
                     }
                 });
+                
+                if (currentDrumHits.length > 0 && onBeat) {
+                    onBeat(currentDrumHits);
+                }
 
             }, interval);
         }

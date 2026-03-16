@@ -65,6 +65,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const [staffDisplayMode, setStaffDisplayMode] = useState<StaffDisplayMode>('sequence');
   const [lastPlayedNote, setLastPlayedNote] = useState<Note | null>(null);
   const [selectedChordName, setSelectedChordName] = useState<string | null>(null);
+  const [activeDrums, setActiveDrums] = useState<('kick' | 'snare' | 'hihat' | 'openhat' | 'rimshot' | 'clap' | 'lowtom' | 'midtom' | 'hightom' | 'crash' | 'ride')[]>([]);
   const synthRef = useRef<any>(null);
 
   useEffect(() => {
@@ -346,9 +347,9 @@ const FreeLab: React.FC<FreeLabProps> = () => {
           <div className="space-y-3 sm:space-y-4 animate-fade-in">
             <div className="bg-white rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
                <h3 className="text-lg font-bold text-slate-800 mb-4">{t('lab.drumKitIntro')}</h3>
-               <DrumKitDisplay />
+               <DrumKitDisplay activeDrums={activeDrums} />
             </div>
-            <DrumSequencer {...{ theme_type: false } as any} />
+            <DrumSequencer {...{ theme_type: false } as any} onBeat={setActiveDrums} />
             <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <h4 className="text-sm font-bold text-slate-800 mb-1">{t('lab.instrumentInfo')}</h4>
               <p className="text-sm text-slate-500">{t('lab.instrumentDesc')}</p>

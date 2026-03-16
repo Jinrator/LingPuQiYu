@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DrumType } from '../../types';
 import { audioService } from '../../services/audioService';
 import { Info } from 'lucide-react';
@@ -89,9 +89,35 @@ const DRUM_PARTS: DrumPartDefinition[] = [
   },
 ];
 
-const DrumKitDisplay: React.FC = () => {
+interface DrumKitDisplayProps {
+    activeDrums?: DrumType[];
+}
+
+const DrumKitDisplay: React.FC<DrumKitDisplayProps> = ({ activeDrums: externalActiveDrums }) => {
   const [activeDrum, setActiveDrum] = useState<DrumType | null>(null);
+  const [visualActiveDrums, setVisualActiveDrums] = useState<Set<DrumType>>(new Set());
   const [hoveredDrum, setHoveredDrum] = useState<DrumType | null>(null);
+
+  // Handle external beats
+  useEffect(() => {
+      if (externalActiveDrums && externalActiveDrums.length > 0) {
+          setVisualActiveDrums(prev => {
+              const next = new Set(prev);
+              externalActiveDrums.forEach(d => next.add(d));
+              return next;
+          });
+
+          const timer = setTimeout(() => {
+              setVisualActiveDrums(prev => {
+                  const next = new Set(prev);
+                  externalActiveDrums.forEach(d => next.delete(d));
+                  return next;
+              });
+          }, 150);
+
+          return () => clearTimeout(timer);
+      }
+  }, [externalActiveDrums]);
 
   const handleDrumClick = (drumId: DrumType) => {
     setActiveDrum(drumId);
@@ -102,6 +128,8 @@ const DrumKitDisplay: React.FC = () => {
         setActiveDrum(null);
     }, 150);
   };
+
+  const isDrumActive = (id: DrumType) => activeDrum === id || visualActiveDrums.has(id);
 
   const selectedDrum = DRUM_PARTS.find(d => d.id === activeDrum) || DRUM_PARTS.find(d => d.id === hoveredDrum);
 
@@ -329,9 +357,9 @@ const DrumKitDisplay: React.FC = () => {
                  )}
 
                  {/* Custom Renderer based on type */}
-                 {part.id === 'hihat' ? renderHiHat(part, activeDrum === part.id) :
-                  (part.id === 'crash' || part.id === 'ride' || part.id === 'openhat') ? renderCymbal(part, activeDrum === part.id) :
-                  renderDrum(part, activeDrum === part.id)}
+                 {part.id === 'hihat' ? renderHiHat(part, isDrumActive(part.id)) :
+                  (part.id === 'crash' || part.id === 'ride' || part.id === 'openhat') ? renderCymbal(part, isDrumActive(part.id)) :
+                  renderDrum(part, isDrumActive(part.id))}
 
                  {/* Label on hover */}
                  {hoveredDrum === part.id && (
