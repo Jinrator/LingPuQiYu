@@ -114,6 +114,7 @@ const dict: Dict = {
   'lab.notation': { 'zh-CN': '简谱 (Notation)', 'zh-TW': '簡譜 (Notation)', en: 'Notation' },
   'lab.pitchLabel': { 'zh-CN': '音高 (Pitch)', 'zh-TW': '音高 (Pitch)', en: 'Pitch' },
   'lab.solfege': { 'zh-CN': '唱名 (Solfege)', 'zh-TW': '唱名 (Solfege)', en: 'Solfège' },
+  'lab.drumKitIntro': { 'zh-CN': '鼓组介绍', 'zh-TW': '鼓組介紹', en: 'Drum Kit Introduction' },
 
   // ── Adventure ──
   'adv.subtitle': { 'zh-CN': 'Adventure Map · 探险地图', 'zh-TW': 'Adventure Map · 探險地圖', en: 'Adventure Map' },

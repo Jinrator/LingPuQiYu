@@ -9,6 +9,7 @@ import Piano from '../music/Piano';
 import MusicStaff from '../music/MusicStaff';
 import PianoRoll from '../music/PianoRoll';
 import DrumSequencer from '../music/DrumSequencer';
+import DrumKitDisplay from '../music/DrumKitDisplay';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
@@ -343,6 +344,10 @@ const FreeLab: React.FC<FreeLabProps> = () => {
       case 'RHYTHM':
         return (
           <div className="space-y-3 sm:space-y-4 animate-fade-in">
+            <div className="bg-white rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+               <h3 className="text-lg font-bold text-slate-800 mb-4">{t('lab.drumKitIntro')}</h3>
+               <DrumKitDisplay />
+            </div>
             <DrumSequencer {...{ theme_type: false } as any} />
             <div className="bg-white rounded-xl p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
               <h4 className="text-sm font-bold text-slate-800 mb-1">{t('lab.instrumentInfo')}</h4>
