@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe, Music, Music2, Music3, Headphones, Mic2 } from 'lucide-react';
+import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { PALETTE } from '../../constants/palette';
 import { useSettings, Language } from '../../contexts/SettingsContext';
@@ -106,15 +106,36 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         {/* ── Left panel (hidden on mobile) ── */}
         <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
 
-          {/* decorative music icons */}
-          <Music  size={90}  className="absolute" style={{ top: '-2%', right: '-4%', color: PALETTE.blue.accent,   opacity: 0.10, transform: 'rotate(12deg)' }} />
-          <Music2 size={44}  className="absolute" style={{ top: '5%',  right: '30%', color: PALETTE.pink.accent,   opacity: 0.08, transform: 'rotate(-15deg)' }} />
-          <Headphones size={56} className="absolute" style={{ top: '18%', right: '8%',  color: PALETTE.yellow.accent, opacity: 0.07, transform: 'rotate(8deg)' }} />
-          <Music3 size={36}  className="absolute" style={{ top: '35%', left: '-2%',  color: PALETTE.green.accent,  opacity: 0.08, transform: 'rotate(-10deg)' }} />
-          <Mic2   size={32}  className="absolute" style={{ top: '50%', right: '5%',  color: PALETTE.orange.accent, opacity: 0.07, transform: 'rotate(20deg)' }} />
-          <Music  size={48}  className="absolute" style={{ top: '65%', left: '5%',   color: PALETTE.blue.accent,   opacity: 0.06, transform: 'rotate(25deg)' }} />
-          <Music2 size={28}  className="absolute" style={{ top: '78%', right: '20%', color: PALETTE.pink.accent,   opacity: 0.07, transform: 'rotate(-18deg)' }} />
-          <Headphones size={40} className="absolute" style={{ top: '85%', left: '25%',  color: PALETTE.green.accent,  opacity: 0.06, transform: 'rotate(6deg)' }} />
+          {/* decorative blocks — restored from commit 4161a25 */}
+          <div className="absolute" style={{width: 130, height: 130, top: '-5%', left: '-5%', background: PALETTE.pink.bg, opacity: 0.62}} />
+          <div className="absolute" style={{width: 70, height: 70, top: '2%', left: '20%', background: PALETTE.blue.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 110, height: 110, top: '-4%', left: '38%', background: PALETTE.yellow.bg, opacity: 0.60}} />
+          <div className="absolute" style={{width: 60, height: 60, top: '4%', left: '58%', background: PALETTE.green.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 140, height: 140, top: '-6%', left: '72%', background: PALETTE.blue.bg, opacity: 0.60}} />
+
+          <div className="absolute" style={{width: 80, height: 80, top: '18%', left: '-3%', background: PALETTE.orange.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 150, height: 150, top: '14%', left: '14%', background: PALETTE.green.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 65, height: 65, top: '20%', left: '42%', background: PALETTE.blue.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 120, height: 120, top: '16%', left: '56%', background: PALETTE.orange.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width: 55, height: 55, top: '22%', left: '84%', background: PALETTE.yellow.bg, opacity: 0.55}} />
+
+          <div className="absolute" style={{width: 140, height: 140, top: '36%', left: '-5%', background: PALETTE.blue.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width: 60, height: 60, top: '42%', left: '22%', background: PALETTE.green.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 100, height: 100, top: '38%', left: '36%', background: PALETTE.pink.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 75, height: 75, top: '40%', left: '62%', background: PALETTE.yellow.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 130, height: 130, top: '34%', left: '74%', background: PALETTE.green.bg, opacity: 0.57}} />
+
+          <div className="absolute" style={{width: 70, height: 70, top: '58%', left: '0%', background: PALETTE.yellow.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 120, height: 120, top: '54%', left: '16%', background: PALETTE.blue.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width: 55, height: 55, top: '60%', left: '44%', background: PALETTE.orange.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 110, height: 110, top: '56%', left: '58%', background: PALETTE.pink.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width: 65, height: 65, top: '62%', left: '84%', background: PALETTE.blue.bg, opacity: 0.55}} />
+
+          <div className="absolute" style={{width: 150, height: 150, top: '74%', left: '-6%', background: PALETTE.orange.bg, opacity: 0.58}} />
+          <div className="absolute" style={{width: 65, height: 65, top: '80%', left: '20%', background: PALETTE.pink.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 125, height: 125, top: '76%', left: '36%', background: PALETTE.blue.bg, opacity: 0.57}} />
+          <div className="absolute" style={{width: 70, height: 70, top: '82%', left: '64%', background: PALETTE.green.bg, opacity: 0.55}} />
+          <div className="absolute" style={{width: 110, height: 110, top: '72%', left: '76%', background: PALETTE.yellow.bg, opacity: 0.57}} />
 
           {/* floating stat bubbles */}
           {/* <div className="absolute top-20 right-[160px] flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-semibold z-10">
@@ -129,7 +150,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
           {/* brand */}
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-14">
-              <div className="w-9 h-9 rounded-lg overflow-hidden bg-white shadow-sm">
+              <div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm">
                 <img src="/logo/logo.png" alt="MelodyVerse" className="w-full h-full object-contain" />
               </div>
               <span className="text-slate-800 font-bold text-base tracking-tight">{t('app.brand')}</span>
@@ -146,8 +167,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
           <div className="relative z-10 flex gap-2 flex-wrap">
             {[t('auth.tagBeginner'), t('auth.tagAI'), t('auth.tagAllAge')].map((tag) => (
-              <span key={tag} className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{background: PALETTE.blue.bg, color: PALETTE.blue.accent}}>
+              <span key={tag} className="px-3 py-1 rounded-full text-xs font-semibold border"
+                style={{background: PALETTE.blue.bg, color: PALETTE.blue.accent, borderColor: `${PALETTE.blue.accent}33`}}>
                 {tag}
               </span>
             ))}
