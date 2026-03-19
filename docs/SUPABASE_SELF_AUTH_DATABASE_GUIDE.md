@@ -227,7 +227,9 @@ http://localhost:3001/api/health
 
 说明：
 
-- 如果用户不存在，会自动创建一个最小用户档案
+- 只有已注册用户才能登录
+- 如果手机号不存在，会返回 `USER_NOT_FOUND`
+- 前端会自动切换到注册页，引导用户补全资料
 
 ### `POST /api/auth/register`
 

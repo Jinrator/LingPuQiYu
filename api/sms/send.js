@@ -32,10 +32,11 @@ export default async function handler(req, res) {
     try {
       const Dypnsapi = await import('@alicloud/dypnsapi20170525');
       const OpenApi = await import('@alicloud/openapi-client');
+      const DypnsapiClient = Dypnsapi.default?.default || Dypnsapi.default;
 
-      const config = new OpenApi.default.Config({ accessKeyId, accessKeySecret });
+      const config = new OpenApi.Config({ accessKeyId, accessKeySecret });
       config.endpoint = 'dypnsapi.aliyuncs.com';
-      const client = new Dypnsapi.default(config);
+      const client = new DypnsapiClient(config);
 
       const sendReq = new Dypnsapi.SendSmsVerifyCodeRequest({
         phoneNumber: phone,

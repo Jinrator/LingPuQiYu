@@ -57,7 +57,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         const r = await doRegister({ phone, code: vCode, username: name, courseType: course || undefined });
         if (r && !r.success) setErrorMsg(r.message || t('auth.registerFail'));
       }
-    } catch (e: any) { setErrorMsg(e.message || t('auth.actionFail')); }
+    } catch (e: any) {
+      if (e?.code === 'USER_NOT_FOUND') {
+        setMode('register');
+        setErrorMsg(t('auth.notRegisteredRedirect'));
+      } else {
+        setErrorMsg(e.message || t('auth.actionFail'));
+      }
+    }
     finally { setIsAuthorizing(false); }
   };
 

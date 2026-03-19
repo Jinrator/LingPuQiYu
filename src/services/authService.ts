@@ -18,6 +18,7 @@ interface LoginResult {
   user?: AuthUser;
   token?: string;
   message?: string;
+  code?: string;
 }
 
 interface StoredSession {
@@ -30,6 +31,7 @@ interface SessionResponse {
   user?: AuthUser;
   token?: string;
   message?: string;
+  code?: string;
 }
 
 const STORAGE_KEY = 'shenyin_auth';
@@ -55,6 +57,18 @@ const clearStoredSession = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
 
+class ApiRequestError extends Error {
+  code?: string;
+  status?: number;
+
+  constructor(message: string, options?: { code?: string; status?: number }) {
+    super(message);
+    this.name = 'ApiRequestError';
+    this.code = options?.code;
+    this.status = options?.status;
+  }
+}
+
 const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
   const headers = new Headers(init.headers || {});
   if (!headers.has('Content-Type') && init.body) {
@@ -74,7 +88,10 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || `请求失败 (${response.status})`);
+    throw new ApiRequestError(data?.message || `请求失败 (${response.status})`, {
+      code: data?.code,
+      status: response.status,
+    });
   }
 
   return data as T;

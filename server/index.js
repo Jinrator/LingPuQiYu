@@ -367,9 +367,13 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json(verification);
     }
 
-    let user = await findUserByPhone(phone);
+    const user = await findUserByPhone(phone);
     if (!user) {
-      user = await createUserProfile({ phone });
+      return res.status(404).json({
+        success: false,
+        code: 'USER_NOT_FOUND',
+        message: '该手机号尚未注册，请先注册',
+      });
     }
 
     const token = buildSessionToken(user);

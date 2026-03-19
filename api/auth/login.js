@@ -1,6 +1,6 @@
 import { signAuthToken } from '../_lib/auth.js';
 import { verifyPhoneCode } from '../_lib/sms.js';
-import { createUserProfile, findUserByPhone } from '../_lib/users.js';
+import { findUserByPhone } from '../_lib/users.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,9 +18,13 @@ export default async function handler(req, res) {
       return res.status(400).json(verification);
     }
 
-    let user = await findUserByPhone(phone);
+    const user = await findUserByPhone(phone);
     if (!user) {
-      user = await createUserProfile({ phone });
+      return res.status(404).json({
+        success: false,
+        code: 'USER_NOT_FOUND',
+        message: '该手机号尚未注册，请先注册',
+      });
     }
 
     const token = signAuthToken(user);

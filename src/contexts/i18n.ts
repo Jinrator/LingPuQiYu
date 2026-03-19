@@ -315,6 +315,7 @@ const dict: Dict = {
   'auth.getCode': { 'zh-CN': '获取验证码', 'zh-TW': '取得驗證碼', en: 'Get Code' },
   'auth.login': { 'zh-CN': '登录', 'zh-TW': '登入', en: 'Log In' },
   'auth.loginFail': { 'zh-CN': '登录失败', 'zh-TW': '登入失敗', en: 'Login failed' },
+  'auth.notRegisteredRedirect': { 'zh-CN': '该手机号尚未注册，已为你切换到注册页', 'zh-TW': '此手機號碼尚未註冊，已為你切換到註冊頁', en: 'This phone number is not registered yet. Switched to sign-up for you.' },
   'auth.registerFail': { 'zh-CN': '注册失败', 'zh-TW': '註冊失敗', en: 'Registration failed' },
   'auth.sendFail': { 'zh-CN': '发送失败', 'zh-TW': '發送失敗', en: 'Failed to send' },
   'auth.actionFail': { 'zh-CN': '操作失败', 'zh-TW': '操作失敗', en: 'Action failed' },
