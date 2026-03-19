@@ -7,7 +7,7 @@
 
 - **签名审核失败**：短信服务要求企业资质才能申请签名，个人账号提示"不支持个人资质的签名实名制报备"
 - **始终处于测试模式**：由于签名/模板无法通过审核，服务端一直走测试模式，验证码只打印在控制台
-- **环境变量未加载**：`server/index.js` 缺少 `dotenv` 依赖，`.env.local` 配置未被读取
+- **环境变量未加载**：旧版 `server/index.js` 缺少 `dotenv` 依赖，`.env.local` 配置未被读取
 
 ### 业务影响
 - 用户无法收到真实短信验证码，无法完成注册/登录
@@ -31,7 +31,7 @@
 原代码使用的是"短信服务"，个人账号无法使用。
 
 ### 问题 2：dotenv 未配置
-`server/index.js` 没有引入 `dotenv`，导致 `.env.local` 中的环境变量未被加载到 `process.env`，所有配置项为空，自动降级为测试模式。
+旧版 `server/index.js` 没有引入 `dotenv`，导致 `.env.local` 中的环境变量未被加载到 `process.env`，所有配置项为空，自动降级为测试模式。当前项目已经迁到 `server/index.ts` 并保留了同样的加载逻辑。
 
 ### 问题 3：前端错误提示缺失
 - `getVCode` 函数缺少 try-catch，网络错误时静默失败
@@ -48,9 +48,11 @@ cd server
 npm install dotenv
 ```
 
-`server/index.js` 顶部添加：
-```javascript
-require('dotenv').config({ path: '.env.local' });
+`server/index.ts` 顶部添加：
+```ts
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
 ```
 
 ### 3.2 迁移到短信认证服务 SDK
@@ -141,7 +143,7 @@ if (body.code === 'isv.BUSINESS_LIMIT_CONTROL') userMsg = '今日发送次数已
 
 | 文件 | 改动说明 |
 |------|---------|
-| `server/index.js` | 迁移到 dypnsapi SDK，添加 dotenv，错误码中文映射 |
+| `server/index.ts` | 迁移到 dypnsapi SDK，添加 dotenv，错误码中文映射 |
 | `server/.env.local` | 更新为短信认证服务配置项 |
 | `server/package.json` | 替换 SDK 依赖 |
 | `src/components/layout/AuthPage.tsx` | getVCode 添加 try-catch，注册页添加错误提示框 |

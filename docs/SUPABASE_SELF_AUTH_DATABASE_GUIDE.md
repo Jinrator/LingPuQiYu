@@ -13,10 +13,11 @@
   - `POST /api/auth/login`
   - `POST /api/auth/register`
   - `GET /api/auth/me`
-- 本地开发后端 `server/index.js` 已接入 Supabase 用户资料读写
+- 本地开发后端 `server/index.ts` 已接入 Supabase 用户资料读写
 - Vercel Serverless `api/auth/*` 已接入 Supabase 用户资料读写
 - 登录态恢复改为通过后端校验 token，而不是只信任本地 `localStorage`
 - 资料页和导航头像已切到真实登录用户数据
+- AI 接口仍保留为 Python：`api/ai/chat.py`
 
 ## 你需要完成的事情
 
@@ -179,7 +180,7 @@ http://localhost:3001/api/health
 本地测试模式：
 
 - 先获取验证码
-- 如果你本地跑的是 `server/index.js`，验证码会打印在终端
+- 如果你本地跑的是 `server/index.ts`，验证码会打印在终端
 - 如果你走的是 serverless 测试模式，默认验证码是 `888888`
 
 成功后，Supabase 的 `public.app_users` 表里应该出现一条记录。

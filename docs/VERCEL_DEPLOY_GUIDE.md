@@ -5,11 +5,12 @@
 - 前端静态站点：Vite 构建产物 `dist`
 - 后端接口：根目录 `api/` 下的 Vercel Functions
 - 本地开发专用服务：`server/` 目录不会部署到 Vercel
+- AI 接口继续保留 Python：`api/ai/chat.py`
 
 ## 我已经帮你准备好的内容
 
 - 已存在 [vercel.json](/Users/andylyu/Documents/GitHub/LingPuQiYu/vercel.json)
-- 已补上 `api/auth/login.js`、`api/auth/register.js`、`api/auth/me.js`
+- 已补上 `api/auth/login.ts`、`api/auth/register.ts`、`api/auth/me.ts`
 - 已给 `api/ai/chat.py` 配置了更长的函数运行时长
 - 已添加 [.python-version](/Users/andylyu/Documents/GitHub/LingPuQiYu/.python-version) 固定 Python 3.12
 
