@@ -17,7 +17,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const location = useLocation();
   const { t, language, setLanguage } = useSettings();
 
-  const { loginWithPhone: doLoginWithPhone, sendSmsCode, register: doRegister, isAuthenticated } = useAuth();
+  const { loginWithPhone: doLoginWithPhone, checkPhoneExists, sendSmsCode, register: doRegister, isAuthenticated } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [course, setCourse] = useState<CourseType | null>(null);
@@ -71,6 +71,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const getVCode = async () => {
     if (phone.length !== 11) return;
     try {
+      if (mode === 'login') {
+        const exists = await checkPhoneExists(phone);
+        if (!exists) {
+          setMode('register');
+          setErrorMsg(t('auth.notRegisteredRedirect'));
+          return;
+        }
+      }
+
       const r = await sendSmsCode(phone);
       if (r?.success) { setCountdown(60); setErrorMsg(''); }
       else setErrorMsg(r?.message || t('auth.sendFail'));

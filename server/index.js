@@ -384,6 +384,23 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/check-phone', async (req, res) => {
+  const { phone } = req.body || {};
+
+  if (!phone) {
+    return res.status(400).json({ success: false, message: '参数不完整' });
+  }
+
+  try {
+    ensureSupabaseReady();
+    const user = await findUserByPhone(phone);
+    return res.json({ success: true, exists: !!user });
+  } catch (err) {
+    console.error('[Auth] 检查手机号失败:', err.message);
+    return res.status(500).json({ success: false, message: err.message || '检查手机号失败' });
+  }
+});
+
 app.post('/api/auth/register', async (req, res) => {
   const { phone, code, username, courseType } = req.body || {};
 

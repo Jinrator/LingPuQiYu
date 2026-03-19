@@ -9,6 +9,7 @@
 ## 已经完成的代码改造
 
 - 前端 `authService` 已改为调用后端接口：
+  - `POST /api/auth/check-phone`
   - `POST /api/auth/login`
   - `POST /api/auth/register`
   - `GET /api/auth/me`
@@ -213,6 +214,22 @@ http://localhost:3001/api/health
 - 服务端日志里是否有 Supabase 报错
 
 ## 当前接口约定
+
+### `POST /api/auth/check-phone`
+
+请求体：
+
+```json
+{
+  "phone": "13800138000"
+}
+```
+
+说明：
+
+- 登录页点击“获取验证码”时会先调这个接口
+- 如果手机号未注册，前端会直接切到注册页
+- 已注册用户才继续发送登录验证码
 
 ### `POST /api/auth/login`
 
