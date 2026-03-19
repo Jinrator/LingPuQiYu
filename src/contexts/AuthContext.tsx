@@ -17,15 +17,31 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const session = authService.getCurrentUser();
-    if (session) {
-      setUser(session.user);
-      setIsAuthenticated(true);
-    }
+    let isMounted = true;
+
+    const hydrateAuth = async () => {
+      setIsLoading(true);
+      try {
+        const session = await authService.getCurrentUser();
+        if (!isMounted) return;
+        setUser(session?.user || null);
+        setIsAuthenticated(!!session);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void hydrateAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const sendSmsCode = useCallback(async (phone: string) => {

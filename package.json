@@ -13,6 +13,7 @@
     "@alicloud/openapi-client": "^0.4.12",
     "@alicloud/tea-util": "^1.4.9",
     "@google/genai": "^1.34.0",
+    "@supabase/supabase-js": "^2.99.2",
     "@types/react-router-dom": "^5.3.3",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",

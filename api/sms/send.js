@@ -1,14 +1,7 @@
 // Vercel Serverless Function - 发送短信验证码
 // 对应原 server/index.js POST /api/sms/send
 
-// 注意：Serverless 无状态，此 Map 仅在单次冷启动实例内有效
-// 生产环境建议用 Upstash Redis 做持久化限流
-const testCodeStore = new Map();
 const rateLimitStore = new Map(); // 简单内存限流（同实例内有效）
-
-function generateTestCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,6 +26,7 @@ export default async function handler(req, res) {
   const accessKeyId = process.env.ALIYUN_ACCESS_KEY_ID;
   const accessKeySecret = process.env.ALIYUN_ACCESS_KEY_SECRET;
   const useAliyun = !!(accessKeyId && accessKeySecret);
+  const allowTestSms = process.env.ALLOW_TEST_SMS === 'true';
 
   if (useAliyun) {
     try {
@@ -74,10 +68,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, message: '短信发送失败，请稍后重试' });
     }
   } else {
-    // 测试模式
-    const code = generateTestCode();
-    testCodeStore.set(phone, { code, expires: Date.now() + 5 * 60 * 1000 });
-    console.log(`[SMS] 测试验证码 -> ${phone}: ${code}`);
-    return res.json({ success: true, message: '验证码已发送' });
+    if (!allowTestSms) {
+      return res.status(503).json({ success: false, message: '短信服务未配置' });
+    }
+
+    // Serverless 无状态，测试环境统一使用固定码，便于和 verify 端保持一致
+    const testCode = process.env.TEST_SMS_CODE || '888888';
+    console.log(`[SMS] 测试验证码 -> ${phone}: ${testCode}`);
+    return res.json({ success: true, message: '验证码已发送（测试环境）' });
   }
 }

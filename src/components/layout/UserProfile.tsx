@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface UserProfileProps {
   theme?: 'light' | 'dark';
@@ -15,11 +16,15 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
   const [showExitConfirm, setShowExitConfirm] = useState<'logout' | 'switch' | null>(null);
   const { t } = useSettings();
+  const { user } = useAuth();
+  const displayAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const displayName = user?.username || (user?.phone ? `用户 ${user.phone.slice(-4)}` : t('profile.userName'));
+  const displayId = user?.id || 'PRO-9527';
 
   const userData = {
-    name: t('profile.userName'),
-    id: 'PRO-9527',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot',
+    name: displayName,
+    id: displayId,
+    avatar: displayAvatar,
     level: 12,
     exp: 85,
     stats: { works: 8, likes: 1250, awards: 4 },
@@ -29,7 +34,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
     { id: 'PRODUCER', titleKey: 'profile.course.producer', progress: 75, palette: PALETTE.blue,   icon: Orbit    },
     { id: 'ARTIST',   titleKey: 'profile.course.artist',   progress: 30, palette: PALETTE.pink,   icon: Sparkles },
     { id: 'MAKER',    titleKey: 'profile.course.maker',    progress: 10, palette: PALETTE.orange, icon: Atom     },
-  ];
+  ].map((course) => ({
+    ...course,
+    progress: user?.courseType === course.id ? 100 : course.progress,
+  }));
 
   const myWorks = [
     { id: '1', titleKey: 'profile.work.1.title', styleKey: 'profile.work.1.style', likes: 342, dateKey: 'profile.work.1.date', icon: '🐝' },

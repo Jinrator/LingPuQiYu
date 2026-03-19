@@ -15,7 +15,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
 const AppLayout: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useSettings();
@@ -25,14 +25,16 @@ const AppLayout: React.FC = () => {
   const [showMelodyDecoder, setShowMelodyDecoder] = useState(false);
   const { showExitConfirm, hideExitConfirm } = useExitConfirmation();
   const currentView = getViewModeFromPath(location.pathname);
+  const userAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
 
   useEffect(() => {
+    if (isLoading) return;
     if (!isAuthenticated && location.pathname !== '/login') {
       navigate('/login', { replace: true });
     } else if (isAuthenticated && location.pathname === '/login') {
       navigate('/lab', { replace: true });
     }
-  }, [isAuthenticated, location.pathname, navigate]);
+  }, [isAuthenticated, isLoading, location.pathname, navigate]);
 
   useEffect(() => {
     if (isAudioInitialized || !isAuthenticated) return;
@@ -59,6 +61,19 @@ const AppLayout: React.FC = () => {
   };
 
   const handleViewChange = (view: ViewMode) => navigate(viewModeToPath[view]);
+
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto" style={{ background: PALETTE.blue.bg }}>
+            <Music4 size={20} style={{ color: PALETTE.blue.accent }} />
+          </div>
+          <p className="text-sm font-medium text-slate-400">{t('app.redirecting')}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated && location.pathname !== '/login') {
     return (
@@ -121,7 +136,7 @@ const AppLayout: React.FC = () => {
               style={currentView === ViewMode.USER_PROFILE ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
             >
               <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+                <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
               </div>
               {t('nav.profile')}
             </button>
@@ -161,7 +176,7 @@ const AppLayout: React.FC = () => {
             className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
             style={currentView === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
           >
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+            <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
           </button>
           <button
             onClick={() => navigate('/settings')}

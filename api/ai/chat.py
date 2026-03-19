@@ -32,12 +32,12 @@ class AIChatIn(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 
-@app.get("/api/ai/chat")
+@app.get("/")
 async def health_check():
     return {"ok": True, "message": "AI chat endpoint is running."}
 
 
-@app.post("/api/ai/chat")
+@app.post("/")
 async def ai_chat(body: AIChatIn):
     if not DASHSCOPE_API_KEY:
         raise HTTPException(status_code=500, detail="Missing DASHSCOPE_API_KEY")
