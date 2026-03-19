@@ -4,6 +4,7 @@ import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { PaletteKey } from '../../constants/palette';
 import { createKeyboardShortcutMaps, isEditableTarget, LETTER_SHORTCUTS } from '../../utils/keyboardShortcuts';
+import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -413,6 +414,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const [articulation, setArticulation] = useState<'Long' | 'Short'>('Long');
   const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
   const [volume, setVolume] = useState(0.8);
+  const [keyboardPlayEnabled, setKeyboardPlayEnabled] = useState(true);
   const audioPoolRef = useRef<Map<string, HTMLAudioElement[]>>(new Map());
   const volumeRef = useRef(volume);
 
@@ -479,6 +481,11 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
 
   // Keyboard shortcut mapping
   useEffect(() => {
+    if (!keyboardPlayEnabled) {
+      setActiveKeys(new Set());
+      return;
+    }
+
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || isEditableTarget(e.target)) return;
       const nk = keyMap[e.key.toLowerCase()];
@@ -486,7 +493,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [keyMap, playNote]);
+  }, [keyMap, keyboardPlayEnabled, playNote]);
 
   if (!config) {
     return <div className="text-center py-20 text-slate-400 text-sm">{t('lab.cnInst.noOneshot')}</div>;
@@ -543,6 +550,8 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
         </div>
       </div>
 
+      <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
+
       {/* Play area */}
       <div className="rounded-xl bg-slate-100 border border-slate-200">
         <div className="overflow-x-auto p-2" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}>
@@ -568,7 +577,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
                       className="w-8 md:w-10 h-40 md:h-52 rounded-b-md flex flex-col justify-end items-center pb-2 z-10 transition-none shadow-sm active:scale-[0.98] origin-top select-none"
                     >
                       <div className="flex flex-col items-center gap-0.5">
-                        {whiteShortcut && (
+                        {keyboardPlayEnabled && whiteShortcut && (
                           <span className="text-[9px] font-black tracking-wide text-slate-300">{whiteShortcut}</span>
                         )}
                         <span className="font-bold text-[10px] text-slate-600">{wk.note}</span>
@@ -592,7 +601,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
                         className="absolute -right-2.5 md:-right-3 top-0 w-5 md:w-6 h-24 md:h-32 rounded-b-md z-20 transition-none active:scale-[0.98] origin-top select-none"
                       >
                         <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 flex-col items-center gap-0.5 leading-none">
-                          {blackShortcut && (
+                          {keyboardPlayEnabled && blackShortcut && (
                             <span className="text-[9px] font-black tracking-[0.08em] text-slate-300">
                               {blackShortcut}
                             </span>
@@ -612,7 +621,9 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
         </div>
       </div>
 
-      <p className="text-xs text-slate-400 text-center">{t('lab.cnInst.playHint')}</p>
+      <p className="text-xs text-slate-400 text-center">
+        {keyboardPlayEnabled ? t('lab.cnInst.playHint') : t('music.keyboardPlayOffHint')}
+      </p>
     </div>
   );
 };

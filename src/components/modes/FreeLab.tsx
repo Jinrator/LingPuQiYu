@@ -14,6 +14,7 @@ import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
 import ChineseInstruments from './ChineseInstruments';
+import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
 type SubModule = 'BASIC' | 'THEORY' | 'HARMONY' | 'RHYTHM' | 'COMPOSE' | 'CHINESE_INST';
@@ -66,6 +67,7 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   const [lastPlayedNote, setLastPlayedNote] = useState<Note | null>(null);
   const [selectedChordName, setSelectedChordName] = useState<string | null>(null);
   const [activeDrums, setActiveDrums] = useState<('kick' | 'snare' | 'hihat' | 'openhat' | 'rimshot' | 'clap' | 'lowtom' | 'midtom' | 'hightom' | 'crash' | 'ride')[]>([]);
+  const [keyboardPlayEnabled, setKeyboardPlayEnabled] = useState(true);
   const synthRef = useRef<any>(null);
 
   useEffect(() => {
@@ -243,7 +245,10 @@ const FreeLab: React.FC<FreeLabProps> = () => {
                 <h3 className="font-bold text-slate-800">{t('lab.tryIt')}</h3>
                 <ClearBtn />
               </div>
-              <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
+              <div className="mb-3 flex justify-end">
+                <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
+              </div>
+              <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} keyboardEnabled={keyboardPlayEnabled} />
             </div>
           </div>
         );
@@ -269,10 +274,11 @@ const FreeLab: React.FC<FreeLabProps> = () => {
               </div>
 
               <div className="w-full">
-                <div className="flex justify-end mb-2">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
                   <ClearBtn />
                 </div>
-                <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
+                <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} keyboardEnabled={keyboardPlayEnabled} />
               </div>
             </div>
           </div>
@@ -337,7 +343,10 @@ const FreeLab: React.FC<FreeLabProps> = () => {
             </div>
             {/* Piano full width */}
             <div className="bg-white rounded-2xl px-4 pt-3 pb-1 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
-              <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} />
+              <div className="mb-3 flex justify-end">
+                <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
+              </div>
+              <Piano {...{ theme_type: false } as any} activeNotes={activeNotes.map(n => n.full)} onNotePlay={toggleNote} keyboardEnabled={keyboardPlayEnabled} />
             </div>
           </div>
         );

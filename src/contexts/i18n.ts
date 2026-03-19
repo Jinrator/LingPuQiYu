@@ -115,6 +115,12 @@ const dict: Dict = {
   'lab.pitchLabel': { 'zh-CN': '音高 (Pitch)', 'zh-TW': '音高 (Pitch)', en: 'Pitch' },
   'lab.solfege': { 'zh-CN': '唱名 (Solfege)', 'zh-TW': '唱名 (Solfege)', en: 'Solfège' },
   'lab.drumKitIntro': { 'zh-CN': '鼓组介绍', 'zh-TW': '鼓組介紹', en: 'Drum Kit Introduction' },
+  'music.keyboardPlay': { 'zh-CN': '使用键盘演奏', 'zh-TW': '使用鍵盤演奏', en: 'Play With Keyboard' },
+  'music.keyboardPlayOn': { 'zh-CN': '已开启，显示键盘提示', 'zh-TW': '已開啟，顯示鍵盤提示', en: 'On, showing keyboard hints' },
+  'music.keyboardPlayOff': { 'zh-CN': '已关闭，仅显示音名', 'zh-TW': '已關閉，僅顯示音名', en: 'Off, showing note names only' },
+  'music.keyboardPlayOnShort': { 'zh-CN': '开', 'zh-TW': '開', en: 'On' },
+  'music.keyboardPlayOffShort': { 'zh-CN': '关', 'zh-TW': '關', en: 'Off' },
+  'music.keyboardPlayOffHint': { 'zh-CN': '键盘提示已关闭，当前只显示音名，可继续点击琴键演奏', 'zh-TW': '鍵盤提示已關閉，目前只顯示音名，可繼續點擊琴鍵彈奏', en: 'Keyboard hints are off. Note names remain visible and you can still click keys to play.' },
 
   // ── Adventure ──
   'adv.subtitle': { 'zh-CN': 'Adventure Map · 探险地图', 'zh-TW': 'Adventure Map · 探險地圖', en: 'Adventure Map' },

@@ -1,22 +1,24 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { Note } from '../../types';
 import { ALL_NOTES } from '../../constants';
 import { createKeyboardShortcutMaps, EXTENDED_SHORTCUTS, isEditableTarget } from '../../utils/keyboardShortcuts';
 
 interface PianoProps {
+  theme_type?: boolean;
   activeNotes: string[]; // List of note full names e.g. "C4"
   onNotePlay: (note: Note) => void;
   showLabels?: boolean;
+  keyboardEnabled?: boolean;
 }
 
-const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, showLabels = true }) => {
+const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, showLabels = true, keyboardEnabled = true }) => {
   const isBlackKey = (name: string) => name.includes('#');
   const isDark = theme_type;
   const { keyToItem: keyMap, idToShortcut: shortcutByNote } = useMemo(
     () => createKeyboardShortcutMaps(ALL_NOTES, EXTENDED_SHORTCUTS, note => note.full),
     [],
   );
+  const showKeyboardHints = showLabels && keyboardEnabled;
   
   // 本地状态用于立即响应按下事件
   const [pressedNote, setPressedNote] = useState<string | null>(null);
@@ -31,6 +33,11 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
   };
 
   useEffect(() => {
+    if (!keyboardEnabled) {
+      setPressedNote(null);
+      return;
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat || event.metaKey || event.ctrlKey || event.altKey || isEditableTarget(event.target)) {
         return;
@@ -56,7 +63,7 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [keyMap, onNotePlay]);
+  }, [keyMap, keyboardEnabled, onNotePlay]);
 
   return (
     <div 
@@ -102,7 +109,7 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                     >
                       {showLabels && (
                           <div className="flex flex-col items-center gap-0.5">
-                              {whiteShortcut && (
+                              {showKeyboardHints && whiteShortcut && (
                                 <span className={`text-[9px] font-black tracking-wide ${
                                   isDark ? 'text-slate-500' : 'text-slate-300'
                                 }`}>{whiteShortcut}</span>
@@ -143,7 +150,7 @@ const Piano: React.FC<PianoProps> = ({ theme_type, activeNotes, onNotePlay, show
                       >
                         {showLabels && (
                           <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 flex-col items-center gap-0.5 leading-none">
-                            {blackShortcut && (
+                            {showKeyboardHints && blackShortcut && (
                               <span className="text-[9px] font-black tracking-[0.08em] text-slate-300">
                                 {blackShortcut}
                               </span>
