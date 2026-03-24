@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { VercelRequest } from '@vercel/node';
+import { findUserById } from './users.js';
 import type { AuthTokenPayload, AuthUser } from './types.js';
 
 const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -82,4 +83,41 @@ export function readBearerToken(req: Pick<VercelRequest, 'headers'>): string | n
     return null;
   }
   return header.slice('Bearer '.length).trim();
+}
+
+export interface AuthContext {
+  token: string;
+  payload: AuthTokenPayload;
+  user: AuthUser;
+}
+
+export class AuthError extends Error {
+  status: number;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
+    this.status = 401;
+  }
+}
+
+export async function requireAuth(
+  req: Pick<VercelRequest, 'headers'>,
+): Promise<AuthContext> {
+  const token = readBearerToken(req);
+  if (!token) {
+    throw new AuthError('缺少登录凭证');
+  }
+
+  const payload = verifyAuthToken(token);
+  if (!payload?.uid || !payload?.phone) {
+    throw new AuthError('登录状态已失效');
+  }
+
+  const user = await findUserById(payload.uid);
+  if (!user || user.phone !== payload.phone) {
+    throw new AuthError('用户不存在或已失效');
+  }
+
+  return { token, payload, user };
 }

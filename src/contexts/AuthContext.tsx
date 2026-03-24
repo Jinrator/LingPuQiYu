@@ -5,7 +5,6 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  checkPhoneExists: (phone: string) => Promise<boolean>;
   sendSmsCode: (phone: string) => Promise<any>;
   loginWithPhone: (phone: string, code: string) => Promise<any>;
   register: (data: { phone: string; code: string; username?: string; courseType?: string }) => Promise<any>;
@@ -47,10 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendSmsCode = useCallback(async (phone: string) => {
     return authService.sendSmsCode(phone);
-  }, []);
-
-  const checkPhoneExists = useCallback(async (phone: string) => {
-    return authService.checkPhoneExists(phone);
   }, []);
 
   const loginWithPhone = useCallback(async (phone: string, code: string) => {
@@ -116,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, checkPhoneExists, sendSmsCode, loginWithPhone, register, loginWithWechat, loginWithQQ, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, register, loginWithWechat, loginWithQQ, logout }}>
       {children}
     </AuthContext.Provider>
   );

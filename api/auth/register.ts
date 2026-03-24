@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { signAuthToken } from '../_lib/auth.js';
+import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { verifyPhoneCode } from '../_lib/sms.js';
 import { createUserProfile, findUserRowByPhone, updateUserProfile } from '../_lib/users.js';
 
@@ -35,8 +36,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.status(400).json({ success: false, message: '参数不完整' });
     return;
   }
+  if (!/^1\d{10}$/.test(phone)) {
+    res.status(400).json({ success: false, message: '手机号格式不正确' });
+    return;
+  }
 
   try {
+    const ip = getClientIp(req);
+    assertRateLimits([
+      {
+        scope: 'auth:register:ip',
+        identifier: ip,
+        limit: 8,
+        windowMs: 10 * 60 * 1000,
+        blockMs: 10 * 60 * 1000,
+        message: '注册尝试过于频繁，请稍后再试',
+      },
+      {
+        scope: 'auth:register:phone',
+        identifier: phone,
+        limit: 5,
+        windowMs: 10 * 60 * 1000,
+        blockMs: 10 * 60 * 1000,
+        message: '该手机号尝试次数过多，请稍后再试',
+      },
+    ]);
+
     const verification = await verifyPhoneCode(phone, code);
     if (!verification.success) {
       res.status(400).json(verification);
@@ -51,8 +76,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const token = signAuthToken(user);
     res.json({ success: true, user, token });
   } catch (error) {
-    const message = error instanceof Error ? error.message : '注册失败，请稍后重试';
-    console.error('[Auth] 注册失败:', message);
-    res.status(500).json({ success: false, message });
+    if (error instanceof RateLimitError) {
+      res.status(error.status).json({ success: false, message: error.message });
+      return;
+    }
+
+    console.error('[Auth] 注册失败:', error instanceof Error ? error.message : 'unknown error');
+    res.status(500).json({ success: false, message: '注册失败，请稍后重试' });
   }
 }

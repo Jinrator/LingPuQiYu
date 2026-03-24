@@ -1,13 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { sendPhoneCode } from '../_lib/sms.js';
-
-const rateLimitStore = new Map<string, number>();
-
-function getRequestIp(req: VercelRequest): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  const candidate = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-  return candidate?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-}
 
 function readPhone(req: VercelRequest): string {
   const body = (req.body ?? {}) as { phone?: unknown };
@@ -20,26 +13,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const ip = getRequestIp(req);
-  const now = Date.now();
-  const lastRequestAt = rateLimitStore.get(ip);
-  if (lastRequestAt && now - lastRequestAt < 60_000) {
-    res.status(429).json({ success: false, message: '请求太频繁，请稍后再试' });
-    return;
-  }
-  rateLimitStore.set(ip, now);
-
   const phone = readPhone(req);
   if (!phone || !/^1\d{10}$/.test(phone)) {
     res.status(400).json({ success: false, message: '手机号格式不正确' });
     return;
   }
 
-  const result = await sendPhoneCode(phone);
-  if (!result.success && result.status) {
-    res.status(result.status).json(result);
-    return;
-  }
+  try {
+    const ip = getClientIp(req);
+    assertRateLimits([
+      {
+        scope: 'sms:send:ip',
+        identifier: ip,
+        limit: 5,
+        windowMs: 10 * 60 * 1000,
+        blockMs: 10 * 60 * 1000,
+        message: '请求太频繁，请稍后再试',
+      },
+      {
+        scope: 'sms:send:phone:minute',
+        identifier: phone,
+        limit: 1,
+        windowMs: 60 * 1000,
+        blockMs: 60 * 1000,
+        message: '发送太频繁，请稍后再试',
+      },
+      {
+        scope: 'sms:send:phone:day',
+        identifier: phone,
+        limit: 10,
+        windowMs: 24 * 60 * 60 * 1000,
+        message: '今日发送次数已达上限',
+      },
+    ]);
 
-  res.json(result);
+    const result = await sendPhoneCode(phone);
+    if (!result.success && result.status) {
+      res.status(result.status).json(result);
+      return;
+    }
+
+    res.json(result);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      res.status(error.status).json({ success: false, message: error.message });
+      return;
+    }
+
+    console.error('[SMS] 发送失败:', error instanceof Error ? error.message : 'unknown error');
+    res.status(500).json({ success: false, message: '短信发送失败，请稍后重试' });
+  }
 }

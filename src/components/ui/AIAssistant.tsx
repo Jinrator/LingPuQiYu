@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Cpu } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
+import { authService } from '../../services/authService';
 
 interface AIAssistantProps {
   theme?: 'light' | 'dark';
 }
+
+type ChatMessage = { role: 'user' | 'assistant'; text: string };
 
 const AIAssistant: React.FC<AIAssistantProps> = () => {
   const { t } = useSettings();
@@ -38,9 +41,13 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
     setMessages(nextMessages);
     setIsTyping(true);
     try {
+      const token = authService.getAccessToken();
       const resp = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           messages: nextMessages.map((m) => ({
             role: m.role,

@@ -13,12 +13,6 @@ interface SmsResult {
   message: string;
 }
 
-interface CheckPhoneResponse {
-  success: boolean;
-  exists: boolean;
-  message?: string;
-}
-
 interface LoginResult {
   success: boolean;
   user?: AuthUser;
@@ -108,15 +102,6 @@ const authHeader = (token: string) => ({
 });
 
 export const authService = {
-  async checkPhoneExists(phone: string): Promise<boolean> {
-    const result = await request<CheckPhoneResponse>('/api/auth/check-phone', {
-      method: 'POST',
-      body: JSON.stringify({ phone }),
-    });
-
-    return result.exists;
-  },
-
   async sendSmsCode(phone: string): Promise<SmsResult> {
     return request<SmsResult>('/api/sms/send', {
       method: 'POST',
@@ -165,6 +150,10 @@ export const authService = {
 
   logout() {
     clearStoredSession();
+  },
+
+  getAccessToken(): string | null {
+    return readStoredSession()?.token || null;
   },
 
   async getCurrentUser(): Promise<StoredSession | null> {

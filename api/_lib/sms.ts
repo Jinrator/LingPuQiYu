@@ -17,13 +17,22 @@ function getAliyunConfig() {
   };
 }
 
+function isProductionEnvironment(): boolean {
+  const runtime = (process.env.VERCEL_ENV || process.env.NODE_ENV || 'development').toLowerCase();
+  return runtime === 'production';
+}
+
+function getTestSmsCode(): string {
+  return (process.env.TEST_SMS_CODE || '').trim();
+}
+
 export function isAliyunSmsEnabled(): boolean {
   const { accessKeyId, accessKeySecret } = getAliyunConfig();
   return Boolean(accessKeyId && accessKeySecret);
 }
 
 export function isTestSmsEnabled(): boolean {
-  return process.env.ALLOW_TEST_SMS === 'true';
+  return process.env.ALLOW_TEST_SMS === 'true' && !isProductionEnvironment();
 }
 
 async function createAliyunSmsClient(): Promise<AliyunSmsClientContext | null> {
@@ -91,7 +100,11 @@ export async function sendPhoneCode(phone: string): Promise<SmsSendResult> {
     return { success: false, status: 503, message: '短信服务未配置' };
   }
 
-  const testCode = process.env.TEST_SMS_CODE || '888888';
+  const testCode = getTestSmsCode();
+  if (!testCode) {
+    return { success: false, status: 503, message: '测试验证码未配置' };
+  }
+
   console.log(`[SMS] 测试验证码 -> ${phone}: ${testCode}`);
   return { success: true, message: '验证码已发送（测试环境）' };
 }
@@ -138,7 +151,11 @@ export async function verifyPhoneCode(
     return { success: false, message: '短信服务未配置' };
   }
 
-  const testCode = process.env.TEST_SMS_CODE || '888888';
+  const testCode = getTestSmsCode();
+  if (!testCode) {
+    return { success: false, message: '短信服务未配置' };
+  }
+
   if (code === testCode) {
     return { success: true };
   }
