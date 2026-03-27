@@ -13,6 +13,12 @@ interface UpdateUserProfileInput {
   courseType?: string;
 }
 
+interface UpdateOwnProfileInput {
+  username?: string;
+  courseType?: string;
+  avatarUrl?: string;
+}
+
 function normalizeLoginMethod(value: string | null | undefined): LoginMethod {
   if (value === 'wechat' || value === 'qq' || value === 'phone') {
     return value;
@@ -123,3 +129,39 @@ export async function updateUserProfile(
   }
   return mapUserRow(data as AppUserRow);
 }
+export async function updateUserProfileById(
+  userId: string,
+  { username, courseType, avatarUrl }: UpdateOwnProfileInput,
+): Promise<AuthUser> {
+  const supabase = getSupabaseAdmin();
+
+  const updates: Partial<
+    Pick<AppUserRow, 'username' | 'course_type' | 'avatar_url' | 'updated_at'>
+  > = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (username !== undefined) {
+    updates.username = username || null;
+  }
+  if (courseType !== undefined) {
+    updates.course_type = courseType || null;
+  }
+  if (avatarUrl !== undefined) {
+    updates.avatar_url = avatarUrl || null;
+  }
+
+  const { data, error } = await supabase
+    .from(getUsersTableName())
+    .update(updates)
+    .eq('id', userId)
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapUserRow(data as AppUserRow);
+}
+
