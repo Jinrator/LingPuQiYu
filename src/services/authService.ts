@@ -34,6 +34,12 @@ interface SessionResponse {
   code?: string;
 }
 
+export interface UpdateProfilePayload {
+  username?: string;
+  courseType?: string;
+  avatarUrl?: string;
+}
+
 const STORAGE_KEY = 'shenyin_auth';
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
@@ -179,6 +185,35 @@ export const authService = {
       return null;
     }
   },
+  
+   async updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+    const storedSession = readStoredSession();
+    if (!storedSession?.token) {
+      throw new Error('未登录，无法更新资料');
+    }
+
+    const result = await request<{ success: boolean; user?: AuthUser; message?: string }>(
+      '/api/profile/update',
+      {
+        method: 'POST',
+        headers: authHeader(storedSession.token),
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!result.success || !result.user) {
+      throw new Error(result.message || '更新资料失败');
+    }
+
+    const nextSession = {
+      user: result.user,
+      token: storedSession.token,
+    };
+
+    writeStoredSession(nextSession);
+    return result.user;
+  },
+
 
   isLoggedIn(): boolean {
     return readStoredSession() !== null;
