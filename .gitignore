@@ -27,8 +27,6 @@ dist-ssr
 .env
 .env.local
 .env.*.local
-server/.env
-server/.env.local
 
 # Kiro IDE files
 .kiro

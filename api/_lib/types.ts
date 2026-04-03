@@ -28,6 +28,15 @@ export interface AuthTokenPayload {
   exp: number;
 }
 
+export interface RefreshTokenRow {
+  id: string;
+  user_id: string;
+  token_hash: string;
+  expires_at: string;
+  revoked: boolean;
+  created_at: string;
+}
+
 export interface SmsVerificationResult {
   success: boolean;
   message?: string;

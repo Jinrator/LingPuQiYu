@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(() => {
-    authService.logout();
+    void authService.logout();
     setUser(null);
     setIsAuthenticated(false);
   }, []);

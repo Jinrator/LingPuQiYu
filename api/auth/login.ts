@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { signAuthToken } from '../_lib/auth.js';
+import { issueTokenPair } from '../_lib/auth.js';
 import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { verifyPhoneCode } from '../_lib/sms.js';
@@ -68,8 +68,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    const token = signAuthToken(user);
-    res.json({ success: true, user, token });
+    const { accessToken, refreshToken } = await issueTokenPair(user);
+    res.json({ success: true, user, token: accessToken, refreshToken });
   } catch (error) {
     if (error instanceof RateLimitError) {
       res.status(error.status).json({ success: false, message: error.message });

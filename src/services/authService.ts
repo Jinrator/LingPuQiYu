@@ -17,6 +17,7 @@ interface LoginResult {
   success: boolean;
   user?: AuthUser;
   token?: string;
+  refreshToken?: string;
   message?: string;
   code?: string;
 }
@@ -24,14 +25,7 @@ interface LoginResult {
 interface StoredSession {
   user: AuthUser;
   token: string;
-}
-
-interface SessionResponse {
-  success: boolean;
-  user?: AuthUser;
-  token?: string;
-  message?: string;
-  code?: string;
+  refreshToken: string;
 }
 
 export interface UpdateProfilePayload {
@@ -45,11 +39,16 @@ const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 const buildUrl = (path: string) => `${API_BASE}${path}`;
 
+// ── Session 存储 ──
+
 const readStoredSession = (): StoredSession | null => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as StoredSession;
+    const parsed = JSON.parse(raw);
+    // 兼容旧格式（没有 refreshToken 的）
+    if (!parsed.token) return null;
+    return parsed as StoredSession;
   } catch {
     return null;
   }
@@ -63,6 +62,8 @@ const clearStoredSession = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
 
+// ── 请求工具 ──
+
 class ApiRequestError extends Error {
   code?: string;
   status?: number;
@@ -75,22 +76,79 @@ class ApiRequestError extends Error {
   }
 }
 
-const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshToken(): Promise<boolean> {
+  const session = readStoredSession();
+  if (!session?.refreshToken) return false;
+
+  try {
+    const response = await fetch(buildUrl('/api/auth/refresh'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: session.refreshToken }),
+    });
+
+    if (!response.ok) {
+      clearStoredSession();
+      return false;
+    }
+
+    const data = await response.json();
+    if (data.success && data.token && data.refreshToken) {
+      writeStoredSession({
+        user: session.user,
+        token: data.token,
+        refreshToken: data.refreshToken,
+      });
+      return true;
+    }
+
+    clearStoredSession();
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// 防止并发刷新
+function refreshTokenOnce(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = tryRefreshToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
+const request = async <T>(path: string, init: RequestInit = {}, retry = true): Promise<T> => {
   const headers = new Headers(init.headers || {});
   if (!headers.has('Content-Type') && init.body) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(buildUrl(path), {
-    ...init,
-    headers,
-  });
+  // 自动附加 access token
+  const session = readStoredSession();
+  if (session?.token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${session.token}`);
+  }
+
+  const response = await fetch(buildUrl(path), { ...init, headers });
 
   let data: any = null;
   try {
     data = await response.json();
   } catch {
     data = null;
+  }
+
+  // 401 且有 refresh token → 尝试刷新后重试一次
+  if (response.status === 401 && retry) {
+    const refreshed = await refreshTokenOnce();
+    if (refreshed) {
+      return request<T>(path, init, false);
+    }
+    clearStoredSession();
   }
 
   if (!response.ok) {
@@ -103,9 +161,7 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
   return data as T;
 };
 
-const authHeader = (token: string) => ({
-  Authorization: `Bearer ${token}`,
-});
+// ── Auth Service ──
 
 export const authService = {
   async sendSmsCode(phone: string): Promise<SmsResult> {
@@ -116,13 +172,17 @@ export const authService = {
   },
 
   async loginWithPhone(phone: string, code: string): Promise<LoginResult> {
-    const result = await request<SessionResponse>('/api/auth/login', {
+    const result = await request<LoginResult>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ phone, code }),
     });
 
-    if (result.success && result.user && result.token) {
-      writeStoredSession({ user: result.user, token: result.token });
+    if (result.success && result.user && result.token && result.refreshToken) {
+      writeStoredSession({
+        user: result.user,
+        token: result.token,
+        refreshToken: result.refreshToken,
+      });
     }
 
     return result;
@@ -134,13 +194,17 @@ export const authService = {
     username?: string;
     courseType?: string;
   }): Promise<LoginResult> {
-    const result = await request<SessionResponse>('/api/auth/register', {
+    const result = await request<LoginResult>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
 
-    if (result.success && result.user && result.token) {
-      writeStoredSession({ user: result.user, token: result.token });
+    if (result.success && result.user && result.token && result.refreshToken) {
+      writeStoredSession({
+        user: result.user,
+        token: result.token,
+        refreshToken: result.refreshToken,
+      });
     }
 
     return result;
@@ -154,22 +218,36 @@ export const authService = {
     return { success: false, message: '当前方案未接入 QQ 登录' };
   },
 
-  logout() {
+  async logout() {
+    const session = readStoredSession();
+    if (session?.token && session?.refreshToken) {
+      try {
+        await fetch(buildUrl('/api/auth/logout'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.token}`,
+          },
+          body: JSON.stringify({ refreshToken: session.refreshToken }),
+        });
+      } catch {
+        // 即使服务端吊销失败，本地也要清除
+      }
+    }
     clearStoredSession();
   },
 
   getAccessToken(): string | null {
-    return readStoredSession()?.token || null;
+    return readStoredSession()?.token ?? null;
   },
 
-  async getCurrentUser(): Promise<StoredSession | null> {
-    const storedSession = readStoredSession();
-    if (!storedSession?.token) return null;
+  async getCurrentUser(): Promise<{ user: AuthUser; token: string } | null> {
+    const session = readStoredSession();
+    if (!session?.token) return null;
 
     try {
-      const result = await request<SessionResponse>('/api/auth/me', {
+      const result = await request<{ success: boolean; user?: AuthUser }>('/api/auth/me', {
         method: 'GET',
-        headers: authHeader(storedSession.token),
       });
 
       if (!result.success || !result.user) {
@@ -177,26 +255,26 @@ export const authService = {
         return null;
       }
 
-      const nextSession = { user: result.user, token: storedSession.token };
-      writeStoredSession(nextSession);
-      return nextSession;
+      // 用最新的 token（可能已被 refresh 更新）
+      const current = readStoredSession();
+      if (current) {
+        const updated = { ...current, user: result.user };
+        writeStoredSession(updated);
+        return { user: result.user, token: updated.token };
+      }
+
+      return null;
     } catch {
       clearStoredSession();
       return null;
     }
   },
-  
-   async updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
-    const storedSession = readStoredSession();
-    if (!storedSession?.token) {
-      throw new Error('未登录，无法更新资料');
-    }
 
+  async updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
     const result = await request<{ success: boolean; user?: AuthUser; message?: string }>(
       '/api/profile/update',
       {
         method: 'POST',
-        headers: authHeader(storedSession.token),
         body: JSON.stringify(payload),
       },
     );
@@ -205,15 +283,13 @@ export const authService = {
       throw new Error(result.message || '更新资料失败');
     }
 
-    const nextSession = {
-      user: result.user,
-      token: storedSession.token,
-    };
+    const session = readStoredSession();
+    if (session) {
+      writeStoredSession({ ...session, user: result.user });
+    }
 
-    writeStoredSession(nextSession);
     return result.user;
   },
-
 
   isLoggedIn(): boolean {
     return readStoredSession() !== null;
