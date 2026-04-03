@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe } from 'lucide-react';
+import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe, Lock, Eye, EyeOff, AtSign } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { PALETTE } from '../../constants/palette';
 import { useSettings, Language } from '../../contexts/SettingsContext';
@@ -10,6 +10,7 @@ interface AuthPageProps {
 }
 
 type AuthMode = 'login' | 'register';
+type LoginMethod = 'password' | 'sms';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
 
 const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
@@ -17,12 +18,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const location = useLocation();
   const { t, language, setLanguage } = useSettings();
 
-  const { loginWithPhone: doLoginWithPhone, sendSmsCode, register: doRegister, isAuthenticated } = useAuth();
+  const { loginWithPhone: doLoginWithPhone, loginWithPassword: doLoginWithPassword, sendSmsCode, register: doRegister, isAuthenticated } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
   const [course, setCourse] = useState<CourseType | null>(null);
-  const [name, setName] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [account, setAccount] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [regPassword, setRegPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [vCode, setVCode] = useState('');
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -51,16 +59,41 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     setIsAuthorizing(true); setErrorMsg('');
     try {
       if (mode === 'login') {
-        const r = await doLoginWithPhone(phone, vCode);
-        if (r && !r.success) setErrorMsg(r.message || t('auth.loginFail'));
+        if (loginMethod === 'password') {
+          const r = await doLoginWithPassword(account, password);
+          if (r && !r.success) {
+            if (r.code === 'NO_PASSWORD') {
+              setLoginMethod('sms');
+              setErrorMsg(t('auth.noPassword'));
+            } else {
+              setErrorMsg(r.message || t('auth.loginFail'));
+            }
+          }
+        } else {
+          const r = await doLoginWithPhone(phone, vCode);
+          if (r && !r.success) setErrorMsg(r.message || t('auth.loginFail'));
+        }
       } else {
-        const r = await doRegister({ phone, code: vCode, username: name, courseType: course || undefined });
-        if (r && !r.success) setErrorMsg(r.message || t('auth.registerFail'));
+        if (!username || !/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
+          setErrorMsg(t('auth.usernameInvalid'));
+          setIsAuthorizing(false);
+          return;
+        }
+        const r = await doRegister({ phone, code: vCode, username, displayName: displayName || undefined, courseType: course || undefined, password: regPassword || undefined });
+        if (r && !r.success) {
+          if (r.code === 'USERNAME_TAKEN') setErrorMsg(t('auth.usernameTaken'));
+          else setErrorMsg(r.message || t('auth.registerFail'));
+        }
       }
     } catch (e: any) {
       if (e?.code === 'USER_NOT_FOUND') {
         setMode('register');
         setErrorMsg(t('auth.notRegisteredRedirect'));
+      } else if (e?.code === 'NO_PASSWORD') {
+        setLoginMethod('sms');
+        setErrorMsg(t('auth.noPassword'));
+      } else if (e?.code === 'USERNAME_TAKEN') {
+        setErrorMsg(t('auth.usernameTaken'));
       } else {
         setErrorMsg(e.message || t('auth.actionFail'));
       }
@@ -70,14 +103,32 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
   const getVCode = async () => {
     if (phone.length !== 11) return;
+    // 立即开始倒计时，不等后端
+    setCountdown(60);
+    setErrorMsg('');
     try {
       const r = await sendSmsCode(phone);
-      if (r?.success) { setCountdown(60); setErrorMsg(''); }
-      else setErrorMsg(r?.message || t('auth.sendFail'));
-    } catch (e: any) { setErrorMsg(e.message || t('auth.sendFail')); }
+      if (!r?.success) {
+        setCountdown(0); // 失败回滚
+        setErrorMsg(r?.message || t('auth.sendFail'));
+      }
+    } catch (e: any) {
+      setCountdown(0);
+      setErrorMsg(e.message || t('auth.sendFail'));
+    }
   };
 
+  const loginDisabled = mode === 'login'
+    ? loginMethod === 'password'
+      ? (isAuthorizing || !account || password.length < 8)
+      : (isAuthorizing || phone.length !== 11 || vCode.length < 4)
+    : (isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4);
+
   const inputCls = `w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-medium outline-none transition-all
+    bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
+    focus:ring-2 focus:ring-[#5BA4F5]/10`;
+
+  const passwordInputCls = `w-full pl-11 pr-10 py-3.5 rounded-xl text-sm font-medium outline-none transition-all
     bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
     focus:ring-2 focus:ring-[#5BA4F5]/10`;
 
@@ -113,7 +164,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         {/* ── Left panel (hidden on mobile) ── */}
         <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
 
-          {/* decorative blocks — restored from commit 4161a25 */}
+          {/* decorative blocks */}
           <div className="absolute" style={{width: 130, height: 130, top: '-5%', left: '-5%', background: PALETTE.pink.bg, opacity: 0.62}} />
           <div className="absolute" style={{width: 70, height: 70, top: '2%', left: '20%', background: PALETTE.blue.bg, opacity: 0.58}} />
           <div className="absolute" style={{width: 110, height: 110, top: '-4%', left: '38%', background: PALETTE.yellow.bg, opacity: 0.60}} />
@@ -143,16 +194,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
           <div className="absolute" style={{width: 125, height: 125, top: '76%', left: '36%', background: PALETTE.blue.bg, opacity: 0.57}} />
           <div className="absolute" style={{width: 70, height: 70, top: '82%', left: '64%', background: PALETTE.green.bg, opacity: 0.55}} />
           <div className="absolute" style={{width: 110, height: 110, top: '72%', left: '76%', background: PALETTE.yellow.bg, opacity: 0.57}} />
-
-          {/* floating stat bubbles */}
-          {/* <div className="absolute top-20 right-[160px] flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-semibold z-10">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            12,500+ 位音乐人
-          </div>
-          <div className="absolute bottom-32 right-[140px] flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-semibold z-10">
-            <span className="w-1.5 h-1.5 rounded-full" style={{background: PALETTE.blue.accent}} />
-            4.9 · 120K 评价
-          </div> */}
 
           {/* brand */}
           <div className="relative z-10">
@@ -213,33 +254,72 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
             {/* ── LOGIN ── */}
             {mode === 'login' && (
               <div className="space-y-3">
-                <div className="h-[10px]" />
-                <div className="relative">
-                  <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                  <input type="tel" placeholder={t('auth.phone')} value={phone}
-                    onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                    className={inputCls} />
+                {/* Login method tabs */}
+                <div className="flex gap-1 p-1 rounded-xl bg-[#F8FAFC]">
+                  {(['password', 'sms'] as LoginMethod[]).map(m => (
+                    <button key={m}
+                      onClick={() => { setLoginMethod(m); setErrorMsg(''); }}
+                      className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                      style={loginMethod === m
+                        ? { background: '#FFFFFF', color: PALETTE.blue.accent, boxShadow: '0 1px 4px rgba(0,0,0,0.02)' }
+                        : { color: '#94A3B8' }
+                      }
+                    >
+                      {m === 'password' ? t('auth.passwordLogin') : t('auth.smsLogin')}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                    <input type="text" placeholder={t('auth.code')} value={vCode}
-                      onChange={e => setVCode(e.target.value.slice(0, 6))}
-                      className={inputCls} />
-                  </div>
-                  <button onClick={getVCode} disabled={countdown > 0 || phone.length !== 11}
-                    className={`px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all
-                      ${countdown > 0 || phone.length !== 11
-                        ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                        : 'text-white hover:opacity-90'}`}
-                    style={countdown > 0 || phone.length !== 11 ? {} : {background: PALETTE.blue.accent}}>
-                    {countdown > 0 ? `${countdown}s` : t('auth.getCode')}
-                  </button>
-                </div>
+
+                {loginMethod === 'password' ? (
+                  <>
+                    <div className="relative">
+                      <AtSign size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input type="text" placeholder={t('auth.account')} value={account}
+                        onChange={e => setAccount(e.target.value.trim())}
+                        className={inputCls} />
+                    </div>
+                    <div className="relative">
+                      <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input type={showPassword ? 'text' : 'password'} placeholder={t('auth.password')} value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className={passwordInputCls} />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input type="tel" placeholder={t('auth.phone')} value={phone}
+                        onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        className={inputCls} />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                        <input type="text" placeholder={t('auth.code')} value={vCode}
+                          onChange={e => setVCode(e.target.value.slice(0, 6))}
+                          className={inputCls} />
+                      </div>
+                      <button onClick={getVCode} disabled={countdown > 0 || phone.length !== 11}
+                        className={`px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all
+                          ${countdown > 0 || phone.length !== 11
+                            ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                            : 'text-white hover:opacity-90'}`}
+                        style={countdown > 0 || phone.length !== 11 ? {} : {background: PALETTE.blue.accent}}>
+                        {countdown > 0 ? `${countdown}s` : t('auth.getCode')}
+                      </button>
+                    </div>
+                  </>
+                )}
+
                 <button onClick={handleAction}
-                  disabled={isAuthorizing || phone.length !== 11 || vCode.length < 4}
+                  disabled={loginDisabled}
                   className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all mt-1 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-                  style={{background: isAuthorizing || phone.length !== 11 || vCode.length < 4 ? '#cbd5e1' : '#1e293b'}}>
+                  style={{background: loginDisabled ? '#cbd5e1' : '#1e293b'}}>
                   {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('auth.login')}</>}
                 </button>
               </div>
@@ -265,9 +345,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                 </div>
                 <div className="space-y-2.5">
                   <div className="relative">
+                    <AtSign size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input type="text" placeholder={t('auth.usernamePlaceholder')} value={username}
+                      onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30).toLowerCase())}
+                      className={inputCls} />
+                  </div>
+                  <div className="relative">
                     <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                    <input type="text" placeholder={t('auth.namePlace')} value={name}
-                      onChange={e => setName(e.target.value)} className={inputCls} />
+                    <input type="text" placeholder={t('auth.displayNamePlace')} value={displayName}
+                      onChange={e => setDisplayName(e.target.value)} className={inputCls} />
                   </div>
                   <div className="relative">
                     <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
@@ -290,9 +376,20 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                       {countdown > 0 ? `${countdown}s` : t('auth.getCode')}
                     </button>
                   </div>
+                  {/* Optional password for registration */}
+                  <div className="relative">
+                    <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input type={showRegPassword ? 'text' : 'password'} placeholder={t('auth.setPasswordOptional')} value={regPassword}
+                      onChange={e => setRegPassword(e.target.value)}
+                      className={passwordInputCls} />
+                    <button type="button" onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                      {showRegPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                 </div>
                 <button onClick={handleAction}
-                  disabled={isAuthorizing || !course || !name || phone.length !== 11 || vCode.length < 4}
+                  disabled={isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4}
                   className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                   style={{background: '#1e293b'}}>
                   {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('auth.finishRegister')}</>}

@@ -4,9 +4,11 @@ export interface AuthUser {
   id: string;
   phone: string;
   username?: string;
+  displayName?: string;
   avatar?: string;
   courseType?: string;
   loginMethod: LoginMethod;
+  hasPassword: boolean;
   createdAt: number;
 }
 
@@ -14,9 +16,11 @@ export interface AppUserRow {
   id: string;
   phone: string;
   username: string | null;
+  display_name: string | null;
   avatar_url: string | null;
   course_type: string | null;
   login_method: string;
+  password_hash: string | null;
   created_at: string;
   updated_at: string;
 }

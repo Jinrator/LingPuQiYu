@@ -2,9 +2,11 @@ export interface AuthUser {
   id: string;
   phone: string;
   username?: string;
+  displayName?: string;
   avatar?: string;
   courseType?: string;
   loginMethod: 'phone' | 'wechat' | 'qq';
+  hasPassword: boolean;
   createdAt: number;
 }
 
@@ -29,7 +31,7 @@ interface StoredSession {
 }
 
 export interface UpdateProfilePayload {
-  username?: string;
+  displayName?: string;
   courseType?: string;
   avatarUrl?: string;
 }
@@ -174,7 +176,24 @@ export const authService = {
   async loginWithPhone(phone: string, code: string): Promise<LoginResult> {
     const result = await request<LoginResult>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, code, mode: 'sms' }),
+    });
+
+    if (result.success && result.user && result.token && result.refreshToken) {
+      writeStoredSession({
+        user: result.user,
+        token: result.token,
+        refreshToken: result.refreshToken,
+      });
+    }
+
+    return result;
+  },
+
+  async loginWithPassword(phone: string, password: string): Promise<LoginResult> {
+    const result = await request<LoginResult>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ account: phone, password, mode: 'password' }),
     });
 
     if (result.success && result.user && result.token && result.refreshToken) {
@@ -192,7 +211,9 @@ export const authService = {
     phone: string;
     code: string;
     username?: string;
+    displayName?: string;
     courseType?: string;
+    password?: string;
   }): Promise<LoginResult> {
     const result = await request<LoginResult>('/api/auth/register', {
       method: 'POST',
@@ -289,6 +310,31 @@ export const authService = {
     }
 
     return result.user;
+  },
+
+  async setUsername(username: string): Promise<{ success: boolean; user?: AuthUser; message?: string; code?: string }> {
+    const result = await request<{ success: boolean; user?: AuthUser; message?: string; code?: string }>(
+      '/api/profile/username',
+      { method: 'POST', body: JSON.stringify({ username }) },
+    );
+    if (result.success && result.user) {
+      const session = readStoredSession();
+      if (session) {
+        writeStoredSession({ ...session, user: result.user });
+      }
+    }
+    return result;
+  },
+
+  async setPassword(data: { oldPassword?: string; newPassword: string }): Promise<{ success: boolean; message?: string }> {
+    const result = await request<{ success: boolean; message?: string }>(
+      '/api/profile/password',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    );
+    return result;
   },
 
   isLoggedIn(): boolean {

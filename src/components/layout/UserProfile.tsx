@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   User, Award, Music, Heart, ShieldCheck, MapPin,
   Sparkles, Orbit, Atom, ArrowRight, Share2, Disc, Star,
-  LogOut, UserCircle2, AlertTriangle
+  LogOut, UserCircle2, AlertTriangle, Lock, Eye, EyeOff, Loader2, CheckCircle2, AtSign
 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -15,11 +15,23 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
   const [showExitConfirm, setShowExitConfirm] = useState<'logout' | 'switch' | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [oldPw, setOldPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [unLoading, setUnLoading] = useState(false);
+  const [unMsg, setUnMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const { t } = useSettings();
-  const { user } = useAuth();
+  const { user, setPassword, setUsername: doSetUsername, refreshUser, isAuthenticated } = useAuth();
   const displayAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
-  const displayName = user?.username || (user?.phone ? `用户 ${user.phone.slice(-4)}` : t('profile.userName'));
-  const displayId = user?.id || 'PRO-9527';
+  const displayName = user?.displayName || user?.username || (user?.phone ? `用户 ${user.phone.slice(-4)}` : t('profile.userName'));
+  const displayId = user?.username ? `@${user.username}` : (user?.id || 'PRO-9527');
 
   const userData = {
     name: displayName,
@@ -44,6 +56,69 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
     { id: '2', titleKey: 'profile.work.2.title', styleKey: 'profile.work.2.style', likes: 128, dateKey: 'profile.work.2.date', icon: '☁️' },
     { id: '3', titleKey: 'profile.work.3.title', styleKey: 'profile.work.3.style', likes: 56,  dateKey: 'profile.work.3.date', icon: '⚙️' },
   ];
+
+  const handlePasswordSubmit = async () => {
+    setPwMsg(null);
+    if (newPw.length < 8) {
+      setPwMsg({ type: 'error', text: '密码至少 8 位' });
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setPwMsg({ type: 'error', text: t('profile.passwordMismatch') });
+      return;
+    }
+    setPwLoading(true);
+    try {
+      const r = await setPassword({
+        oldPassword: user?.hasPassword ? oldPw : undefined,
+        newPassword: newPw,
+      });
+      if (r.success) {
+        setPwMsg({ type: 'success', text: t('profile.passwordSuccess') });
+        setOldPw(''); setNewPw(''); setConfirmPw('');
+        await refreshUser();
+        setTimeout(() => setShowPasswordModal(false), 1200);
+      } else {
+        setPwMsg({ type: 'error', text: r.message || '操作失败' });
+      }
+    } catch (e: any) {
+      setPwMsg({ type: 'error', text: e.message || '操作失败' });
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const handleUsernameSubmit = async () => {
+    setUnMsg(null);
+    if (!newUsername || newUsername.length < 3) {
+      setUnMsg({ type: 'error', text: t('auth.usernameInvalid') });
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(newUsername)) {
+      setUnMsg({ type: 'error', text: t('auth.usernameInvalid') });
+      return;
+    }
+    setUnLoading(true);
+    try {
+      const r = await doSetUsername(newUsername.toLowerCase());
+      if (r.success) {
+        setUnMsg({ type: 'success', text: t('profile.passwordSuccess') });
+        setTimeout(() => setShowUsernameModal(false), 1200);
+      } else {
+        if (r.code === 'USERNAME_TAKEN') setUnMsg({ type: 'error', text: t('auth.usernameTaken') });
+        else setUnMsg({ type: 'error', text: r.message || '操作失败' });
+      }
+    } catch (e: any) {
+      if (e?.code === 'USERNAME_TAKEN') setUnMsg({ type: 'error', text: t('auth.usernameTaken') });
+      else setUnMsg({ type: 'error', text: e.message || '操作失败' });
+    } finally {
+      setUnLoading(false);
+    }
+  };
+
+  const pwInputCls = `w-full pl-11 pr-10 py-3 rounded-xl text-sm font-medium outline-none transition-all
+    bg-white border border-slate-200 text-slate-800 placeholder:text-slate-300
+    focus:border-[#5BA4F5] focus:ring-2 focus:ring-[#5BA4F5]/10`;
 
   return (
     <div className="h-full overflow-y-auto bg-[#F5F7FA] scrollbar-hide">
@@ -111,6 +186,61 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Security card */}
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] space-y-4">
+          {/* Username row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.bg }}>
+                <AtSign size={16} style={{ color: PALETTE.blue.accent }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">{t('auth.username')}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {user?.username
+                    ? <span className="font-semibold" style={{ color: PALETTE.blue.accent }}>@{user.username}</span>
+                    : <span className="font-semibold" style={{ color: PALETTE.orange.accent }}>{t('profile.passwordNotSet')}</span>
+                  }
+                </p>
+              </div>
+            </div>
+            {!user?.username && (
+              <button
+                onClick={() => { setShowUsernameModal(true); setUnMsg(null); setNewUsername(''); }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-95 text-white hover:opacity-90"
+                style={{ background: PALETTE.orange.accent }}
+              >
+                {t('auth.setupUsername')}
+              </button>
+            )}
+          </div>
+
+          <div className="h-px bg-slate-100" />
+
+          {/* Password row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.bg }}>
+                <Lock size={16} style={{ color: PALETTE.blue.accent }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">{t('auth.password')}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  <span className="font-semibold" style={{ color: user?.hasPassword ? PALETTE.green.accent : PALETTE.orange.accent }}>
+                    {user?.hasPassword ? t('profile.passwordSet') : t('profile.passwordNotSet')}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => { setShowPasswordModal(true); setPwMsg(null); setOldPw(''); setNewPw(''); setConfirmPw(''); }}
+              className="px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-95 border border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"
+            >
+              {user?.hasPassword ? t('profile.changePassword') : t('profile.setPassword')}
+            </button>
           </div>
         </div>
 
@@ -217,6 +347,113 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
           </button>
         </div>
       </div>
+
+      {/* Username setup modal */}
+      {(showUsernameModal || (isAuthenticated && !user?.username)) && (
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-6 sm:p-8 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.bg }}>
+                <AtSign size={18} style={{ color: PALETTE.blue.accent }} />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold tracking-tight text-slate-800">{t('auth.setupUsername')}</h4>
+                <p className="text-xs text-slate-400 mt-0.5">{t('auth.setupUsernameDesc')}</p>
+              </div>
+            </div>
+
+            {unMsg && (
+              <div className={`px-4 py-2.5 rounded-xl text-sm font-medium ${unMsg.type === 'error' ? 'bg-red-50 text-red-500' : 'text-white'}`}
+                style={unMsg.type === 'success' ? { background: PALETTE.green.accent } : undefined}>
+                {unMsg.type === 'success' && <CheckCircle2 size={14} className="inline mr-1.5 -mt-0.5" />}
+                {unMsg.text}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <div className="relative">
+                <AtSign size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                <input type="text" placeholder={t('auth.usernamePlaceholder')} value={newUsername}
+                  onChange={e => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30).toLowerCase())}
+                  className={pwInputCls} />
+              </div>
+              <p className="text-xs text-slate-300 px-1">{t('auth.usernameOnce')}</p>
+            </div>
+
+            <button onClick={handleUsernameSubmit}
+              disabled={unLoading || !newUsername || newUsername.length < 3}
+              className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: PALETTE.blue.accent }}>
+              {unLoading ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('profile.save')}</>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Password modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-6 sm:p-8 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.bg }}>
+                <Lock size={18} style={{ color: PALETTE.blue.accent }} />
+              </div>
+              <h4 className="text-lg font-bold tracking-tight text-slate-800">
+                {user?.hasPassword ? t('profile.changePassword') : t('profile.setPassword')}
+              </h4>
+            </div>
+
+            {pwMsg && (
+              <div className={`px-4 py-2.5 rounded-xl text-sm font-medium ${pwMsg.type === 'error' ? 'bg-red-50 text-red-500' : 'text-white'}`}
+                style={pwMsg.type === 'success' ? { background: PALETTE.green.accent } : undefined}>
+                {pwMsg.type === 'success' && <CheckCircle2 size={14} className="inline mr-1.5 -mt-0.5" />}
+                {pwMsg.text}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {user?.hasPassword && (
+                <div className="relative">
+                  <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                  <input type={showOldPw ? 'text' : 'password'} placeholder={t('profile.currentPassword')} value={oldPw}
+                    onChange={e => setOldPw(e.target.value)} className={pwInputCls} />
+                  <button type="button" onClick={() => setShowOldPw(!showOldPw)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                    {showOldPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              )}
+              <div className="relative">
+                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                <input type={showNewPw ? 'text' : 'password'} placeholder={t('profile.newPassword')} value={newPw}
+                  onChange={e => setNewPw(e.target.value)} className={pwInputCls} />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                  {showNewPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                <input type="password" placeholder={t('profile.confirmPassword')} value={confirmPw}
+                  onChange={e => setConfirmPw(e.target.value)} className={pwInputCls} />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setShowPasswordModal(false)}
+                className="flex-1 py-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+                {t('profile.cancel')}
+              </button>
+              <button onClick={handlePasswordSubmit}
+                disabled={pwLoading || newPw.length < 8 || !confirmPw}
+                className="flex-1 py-3 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: PALETTE.blue.accent }}>
+                {pwLoading ? <Loader2 size={14} className="animate-spin" /> : t('profile.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Exit confirm modal */}
       {showExitConfirm && (

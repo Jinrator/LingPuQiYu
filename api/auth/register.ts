@@ -3,27 +3,34 @@ import { issueTokenPair } from '../_lib/auth.js';
 import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { verifyPhoneCode } from '../_lib/sms.js';
-import { createUserProfile, findUserRowByPhone, updateUserProfile } from '../_lib/users.js';
-import { MAX_USERNAME_LENGTH, MAX_COURSE_TYPE_LENGTH, sanitizeString } from '../_lib/validate.js';
+import { createUserProfile, findUserRowByPhone, updateUserProfile, isUsernameTaken } from '../_lib/users.js';
+import { MAX_DISPLAY_NAME_LENGTH, MAX_COURSE_TYPE_LENGTH, sanitizeString, validatePassword, validateUsername } from '../_lib/validate.js';
+import { hashPassword } from '../_lib/password.js';
 
 function readBody(req: VercelRequest): {
   phone: string;
   code: string;
   username?: string;
+  displayName?: string;
   courseType?: string;
+  password?: string;
 } {
   const body = (req.body ?? {}) as {
     phone?: unknown;
     code?: unknown;
     username?: unknown;
+    displayName?: unknown;
     courseType?: unknown;
+    password?: unknown;
   };
 
   return {
     phone: typeof body.phone === 'string' ? body.phone.trim() : '',
     code: typeof body.code === 'string' ? body.code.trim() : '',
-    username: typeof body.username === 'string' ? sanitizeString(body.username, MAX_USERNAME_LENGTH) : undefined,
+    username: typeof body.username === 'string' ? body.username.trim().toLowerCase() : undefined,
+    displayName: typeof body.displayName === 'string' ? sanitizeString(body.displayName, MAX_DISPLAY_NAME_LENGTH) : undefined,
     courseType: typeof body.courseType === 'string' ? sanitizeString(body.courseType, MAX_COURSE_TYPE_LENGTH) : undefined,
+    password: typeof body.password === 'string' ? body.password : undefined,
   };
 }
 
@@ -35,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const { phone, code, username, courseType } = readBody(req);
+  const { phone, code, username, displayName, courseType, password } = readBody(req);
   if (!phone || !code) {
     res.status(400).json({ success: false, message: '参数不完整' });
     return;
@@ -43,6 +50,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   if (!/^1\d{10}$/.test(phone)) {
     res.status(400).json({ success: false, message: '手机号格式不正确' });
     return;
+  }
+
+  // username 必填且校验格式
+  if (!username) {
+    res.status(400).json({ success: false, message: '请设置用户名' });
+    return;
+  }
+  const unCheck = validateUsername(username);
+  if (!unCheck.valid) {
+    res.status(400).json({ success: false, message: unCheck.message });
+    return;
+  }
+
+  // displayName 必填
+  if (!displayName) {
+    res.status(400).json({ success: false, message: '请填写昵称' });
+    return;
+  }
+
+  // 密码可选，但如果提供了就要校验
+  if (password !== undefined) {
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) {
+      res.status(400).json({ success: false, message: pwCheck.message });
+      return;
+    }
   }
 
   try {
@@ -72,10 +105,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
+    // 查重 username
+    if (await isUsernameTaken(username)) {
+      res.status(409).json({ success: false, code: 'USERNAME_TAKEN', message: '该用户名已被使用' });
+      return;
+    }
+
+    const passwordHash = password ? hashPassword(password) : undefined;
+
     const existingRow = await findUserRowByPhone(phone);
     const user = existingRow
-      ? await updateUserProfile(existingRow, { username, courseType })
-      : await createUserProfile({ phone, username, courseType });
+      ? await updateUserProfile(existingRow, { displayName, courseType })
+      : await createUserProfile({ phone, username, displayName, courseType, passwordHash });
 
     const { accessToken, refreshToken } = await issueTokenPair(user);
     res.json({ success: true, user, token: accessToken, refreshToken });

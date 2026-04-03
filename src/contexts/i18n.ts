@@ -369,6 +369,39 @@ const dict: Dict = {
   'lab.cnInst.short': { 'zh-CN': '短音', 'zh-TW': '短音', en: 'Short' },
   'lab.cnInst.noOneshot': { 'zh-CN': '该乐器暂无弹奏采样', 'zh-TW': '該樂器暫無彈奏採樣', en: 'No playable samples for this instrument' },
   'lab.cnInst.playHint': { 'zh-CN': '点击琴键弹奏，也可以使用琴键上标注的键盘按键快捷演奏', 'zh-TW': '點擊琴鍵彈奏，也可以使用琴鍵上標註的鍵盤按鍵快捷演奏', en: 'Click keys to play, or use the keyboard shortcuts shown on each key for quick performance' },
+
+  // ── Auth password & username ──
+  'auth.password': { 'zh-CN': '密码', 'zh-TW': '密碼', en: 'Password' },
+  'auth.passwordPlace': { 'zh-CN': '输入密码（至少8位）', 'zh-TW': '輸入密碼（至少8位）', en: 'Password (min 8 characters)' },
+  'auth.passwordLogin': { 'zh-CN': '密码登录', 'zh-TW': '密碼登入', en: 'Password' },
+  'auth.smsLogin': { 'zh-CN': '验证码登录', 'zh-TW': '驗證碼登入', en: 'SMS Code' },
+  'auth.useSms': { 'zh-CN': '验证码登录', 'zh-TW': '驗證碼登入', en: 'Use SMS code' },
+  'auth.usePassword': { 'zh-CN': '密码登录', 'zh-TW': '密碼登入', en: 'Use password' },
+  'auth.noPassword': { 'zh-CN': '该账号未设置密码，请使用验证码登录', 'zh-TW': '此帳號未設定密碼，請使用驗證碼登入', en: 'No password set, please use SMS code to log in' },
+  'auth.setPasswordOptional': { 'zh-CN': '设置密码（可选）', 'zh-TW': '設定密碼（可選）', en: 'Set password (optional)' },
+  'auth.account': { 'zh-CN': '手机号 / 用户名', 'zh-TW': '手機號 / 用戶名', en: 'Phone / Username' },
+  'auth.username': { 'zh-CN': '用户名', 'zh-TW': '用戶名', en: 'Username' },
+  'auth.usernamePlaceholder': { 'zh-CN': '设置用户名（字母、数字、下划线）', 'zh-TW': '設定用戶名（字母、數字、底線）', en: 'Username (letters, numbers, underscore)' },
+  'auth.usernameRequired': { 'zh-CN': '请设置用户名', 'zh-TW': '請設定用戶名', en: 'Please set a username' },
+  'auth.usernameTaken': { 'zh-CN': '该用户名已被使用', 'zh-TW': '此用戶名已被使用', en: 'Username is taken' },
+  'auth.usernameInvalid': { 'zh-CN': '用户名只能包含字母、数字和下划线，3-30位', 'zh-TW': '用戶名只能包含字母、數字和底線，3-30位', en: 'Letters, numbers, underscore only, 3-30 chars' },
+  'auth.displayNamePlace': { 'zh-CN': '昵称 / 显示名', 'zh-TW': '暱稱 / 顯示名', en: 'Display name / Nickname' },
+  'auth.setupUsername': { 'zh-CN': '设置用户名', 'zh-TW': '設定用戶名', en: 'Set Username' },
+  'auth.setupUsernameDesc': { 'zh-CN': '设置一个唯一的用户名，用于登录和被其他用户识别', 'zh-TW': '設定一個唯一的用戶名，用於登入和被其他用戶識別', en: 'Set a unique username for login and identification' },
+  'auth.usernameOnce': { 'zh-CN': '用户名设置后不可修改', 'zh-TW': '用戶名設定後不可修改', en: 'Username cannot be changed once set' },
+
+  // ── Profile password management ──
+  'profile.security': { 'zh-CN': '账号安全', 'zh-TW': '帳號安全', en: 'Account Security' },
+  'profile.setPassword': { 'zh-CN': '设置密码', 'zh-TW': '設定密碼', en: 'Set Password' },
+  'profile.changePassword': { 'zh-CN': '修改密码', 'zh-TW': '修改密碼', en: 'Change Password' },
+  'profile.currentPassword': { 'zh-CN': '当前密码', 'zh-TW': '目前密碼', en: 'Current password' },
+  'profile.newPassword': { 'zh-CN': '新密码', 'zh-TW': '新密碼', en: 'New password' },
+  'profile.confirmPassword': { 'zh-CN': '确认新密码', 'zh-TW': '確認新密碼', en: 'Confirm new password' },
+  'profile.passwordMismatch': { 'zh-CN': '两次密码不一致', 'zh-TW': '兩次密碼不一致', en: 'Passwords do not match' },
+  'profile.passwordSuccess': { 'zh-CN': '密码设置成功', 'zh-TW': '密碼設定成功', en: 'Password updated' },
+  'profile.passwordNotSet': { 'zh-CN': '未设置', 'zh-TW': '未設定', en: 'Not set' },
+  'profile.passwordSet': { 'zh-CN': '已设置', 'zh-TW': '已設定', en: 'Set' },
+  'profile.save': { 'zh-CN': '保存', 'zh-TW': '儲存', en: 'Save' },
 };
 
 export default dict;

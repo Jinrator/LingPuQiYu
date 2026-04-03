@@ -4,7 +4,7 @@ import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { updateUserProfileById } from '../_lib/users.js';
 import {
-  MAX_USERNAME_LENGTH,
+  MAX_DISPLAY_NAME_LENGTH,
   MAX_COURSE_TYPE_LENGTH,
   MAX_AVATAR_URL_LENGTH,
   sanitizeString,
@@ -12,12 +12,12 @@ import {
 } from '../_lib/validate.js';
 
 function readBody(req: VercelRequest): {
-  username?: string;
+  displayName?: string;
   courseType?: string;
   avatarUrl?: string;
 } {
   const body = (req.body ?? {}) as {
-    username?: unknown;
+    displayName?: unknown;
     courseType?: unknown;
     avatarUrl?: unknown;
   };
@@ -25,7 +25,7 @@ function readBody(req: VercelRequest): {
   const avatarRaw = typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
 
   return {
-    username: typeof body.username === 'string' ? sanitizeString(body.username, MAX_USERNAME_LENGTH) : undefined,
+    displayName: typeof body.displayName === 'string' ? sanitizeString(body.displayName, MAX_DISPLAY_NAME_LENGTH) : undefined,
     courseType: typeof body.courseType === 'string' ? sanitizeString(body.courseType, MAX_COURSE_TYPE_LENGTH) : undefined,
     avatarUrl: avatarRaw && avatarRaw.length <= MAX_AVATAR_URL_LENGTH && isValidUrl(avatarRaw) ? avatarRaw : undefined,
   };
@@ -60,10 +60,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       },
     ]);
 
-    const { username, courseType, avatarUrl } = readBody(req);
+    const { displayName, courseType, avatarUrl } = readBody(req);
 
     const user = await updateUserProfileById(auth.user.id, {
-      username,
+      displayName,
       courseType,
       avatarUrl,
     });
