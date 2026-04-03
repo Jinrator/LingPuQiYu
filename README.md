@@ -158,6 +158,31 @@ curl https://your-domain.vercel.app/api/health
 curl https://your-domain.vercel.app/api/ai/chat
 ```
 
+## 一键全栈调试（VS Code）
+
+项目已配置 `.vscode/launch.json`，可以在 VS Code 中一键启动前端 + 后端并 attach 调试器。
+
+### 前提
+
+1. 确保 `.env.local` 中配置了 `VITE_API_BASE=http://localhost:3001`
+2. 首次使用需运行 `npx vercel link` 关联项目
+
+### 启动方式
+
+按 `F5` 或打开 Run and Debug 面板（`⇧⌘D`），选择配置：
+
+| 配置名 | 说明 |
+|--------|------|
+| 🚀 全栈调试 (前端 + API) | 同时启动 Vite（:3000）和 vercel dev（:3001），打开 Chrome |
+| 前端 (Chrome) | 仅启动 Vite + Chrome 调试 |
+| 后端 API (Vercel Dev) | 仅启动 vercel dev，可在 `api/` 下打断点 |
+
+### 调试技巧
+
+- 前端：直接在 `.tsx` / `.ts` 文件中打断点，Chrome 会自动暂停
+- 后端：在 `api/` 下的 serverless function 中打断点
+- 停止：点击调试工具栏的红色停止按钮，会同时终止前后端进程
+
 ## 后端调试
 
 ### 本地开发
