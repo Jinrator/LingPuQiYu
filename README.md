@@ -252,14 +252,14 @@ vercel logs <deployment-url> --follow
 
 `docs/solutions/` 下记录每次问题修复和功能方案的技术沉淀：
 
-| 文档 | 说明 |
-|------|------|
-| [BACKEND_SECURITY_SOLUTION](./docs/solutions/BACKEND_SECURITY_SOLUTION.md) | 后端安全防护方案 |
-| [PIANO_HIGHLIGHT_DELAY_FIX](./docs/solutions/PIANO_HIGHLIGHT_DELAY_FIX.md) | 钢琴键盘高亮延迟修复 |
-| [SAFARI_FIX_ANALYSIS](./docs/solutions/SAFARI_FIX_ANALYSIS.md) | Safari 兼容性修复 |
-| [AUTHING_INTEGRATION_SOLUTION](./docs/solutions/AUTHING_INTEGRATION_SOLUTION.md) | Authing 认证集成方案（已弃用） |
-| [ROUTING_AND_LOGOUT_FIX](./docs/solutions/ROUTING_AND_LOGOUT_FIX.md) | 路由状态与退出登录修复 |
-| [REACT_ROUTER_MIGRATION_SOLUTION](./docs/solutions/REACT_ROUTER_MIGRATION_SOLUTION.md) | React Router 迁移方案 |
-| [SMS_AUTH_SERVICE_MIGRATION](./docs/solutions/SMS_AUTH_SERVICE_MIGRATION.md) | SMS 认证服务迁移方案 |
+| 文档 | 说明 | 状态 |
+|------|------|------|
+| [BACKEND_SECURITY_SOLUTION](./docs/solutions/BACKEND_SECURITY_SOLUTION.md) | 后端安全防护方案 | ✅ 已启用 |
+| [PIANO_HIGHLIGHT_DELAY_FIX](./docs/solutions/PIANO_HIGHLIGHT_DELAY_FIX.md) | 钢琴键盘高亮延迟修复 | ✅ 已启用 |
+| [SAFARI_FIX_ANALYSIS](./docs/solutions/SAFARI_FIX_ANALYSIS.md) | Safari 兼容性修复 | ✅ 已启用 |
+| [AUTHING_INTEGRATION_SOLUTION](./docs/solutions/AUTHING_INTEGRATION_SOLUTION.md) | Authing 认证集成方案 | 🚫 已弃用 |
+| [ROUTING_AND_LOGOUT_FIX](./docs/solutions/ROUTING_AND_LOGOUT_FIX.md) | 路由状态与退出登录修复 | ✅ 已启用 |
+| [REACT_ROUTER_MIGRATION_SOLUTION](./docs/solutions/REACT_ROUTER_MIGRATION_SOLUTION.md) | React Router 迁移方案 | ✅ 已启用 |
+| [SMS_AUTH_SERVICE_MIGRATION](./docs/solutions/SMS_AUTH_SERVICE_MIGRATION.md) | 阿里云短信认证服务接入 | ✅ 已启用 |
 
 每次解决问题后按 `遇到问题 → 调试分析 → 实施修复 → 写 Solution 文档 → 提交代码` 的流程沉淀文档。
