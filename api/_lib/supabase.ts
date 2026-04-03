@@ -1,31 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const APP_USERS_TABLE = 'app_users';
+export const APP_USERS_TABLE = 'app_users';
 
-let supabaseAdmin: any = null;
+let supabaseAdmin: SupabaseClient | null = null;
 
-export function getSupabaseAdmin(): any {
+export function getSupabaseAdmin(): SupabaseClient {
   if (supabaseAdmin) {
     return supabaseAdmin;
   }
 
-  const url = process.env.SUPABASE_URL || '';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceRoleKey) {
-    throw new Error('Supabase 未配置，请在服务端设置 SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY');
+    throw new Error('缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY');
   }
 
   supabaseAdmin = createClient(url, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 
   return supabaseAdmin;
-}
-
-export function getUsersTableName(): string {
-  return APP_USERS_TABLE;
 }

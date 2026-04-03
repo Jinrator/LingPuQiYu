@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { sendPhoneCode } from '../_lib/sms.js';
 
@@ -8,6 +9,8 @@ function readPhone(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  if (setCorsHeaders(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, message: 'Method not allowed' });
     return;
@@ -60,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    console.error('[SMS] 发送失败:', error instanceof Error ? error.message : 'unknown error');
-    res.status(500).json({ success: false, message: '短信发送失败，请稍后重试' });
+    console.error('[SMS] 发送失败:', error);
+    res.status(500).json({ success: false, message: '短信发送失败' });
   }
 }

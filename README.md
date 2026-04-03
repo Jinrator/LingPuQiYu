@@ -215,3 +215,121 @@ docs/
     ├── AUTHING_INTEGRATION_SOLUTION.md
     └── ROUTING_AND_LOGOUT_FIX.md
 ```
+
+---
+
+## 🔧 后端调试指南
+
+### 架构概览
+
+后端采用 Vercel Serverless Functions，每个 `api/` 目录下的 `.ts` 文件对应一个独立的 HTTP 端点：
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/health` | GET | 健康检查 |
+| `/api/auth/login` | POST | 手机号登录 |
+| `/api/auth/register` | POST | 手机号注册 |
+| `/api/auth/me` | GET | 获取当前用户（需 Bearer Token） |
+| `/api/profile/update` | POST | 更新用户资料（需 Bearer Token） |
+| `/api/sms/send` | POST | 发送短信验证码 |
+| `/api/ai/chat` | POST | AI 对话（需 Bearer Token） |
+
+### 本地调试
+
+#### 1. 安装 Vercel CLI
+
+```bash
+npm i -g vercel
+```
+
+#### 2. 关联项目并启动本地开发服务器
+
+```bash
+vercel link          # 首次需要关联 Vercel 项目
+vercel dev           # 启动本地开发服务器（默认 http://localhost:3000）
+```
+
+`vercel dev` 会模拟 Vercel 的 Serverless 运行环境，自动读取 `.env.local` 中的环境变量，并将 `api/` 目录下的函数映射为 HTTP 端点。
+
+#### 3. 用 curl 测试端点
+
+```bash
+# 健康检查
+curl http://localhost:3000/api/health
+
+# 发送验证码
+curl -X POST http://localhost:3000/api/sms/send \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"13800138000"}'
+
+# 登录
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"13800138000","code":"123456"}'
+
+# 需要认证的接口（用登录返回的 token）
+curl http://localhost:3000/api/auth/me \
+  -H "Authorization: Bearer <your_token>"
+```
+
+#### 4. 测试短信（非生产环境）
+
+在 `.env.local` 中配置以下变量即可跳过阿里云短信，使用固定验证码：
+
+```env
+ALLOW_TEST_SMS=true
+TEST_SMS_CODE=123456
+```
+
+> 注意：`ALLOW_TEST_SMS=true` 仅在 `VERCEL_ENV` / `NODE_ENV` 不为 `production` 时生效。
+
+### 查看 Vercel 生产日志
+
+```bash
+# 实时查看 Serverless Function 日志
+vercel logs <your-deployment-url> --follow
+
+# 或在 Vercel Dashboard 中查看：
+# Project → Deployments → Functions → 选择具体函数查看日志
+```
+
+### 常见问题排查
+
+| 现象 | 排查方向 |
+|------|----------|
+| 接口返回 500 | 检查 Vercel Dashboard 的 Function Logs，看具体报错 |
+| 验证码发不出去 | 确认 `ALIYUN_ACCESS_KEY_ID` / `ALIYUN_ACCESS_KEY_SECRET` 已配置 |
+| Token 验证失败 | 确认 `AUTH_TOKEN_SECRET` 在本地和生产环境一致 |
+| AI 聊天无响应 | 确认 `DASHSCOPE_API_KEY` 已配置，检查上游 API 是否可达 |
+| 数据库操作失败 | 确认 `SUPABASE_URL` 和 `SUPABASE_SERVICE_ROLE_KEY` 正确 |
+| CORS 报错 | 生产环境需在 `ALLOWED_ORIGINS` 中配置前端域名 |
+
+### 环境变量清单
+
+后端运行所需的完整环境变量（在 Vercel Dashboard → Settings → Environment Variables 中配置）：
+
+```env
+# 必需
+AUTH_TOKEN_SECRET=          # JWT 签名密钥（随机长字符串）
+SUPABASE_URL=               # Supabase 项目 URL
+SUPABASE_SERVICE_ROLE_KEY=  # Supabase Service Role Key
+
+# 短信服务（阿里云）
+ALIYUN_ACCESS_KEY_ID=
+ALIYUN_ACCESS_KEY_SECRET=
+SMS_SIGN_NAME=
+SMS_TEMPLATE_CODE=
+SMS_SCHEME_NAME=
+
+# AI 服务
+DASHSCOPE_API_KEY=
+DASHSCOPE_BASE_URL=         # 可选，默认 https://dashscope.aliyuncs.com/compatible-mode/v1
+DEFAULT_MODEL=              # 可选，默认 qwen-plus
+
+# 安全
+ALLOWED_ORIGINS=            # 生产环境必须配置，逗号分隔
+
+# 仅开发环境
+ALLOW_TEST_SMS=true
+TEST_SMS_CODE=123456
+```

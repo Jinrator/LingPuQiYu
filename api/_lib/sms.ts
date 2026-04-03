@@ -8,22 +8,20 @@ interface AliyunSmsClientContext {
 }
 
 function getAliyunConfig() {
-  return {
-    accessKeyId: process.env.ALIYUN_ACCESS_KEY_ID || '',
-    accessKeySecret: process.env.ALIYUN_ACCESS_KEY_SECRET || '',
-    signName: process.env.SMS_SIGN_NAME || '',
-    templateCode: process.env.SMS_TEMPLATE_CODE || '',
-    schemeName: process.env.SMS_SCHEME_NAME || '',
-  };
+  const accessKeyId = process.env.ALIYUN_ACCESS_KEY_ID;
+  const accessKeySecret = process.env.ALIYUN_ACCESS_KEY_SECRET;
+  const signName = process.env.SMS_SIGN_NAME;
+  const templateCode = process.env.SMS_TEMPLATE_CODE;
+  const schemeName = process.env.SMS_SCHEME_NAME;
+  return { accessKeyId, accessKeySecret, signName, templateCode, schemeName };
 }
 
 function isProductionEnvironment(): boolean {
-  const runtime = (process.env.VERCEL_ENV || process.env.NODE_ENV || 'development').toLowerCase();
-  return runtime === 'production';
-}
-
-function getTestSmsCode(): string {
-  return (process.env.TEST_SMS_CODE || '').trim();
+  const runtime = process.env.VERCEL_ENV || process.env.NODE_ENV;
+  if (!runtime) {
+    throw new Error('缺少 VERCEL_ENV 或 NODE_ENV 环境变量');
+  }
+  return runtime.toLowerCase() === 'production';
 }
 
 export function isAliyunSmsEnabled(): boolean {
@@ -35,10 +33,10 @@ export function isTestSmsEnabled(): boolean {
   return process.env.ALLOW_TEST_SMS === 'true' && !isProductionEnvironment();
 }
 
-async function createAliyunSmsClient(): Promise<AliyunSmsClientContext | null> {
+async function createAliyunSmsClient(): Promise<AliyunSmsClientContext> {
   const { accessKeyId, accessKeySecret } = getAliyunConfig();
   if (!accessKeyId || !accessKeySecret) {
-    return null;
+    throw new Error('阿里云短信未配置：缺少 ALIYUN_ACCESS_KEY_ID 或 ALIYUN_ACCESS_KEY_SECRET');
   }
 
   const DypnsapiModule = (await import('@alicloud/dypnsapi20170525')) as unknown as AliyunModuleNamespace;
@@ -47,118 +45,109 @@ async function createAliyunSmsClient(): Promise<AliyunSmsClientContext | null> {
   const config = new OpenApiModule.Config({ accessKeyId, accessKeySecret });
   config.endpoint = 'dypnsapi.aliyuncs.com';
 
-  return {
-    Dypnsapi: DypnsapiModule,
-    client: new DypnsapiClient(config),
-  };
+  return { Dypnsapi: DypnsapiModule, client: new DypnsapiClient(config) };
 }
 
-export async function sendPhoneCode(phone: string): Promise<SmsSendResult> {
-  const aliyunContext = await createAliyunSmsClient();
-  if (aliyunContext) {
-    try {
-      const { Dypnsapi, client } = aliyunContext;
-      const { signName, templateCode, schemeName } = getAliyunConfig();
-      const sendReq = new Dypnsapi.SendSmsVerifyCodeRequest({
-        phoneNumber: phone,
-        countryCode: '86',
-        codeLength: 6,
-        validTime: 300,
-        interval: 60,
-        codeType: 1,
-        signName: signName || undefined,
-        templateCode: templateCode || undefined,
-        schemeName: schemeName || undefined,
-        templateParam: JSON.stringify({ code: '##code##', min: '5' }),
-      });
+// ── 发送验证码 ──
 
-      const result = await client.sendSmsVerifyCode(sendReq);
-      const body = (result.body || {}) as { code?: string; message?: string };
+async function sendViaAliyun(phone: string): Promise<SmsSendResult> {
+  const { Dypnsapi, client } = await createAliyunSmsClient();
+  const { signName, templateCode, schemeName } = getAliyunConfig();
 
-      if (body.code === 'OK') {
-        return { success: true, message: '验证码已发送' };
-      }
+  const sendReq = new Dypnsapi.SendSmsVerifyCodeRequest({
+    phoneNumber: phone,
+    countryCode: '86',
+    codeLength: 6,
+    validTime: 300,
+    interval: 60,
+    codeType: 1,
+    signName,
+    templateCode,
+    schemeName,
+    templateParam: JSON.stringify({ code: '##code##', min: '5' }),
+  });
 
-      let userMsg = body.message || '发送失败';
-      if (body.code === 'biz.FREQUENCY') {
-        userMsg = '发送太频繁，请稍后再试';
-      } else if (body.code === 'InternalError') {
-        userMsg = '服务暂时不可用，请稍后重试';
-      } else if (body.code === 'isv.BUSINESS_LIMIT_CONTROL') {
-        userMsg = '今日发送次数已达上限';
-      }
+  const result = await client.sendSmsVerifyCode(sendReq);
+  const body = result.body as { code?: string; message?: string };
 
-      return { success: false, message: userMsg };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      console.error('[SMS] 发送异常:', message);
-      return { success: false, status: 500, message: '短信发送失败，请稍后重试' };
-    }
+  if (body.code === 'OK') {
+    return { success: true, message: '验证码已发送' };
   }
 
-  if (!isTestSmsEnabled()) {
-    return { success: false, status: 503, message: '短信服务未配置' };
-  }
+  const errorMap: Record<string, string> = {
+    'biz.FREQUENCY': '发送太频繁，请稍后再试',
+    'InternalError': '服务暂时不可用，请稍后重试',
+    'isv.BUSINESS_LIMIT_CONTROL': '今日发送次数已达上限',
+  };
 
-  const testCode = getTestSmsCode();
-  if (!testCode) {
-    return { success: false, status: 503, message: '测试验证码未配置' };
-  }
+  return { success: false, message: errorMap[body.code!] ?? body.message ?? '发送失败' };
+}
 
-  console.log(`[SMS] 测试验证码 -> ${phone}: ${testCode}`);
+function sendViaTestCode(phone: string): SmsSendResult {
+  const code = process.env.TEST_SMS_CODE?.trim();
+  if (!code) {
+    throw new Error('测试模式已开启但缺少 TEST_SMS_CODE');
+  }
+  console.log(`[SMS] 测试验证码已发送 -> ${phone.slice(0, 3)}****${phone.slice(-4)}`);
   return { success: true, message: '验证码已发送（测试环境）' };
 }
 
-export async function verifyPhoneCode(
-  phone: string,
-  code: string,
-): Promise<SmsVerificationResult> {
-  const aliyunContext = await createAliyunSmsClient();
-  if (aliyunContext) {
-    try {
-      const { Dypnsapi, client } = aliyunContext;
-      const checkReq = new Dypnsapi.CheckSmsVerifyCodeRequest({
-        phoneNumber: phone,
-        countryCode: '86',
-        verifyCode: code,
-      });
-
-      const result = await client.checkSmsVerifyCode(checkReq);
-      const body = (result.body || {}) as {
-        code?: string;
-        message?: string;
-        model?: { verifyResult?: string };
-      };
-
-      if (body.code === 'OK' && body.model?.verifyResult === 'PASS') {
-        return { success: true };
-      }
-
-      let userMsg = '验证码错误';
-      if (body.message?.includes('expired')) {
-        userMsg = '验证码已过期，请重新获取';
-      }
-
-      return { success: false, message: userMsg };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error';
-      console.error('[SMS] 校验异常:', message);
-      return { success: false, message: '校验失败，请稍后重试' };
-    }
+export async function sendPhoneCode(phone: string): Promise<SmsSendResult> {
+  if (isAliyunSmsEnabled()) {
+    return sendViaAliyun(phone);
   }
-
-  if (!isTestSmsEnabled()) {
-    return { success: false, message: '短信服务未配置' };
+  if (isTestSmsEnabled()) {
+    return sendViaTestCode(phone);
   }
+  throw new Error('短信服务未配置：既无阿里云密钥，也未开启测试模式');
+}
 
-  const testCode = getTestSmsCode();
-  if (!testCode) {
-    return { success: false, message: '短信服务未配置' };
-  }
+// ── 校验验证码 ──
 
-  if (code === testCode) {
+async function verifyViaAliyun(phone: string, code: string): Promise<SmsVerificationResult> {
+  const { Dypnsapi, client } = await createAliyunSmsClient();
+
+  const checkReq = new Dypnsapi.CheckSmsVerifyCodeRequest({
+    phoneNumber: phone,
+    countryCode: '86',
+    verifyCode: code,
+  });
+
+  const result = await client.checkSmsVerifyCode(checkReq);
+  const body = result.body as {
+    code?: string;
+    message?: string;
+    model?: { verifyResult?: string };
+  };
+
+  if (body.code === 'OK' && body.model?.verifyResult === 'PASS') {
     return { success: true };
   }
 
-  return { success: false, message: '验证码错误' };
+  const message = body.message?.includes('expired')
+    ? '验证码已过期，请重新获取'
+    : '验证码错误';
+
+  return { success: false, message };
+}
+
+function verifyViaTestCode(code: string): SmsVerificationResult {
+  const testCode = process.env.TEST_SMS_CODE?.trim();
+  if (!testCode) {
+    throw new Error('测试模式已开启但缺少 TEST_SMS_CODE');
+  }
+  if (code !== testCode) {
+    return { success: false, message: '验证码错误' };
+  }
+  return { success: true };
+}
+
+export async function verifyPhoneCode(phone: string, code: string): Promise<SmsVerificationResult> {
+  if (isAliyunSmsEnabled()) {
+    return verifyViaAliyun(phone, code);
+  }
+  if (isTestSmsEnabled()) {
+    return verifyViaTestCode(code);
+  }
+  throw new Error('短信服务未配置：既无阿里云密钥，也未开启测试模式');
 }

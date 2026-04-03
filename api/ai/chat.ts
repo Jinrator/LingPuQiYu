@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { AuthError, requireAuth } from '../_lib/auth.js';
+import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
+import { MAX_CHAT_MESSAGE_LENGTH, MAX_CHAT_MESSAGES_COUNT } from '../_lib/validate.js';
 
 interface ChatMessage {
   role: string;
@@ -38,14 +40,11 @@ const SYSTEM_PROMPT = `
 `.trim();
 
 function getDashScopeConfig() {
-  return {
-    apiKey: (process.env.DASHSCOPE_API_KEY || '').trim(),
-    baseUrl: (
-      process.env.DASHSCOPE_BASE_URL ||
-      'https://dashscope.aliyuncs.com/compatible-mode/v1'
-    ).trim(),
-    model: (process.env.DEFAULT_MODEL || 'qwen-plus').trim(),
-  };
+  const apiKey = process.env.DASHSCOPE_API_KEY?.trim();
+  const baseUrl = process.env.DASHSCOPE_BASE_URL?.trim()
+    || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+  const model = process.env.DEFAULT_MODEL?.trim() || 'qwen-plus';
+  return { apiKey, baseUrl, model };
 }
 
 function readMessages(req: VercelRequest): ChatMessage[] {
@@ -64,14 +63,16 @@ function readMessages(req: VercelRequest): ChatMessage[] {
       return [];
     }
 
-    return [{ role: record.role, content: record.content }];
-  });
+    return [{ role: record.role, content: record.content.slice(0, MAX_CHAT_MESSAGE_LENGTH) }];
+  }).slice(0, MAX_CHAT_MESSAGES_COUNT);
 }
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse,
 ): Promise<void> {
+  if (setCorsHeaders(req, res)) return;
+
   if (req.method === 'GET') {
     res.json({ ok: true, message: 'AI chat endpoint is running.' });
     return;
@@ -111,8 +112,7 @@ export default async function handler(
 
     const { apiKey, baseUrl, model } = getDashScopeConfig();
     if (!apiKey) {
-      res.status(500).json({ success: false, message: 'AI 服务暂未配置' });
-      return;
+      throw new Error('缺少 DASHSCOPE_API_KEY 环境变量');
     }
 
     const controller = new AbortController();
@@ -148,8 +148,12 @@ export default async function handler(
         choices?: Array<{ message?: { content?: string } }>;
       };
 
-      const reply =
-        data.choices?.[0]?.message?.content || '抱歉，我暂时没有生成有效回复。';
+      const reply = data.choices?.[0]?.message?.content;
+      if (!reply) {
+        console.error('[AI] 上游返回空内容:', JSON.stringify(data).slice(0, 500));
+        res.status(502).json({ success: false, message: 'AI 未返回有效回复' });
+        return;
+      }
 
       res.json({
         reply,
@@ -172,7 +176,7 @@ export default async function handler(
     }
 
     const isAbort = error instanceof Error && error.name === 'AbortError';
-    console.error('[AI] 调用失败:', error instanceof Error ? error.message : 'unknown error');
+    console.error('[AI] 调用失败:', error);
     res.status(isAbort ? 504 : 500).json({
       success: false,
       message: isAbort ? 'AI 服务响应超时，请稍后再试' : 'AI 服务暂时不可用，请稍后再试',

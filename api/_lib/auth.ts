@@ -6,7 +6,7 @@ import type { AuthTokenPayload, AuthUser } from './types.js';
 const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function getSecret(): string {
-  const secret = process.env.AUTH_TOKEN_SECRET || '';
+  const secret = process.env.AUTH_TOKEN_SECRET;
   if (!secret) {
     throw new Error('缺少 AUTH_TOKEN_SECRET');
   }
@@ -78,8 +78,8 @@ export function verifyAuthToken(token: string | null | undefined): AuthTokenPayl
 }
 
 export function readBearerToken(req: Pick<VercelRequest, 'headers'>): string | null {
-  const header = req.headers.authorization || '';
-  if (!header.startsWith('Bearer ')) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) {
     return null;
   }
   return header.slice('Bearer '.length).trim();

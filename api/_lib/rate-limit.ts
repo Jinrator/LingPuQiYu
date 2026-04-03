@@ -45,7 +45,7 @@ export function getClientIp(req: Pick<VercelRequest, 'headers' | 'socket'>): str
 
 export function assertRateLimit(rule: RateLimitRule): void {
   if (!rule.identifier) {
-    return;
+    throw new Error(`速率限制规则 "${rule.scope}" 缺少 identifier`);
   }
 
   const now = Date.now();
