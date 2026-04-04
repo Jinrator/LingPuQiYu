@@ -3,7 +3,7 @@ import { issueTokenPair } from '../_lib/auth.js';
 import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { verifyPhoneCode } from '../_lib/sms.js';
-import { createUserProfile, findUserRowByPhone, updateUserProfile, isUsernameTaken } from '../_lib/users.js';
+import { createUserProfile, findUserRowByPhone, isUsernameTaken } from '../_lib/users.js';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_COURSE_TYPE_LENGTH, sanitizeString, validatePassword, validateUsername } from '../_lib/validate.js';
 import { hashPassword } from '../_lib/password.js';
 
@@ -105,6 +105,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
+    // 查重 phone
+    const existingRow = await findUserRowByPhone(phone);
+    if (existingRow) {
+      res.status(409).json({ success: false, code: 'PHONE_TAKEN', message: '该手机号已注册' });
+      return;
+    }
+
     // 查重 username
     if (await isUsernameTaken(username)) {
       res.status(409).json({ success: false, code: 'USERNAME_TAKEN', message: '该用户名已被使用' });
@@ -113,10 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     const passwordHash = password ? hashPassword(password) : undefined;
 
-    const existingRow = await findUserRowByPhone(phone);
-    const user = existingRow
-      ? await updateUserProfile(existingRow, { displayName, courseType })
-      : await createUserProfile({ phone, username, displayName, courseType, passwordHash });
+    const user = await createUserProfile({ phone, username, displayName, courseType, passwordHash });
 
     const { accessToken, refreshToken } = await issueTokenPair(user);
     res.json({ success: true, user, token: accessToken, refreshToken });

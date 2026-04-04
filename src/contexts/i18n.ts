@@ -389,6 +389,12 @@ const dict: Dict = {
   'auth.setupUsername': { 'zh-CN': '设置用户名', 'zh-TW': '設定用戶名', en: 'Set Username' },
   'auth.setupUsernameDesc': { 'zh-CN': '设置一个唯一的用户名，用于登录和被其他用户识别', 'zh-TW': '設定一個唯一的用戶名，用於登入和被其他用戶識別', en: 'Set a unique username for login and identification' },
   'auth.usernameOnce': { 'zh-CN': '用户名设置后不可修改', 'zh-TW': '用戶名設定後不可修改', en: 'Username cannot be changed once set' },
+  'auth.usernameAvailable': { 'zh-CN': '用户名可用', 'zh-TW': '用戶名可用', en: 'Username is available' },
+  'auth.usernameChecking': { 'zh-CN': '检查中...', 'zh-TW': '檢查中...', en: 'Checking...' },
+  'auth.phoneTaken': { 'zh-CN': '该手机号已注册，请直接登录', 'zh-TW': '此手機號碼已註冊，請直接登入', en: 'This phone is already registered, please log in' },
+  'auth.phoneAvailable': { 'zh-CN': '手机号可用', 'zh-TW': '手機號碼可用', en: 'Phone number is available' },
+  'auth.phoneChecking': { 'zh-CN': '检查中...', 'zh-TW': '檢查中...', en: 'Checking...' },
+  'auth.usernameShort': { 'zh-CN': '用户名至少3个字符', 'zh-TW': '用戶名至少3個字元', en: 'Username must be at least 3 characters' },
 
   // ── Profile password management ──
   'profile.security': { 'zh-CN': '账号安全', 'zh-TW': '帳號安全', en: 'Account Security' },

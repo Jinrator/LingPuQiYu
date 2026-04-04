@@ -255,6 +255,21 @@ function refreshTokenOnce(): Promise<boolean> {
 }
 ```
 
+### 前端乐观认证（`src/contexts/AuthContext.tsx`）
+
+为消除页面刷新时的白屏闪烁，前端采用乐观认证策略：
+
+1. **初始化时**：从 `localStorage` 同步读取缓存的 session，若存在则立即设置 `isAuthenticated = true`、`isLoading = false`，UI 无阻塞渲染
+2. **后台验证**：`useEffect` 中异步调用 `/api/auth/me` 校验 token 有效性
+3. **失败回退**：若后端返回无效（token 过期/被吊销/用户被删除），将 `isAuthenticated` 设为 `false`，触发跳转到登录页
+
+**安全性不受影响的原因**：
+
+- 前端路由守卫从来不是安全边界，仅控制 UI 导航。所有敏感数据和操作的鉴权在后端 API 层完成
+- token 过期的用户即使短暂看到页面骨架，调用任何 API 都会被 401 拒绝
+- 后台验证失败后会清除 localStorage 并跳转登录页，不会停留在受保护页面
+- `ProtectedRoute` 仅在 `isLoading && !isAuthenticated`（即无本地 session 的首次加载）时显示 spinner，有本地 session 时直接放行渲染
+
 ## 8. SMS 日志脱敏
 
 ```typescript
@@ -336,10 +351,13 @@ ALLOWED_ORIGINS= VERCEL_ENV=production curl /api/health
 | `api/sms/send.ts` | 发送验证码 |
 | `vercel.json` | 安全响应头配置 |
 | `src/services/authService.ts` | 前端 Token 自动刷新 |
+| `src/contexts/AuthContext.tsx` | 前端乐观认证（localStorage 恢复 + 后台验证） |
+| `src/components/layout/AppLayout.tsx` | 路由守卫（无阻塞渲染） |
+| `src/components/router/ProtectedRoute.tsx` | 受保护路由（乐观放行已缓存 session） |
 
 ---
 
-**修复日期**：2026-02-01
+**修复日期**：2026-02-01（初版）/ 2026-04-04（补充前端乐观认证策略）
 **修复人员**：Andy, Claude Sonnet 4.5
 **问题严重程度**：高（安全基础设施）
 **修复状态**：✅ 已完成并验证

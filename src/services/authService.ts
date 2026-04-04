@@ -166,6 +166,23 @@ const request = async <T>(path: string, init: RequestInit = {}, retry = true): P
 // ── Auth Service ──
 
 export const authService = {
+  async checkAvailability(data: { username?: string; phone?: string }): Promise<{
+    success: boolean;
+    usernameAvailable?: boolean;
+    usernameMessage?: string;
+    phoneAvailable?: boolean;
+    phoneMessage?: string;
+  }> {
+    try {
+      return await request('/api/auth/check-availability', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch {
+      return { success: false };
+    }
+  },
+
   async sendSmsCode(phone: string): Promise<SmsResult> {
     return request<SmsResult>('/api/sms/send', {
       method: 'POST',

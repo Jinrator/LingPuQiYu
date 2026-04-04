@@ -281,7 +281,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
                 <AtSign size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                 <input type="text" placeholder={t('auth.usernamePlaceholder')} value={newUsername}
                   onChange={e => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30).toLowerCase())}
-                  className={pwInputCls} />
+                  className={inputCls} />
               </div>
               <p className="text-xs text-slate-300 px-1">{t('auth.usernameOnce')}</p>
             </div>

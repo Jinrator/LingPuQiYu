@@ -160,7 +160,7 @@ const ChineseInstruments: React.FC = () => {
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 p-2"
                   style={{ background: pal.bg }}
                 >
-                  <img src={inst.iconUrl} alt={t(inst.nameKey)} className="w-full h-full object-contain" style={{ filter: getIconFilter(inst.color) }} />
+                  <img src={inst.iconUrl} alt={t(inst.nameKey)} className="w-full h-full object-contain" loading="lazy" style={{ filter: getIconFilter(inst.color) }} />
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-slate-800 truncate">{t(inst.nameKey)}</h3>

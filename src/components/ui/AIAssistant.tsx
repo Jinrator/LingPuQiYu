@@ -1,8 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, Bot } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import { authService } from '../../services/authService';
+
+/** Image with graceful fallback to icon placeholder */
+const SafeImg: React.FC<{
+  src: string; alt: string; className?: string;
+  fallbackIcon?: React.ReactNode; containerClass?: string; containerStyle?: React.CSSProperties;
+}> = ({ src, alt, className, fallbackIcon, containerClass, containerStyle }) => {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={containerClass} style={containerStyle}>
+        {fallbackIcon || <Bot size={18} className="text-white/80" />}
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} className={className} loading="lazy" onError={() => setFailed(true)} />;
+};
 
 interface AIAssistantProps {
   theme?: 'light' | 'dark';
@@ -95,7 +111,12 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4" style={{ background: PALETTE.blue.bg }}>
             <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: PALETTE.blue.accent }}>
-                <img src="/images/AI_avatar.png" alt="AI Avatar" className="w-full h-full object-cover" />
+                <SafeImg
+                  src="/images/AI_avatar.png" alt="AI Avatar" className="w-full h-full object-cover"
+                  containerClass="w-full h-full flex items-center justify-center"
+                  containerStyle={{ background: PALETTE.blue.accent }}
+                  fallbackIcon={<Bot size={18} className="text-white/80" />}
+                />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-800">Jin-Bot AI</p>
@@ -173,7 +194,12 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
           className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.04)] bg-white transition-all hover:scale-[1.05] active:scale-95 relative p-0"
           style={{ boxShadow: '0 0 15px rgba(91, 164, 245, 0.5)' }}  // 添加这一行，蓝色柔光
         >
-          <img src="/images/AI_avatar_M.png" alt="AI" className="w-full h-full object-cover rounded-2xl" />
+          <SafeImg
+            src="/images/AI_avatar_M.png" alt="AI" className="w-full h-full object-cover rounded-2xl"
+            containerClass="w-full h-full flex items-center justify-center rounded-2xl"
+            containerStyle={{ background: PALETTE.blue.accent }}
+            fallbackIcon={<Bot size={24} className="text-white/80" />}
+          />
           <span
             className="absolute -top-1.5 -right-1.5 text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full"
             style={{ background: PALETTE.blue.accent }}

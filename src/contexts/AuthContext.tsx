@@ -20,20 +20,48 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // 先从 localStorage 乐观恢复，避免等待网络请求阻塞 UI
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const raw = localStorage.getItem('shenyin_auth');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed?.user || null;
+    } catch { return null; }
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    // 如果本地有 session，直接标记为非 loading，让 UI 立即渲染
+    try {
+      const raw = localStorage.getItem('shenyin_auth');
+      if (!raw) return true;
+      const parsed = JSON.parse(raw);
+      return !parsed?.token;
+    } catch { return true; }
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      const raw = localStorage.getItem('shenyin_auth');
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!parsed?.token;
+    } catch { return false; }
+  });
 
   useEffect(() => {
     let isMounted = true;
 
     const hydrateAuth = async () => {
-      setIsLoading(true);
       try {
         const session = await authService.getCurrentUser();
         if (!isMounted) return;
-        setUser(session?.user || null);
-        setIsAuthenticated(!!session);
+        if (session) {
+          setUser(session.user);
+          setIsAuthenticated(true);
+        } else {
+          // 服务端验证失败，清除乐观状态
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);

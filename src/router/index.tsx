@@ -12,9 +12,11 @@ const LoginPage = React.lazy(() => import('../pages/Login'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFound'));
 const SettingsPage = React.lazy(() => import('../pages/Settings'));
 
+import { Loader2 } from 'lucide-react';
+
 const RouteFallback: React.FC = () => (
   <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
-    <p className="text-sm font-medium text-slate-400">Loading...</p>
+    <Loader2 size={22} className="animate-spin text-[#5BA4F5]" />
   </div>
 );
 

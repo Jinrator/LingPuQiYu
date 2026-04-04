@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe, Lock, Eye, EyeOff, AtSign } from 'lucide-react';
+import { User, ArrowRight, CheckCircle2, Orbit, Sparkles, Atom, Smartphone, Loader2, KeyRound, Globe, Lock, Eye, EyeOff, AtSign, AlertCircle, Check } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { PALETTE } from '../../constants/palette';
 import { useSettings, Language } from '../../contexts/SettingsContext';
+import { authService } from '../../services/authService';
 
 interface AuthPageProps {
   theme: 'light' | 'dark';
@@ -35,6 +36,68 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // ── Real-time availability state ──
+  type FieldStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
+  const [usernameStatus, setUsernameStatus] = useState<FieldStatus>('idle');
+  const [usernameHint, setUsernameHint] = useState('');
+  const [phoneStatus, setPhoneStatus] = useState<FieldStatus>('idle');
+  const [phoneHint, setPhoneHint] = useState('');
+  const usernameTimer = useRef<number | null>(null);
+  const phoneTimer = useRef<number | null>(null);
+
+  const checkUsername = useCallback((value: string) => {
+    if (usernameTimer.current) clearTimeout(usernameTimer.current);
+    if (!value || value.length < 3) {
+      setUsernameStatus(value ? 'invalid' : 'idle');
+      setUsernameHint(value ? t('auth.usernameShort') : '');
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(value)) {
+      setUsernameStatus('invalid');
+      setUsernameHint(t('auth.usernameInvalid'));
+      return;
+    }
+    setUsernameStatus('checking');
+    setUsernameHint(t('auth.usernameChecking'));
+    usernameTimer.current = window.setTimeout(async () => {
+      const r = await authService.checkAvailability({ username: value });
+      if (r.usernameAvailable === true) {
+        setUsernameStatus('available');
+        setUsernameHint(t('auth.usernameAvailable'));
+      } else if (r.usernameAvailable === false) {
+        setUsernameStatus('taken');
+        setUsernameHint(r.usernameMessage || t('auth.usernameTaken'));
+      }
+    }, 500);
+  }, [t]);
+
+  const checkPhone = useCallback((value: string) => {
+    if (phoneTimer.current) clearTimeout(phoneTimer.current);
+    if (mode !== 'register') { setPhoneStatus('idle'); setPhoneHint(''); return; }
+    if (value.length < 11) { setPhoneStatus('idle'); setPhoneHint(''); return; }
+    if (!/^1\d{10}$/.test(value)) { setPhoneStatus('invalid'); setPhoneHint(t('auth.usernameInvalid')); return; }
+    setPhoneStatus('checking');
+    setPhoneHint(t('auth.phoneChecking'));
+    phoneTimer.current = window.setTimeout(async () => {
+      const r = await authService.checkAvailability({ phone: value });
+      if (r.phoneAvailable === true) {
+        setPhoneStatus('available');
+        setPhoneHint(t('auth.phoneAvailable'));
+      } else if (r.phoneAvailable === false) {
+        setPhoneStatus('taken');
+        setPhoneHint(r.phoneMessage || t('auth.phoneTaken'));
+      }
+    }, 500);
+  }, [t, mode]);
+
+  // Clean up timers
+  useEffect(() => {
+    return () => {
+      if (usernameTimer.current) clearTimeout(usernameTimer.current);
+      if (phoneTimer.current) clearTimeout(phoneTimer.current);
+    };
+  }, []);
 
   const courses = [
     { id: 'PRODUCER' as CourseType, titleKey: 'auth.course.producer', descKey: 'auth.course.producerDesc', icon: Orbit, color: PALETTE.blue },
@@ -81,8 +144,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         }
         const r = await doRegister({ phone, code: vCode, username, displayName: displayName || undefined, courseType: course || undefined, password: regPassword || undefined });
         if (r && !r.success) {
-          if (r.code === 'USERNAME_TAKEN') setErrorMsg(t('auth.usernameTaken'));
-          else setErrorMsg(r.message || t('auth.registerFail'));
+          if (r.code === 'USERNAME_TAKEN') {
+            setErrorMsg(t('auth.usernameTaken'));
+            setUsernameStatus('taken');
+            setUsernameHint(t('auth.usernameTaken'));
+          } else if (r.code === 'PHONE_TAKEN') {
+            setErrorMsg(t('auth.phoneTaken'));
+            setPhoneStatus('taken');
+            setPhoneHint(t('auth.phoneTaken'));
+          } else {
+            setErrorMsg(r.message || t('auth.registerFail'));
+          }
         }
       }
     } catch (e: any) {
@@ -94,6 +166,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         setErrorMsg(t('auth.noPassword'));
       } else if (e?.code === 'USERNAME_TAKEN') {
         setErrorMsg(t('auth.usernameTaken'));
+        setUsernameStatus('taken');
+        setUsernameHint(t('auth.usernameTaken'));
+      } else if (e?.code === 'PHONE_TAKEN') {
+        setErrorMsg(t('auth.phoneTaken'));
+        setPhoneStatus('taken');
+        setPhoneHint(t('auth.phoneTaken'));
       } else {
         setErrorMsg(e.message || t('auth.actionFail'));
       }
@@ -122,7 +200,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     ? loginMethod === 'password'
       ? (isAuthorizing || !account || password.length < 8)
       : (isAuthorizing || phone.length !== 11 || vCode.length < 4)
-    : (isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4);
+    : (isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken');
 
   const inputCls = `w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-medium outline-none transition-all
     bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
@@ -236,7 +314,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                 {mode === 'login' ? t('auth.loginSub') : t('auth.registerSub')}
               </p>
             </div>
-            <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrorMsg(''); }}
+            <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrorMsg(''); setUsernameStatus('idle'); setUsernameHint(''); setPhoneStatus('idle'); setPhoneHint(''); }}
               className="text-xs font-semibold flex items-center gap-1 text-slate-400 hover:text-slate-800 transition-colors">
               {mode === 'login' ? t('auth.goRegister') : t('auth.goLogin')}
               <ArrowRight size={12} />
@@ -347,9 +425,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                   <div className="relative">
                     <AtSign size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                     <input type="text" placeholder={t('auth.usernamePlaceholder')} value={username}
-                      onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30).toLowerCase())}
-                      className={inputCls} />
+                      onChange={e => { const v = e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30).toLowerCase(); setUsername(v); checkUsername(v); }}
+                      className={`${inputCls} ${usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-300 focus:border-red-400 focus:ring-red-400/10' : usernameStatus === 'available' ? 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/10' : ''}`} />
+                    {usernameStatus === 'checking' && <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 animate-spin" />}
+                    {usernameStatus === 'available' && <Check size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" />}
+                    {(usernameStatus === 'taken' || usernameStatus === 'invalid') && <AlertCircle size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400" />}
                   </div>
+                  {usernameHint && (
+                    <p className={`text-xs font-medium -mt-1 ml-1 ${usernameStatus === 'available' ? 'text-emerald-500' : usernameStatus === 'checking' ? 'text-slate-400' : 'text-red-400'}`}>
+                      {usernameHint}
+                    </p>
+                  )}
                   <div className="relative">
                     <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                     <input type="text" placeholder={t('auth.displayNamePlace')} value={displayName}
@@ -358,9 +444,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                   <div className="relative">
                     <Smartphone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                     <input type="tel" placeholder={t('auth.phone')} value={phone}
-                      onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className={inputCls} />
+                      onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 11); setPhone(v); checkPhone(v); }}
+                      className={`${inputCls} ${phoneStatus === 'taken' ? 'border-red-300 focus:border-red-400 focus:ring-red-400/10' : phoneStatus === 'available' ? 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/10' : ''}`} />
+                    {phoneStatus === 'checking' && <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 animate-spin" />}
+                    {phoneStatus === 'available' && <Check size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" />}
+                    {phoneStatus === 'taken' && <AlertCircle size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400" />}
                   </div>
+                  {phoneHint && (
+                    <p className={`text-xs font-medium -mt-1 ml-1 ${phoneStatus === 'available' ? 'text-emerald-500' : phoneStatus === 'checking' ? 'text-slate-400' : 'text-red-400'}`}>
+                      {phoneHint}
+                    </p>
+                  )}
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
@@ -389,7 +483,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                   </div>
                 </div>
                 <button onClick={handleAction}
-                  disabled={isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4}
+                  disabled={isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken'}
                   className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                   style={{background: '#1e293b'}}>
                   {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('auth.finishRegister')}</>}

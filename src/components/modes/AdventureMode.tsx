@@ -1,24 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { ADVENTURE_LEVELS, AdventureLevel } from '../../constants';
-import { Lock, CheckCircle2, Gift, X, Zap, Star, Target, MessageCircle } from 'lucide-react';
-import SoundHuntingProject from '../projects/SoundHuntingProject';
-import RhythmColoringProject from '../projects/RhythmColoringProject';
-import RhythmLegoProject from '../projects/RhythmLegoProject';
-import PitchLadderProject from '../projects/PitchLadderProject';
-import MoodDoodleProject from '../projects/MoodDoodleProject';
-import MelodyMirrorProject from '../projects/MelodyMirrorProject';
-import InspirationRetroProject from '../projects/InspirationRetroProject';
-import ChordBurgerProject from '../projects/ChordBurgerProject';
-import ChordRouteProject from '../projects/ChordRouteProject';
-import StyleTransformProject from '../projects/StyleTransformProject';
-import MusicAtlasProject from '../projects/MusicAtlasProject';
-import MemoryHookProject from '../projects/MemoryHookProject';
-import MusicTrainProject from '../projects/MusicTrainProject';
-import AIRecordingStudioProject from '../projects/AIRecordingStudioProject';
-import PersonalDebutProject from '../projects/PersonalDebutProject';
+import { Lock, CheckCircle2, Gift, X, Zap, Star, Target, MessageCircle, Loader2 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
+
+// 懒加载项目组件，避免一次性加载 15 个组件阻塞渲染
+const SoundHuntingProject = lazy(() => import('../projects/SoundHuntingProject'));
+const RhythmColoringProject = lazy(() => import('../projects/RhythmColoringProject'));
+const RhythmLegoProject = lazy(() => import('../projects/RhythmLegoProject'));
+const PitchLadderProject = lazy(() => import('../projects/PitchLadderProject'));
+const MoodDoodleProject = lazy(() => import('../projects/MoodDoodleProject'));
+const MelodyMirrorProject = lazy(() => import('../projects/MelodyMirrorProject'));
+const InspirationRetroProject = lazy(() => import('../projects/InspirationRetroProject'));
+const ChordBurgerProject = lazy(() => import('../projects/ChordBurgerProject'));
+const ChordRouteProject = lazy(() => import('../projects/ChordRouteProject'));
+const StyleTransformProject = lazy(() => import('../projects/StyleTransformProject'));
+const MusicAtlasProject = lazy(() => import('../projects/MusicAtlasProject'));
+const MemoryHookProject = lazy(() => import('../projects/MemoryHookProject'));
+const MusicTrainProject = lazy(() => import('../projects/MusicTrainProject'));
+const AIRecordingStudioProject = lazy(() => import('../projects/AIRecordingStudioProject'));
+const PersonalDebutProject = lazy(() => import('../projects/PersonalDebutProject'));
+
+const ProjectFallback: React.FC = () => (
+  <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
+    <div className="text-center">
+      <Loader2 size={24} className="animate-spin mx-auto mb-3" style={{ color: PALETTE.green.accent }} />
+      <p className="text-sm font-medium text-slate-400">加载中...</p>
+    </div>
+  </div>
+);
 
 interface AdventureModeProps { theme?: 'light' | 'dark'; }
 type Category = '初级' | '中级' | '高级';
@@ -81,7 +92,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
   };
 
   const activeLevelView = renderActiveLevel();
-  if (activeLevelView) return activeLevelView;
+  if (activeLevelView) return <Suspense fallback={<ProjectFallback />}>{activeLevelView}</Suspense>;
 
   const completedCount = ADVENTURE_LEVELS.filter(l => l.completed).length;
   const totalCount = ADVENTURE_LEVELS.length;
