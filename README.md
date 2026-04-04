@@ -31,7 +31,7 @@ src/                              # 前端
 │   ├── music/                    # Piano / PianoRoll / MusicStaff / DrumSequencer
 │   └── ui/                       # AIAssistant / ExitConfirmation
 ├── contexts/                     # AuthContext / SettingsContext
-├── services/                     # authService / audioService / drumSynthesizer
+├── services/                     # authService / audioService / resourceLoader / drumSynthesizer
 ├── hooks/                        # useAuth / useAppRouter
 ├── constants/                    # palette / 音符和弦配置
 └── utils/                        # musicNotes
@@ -261,5 +261,6 @@ vercel logs <deployment-url> --follow
 | [ROUTING_AND_LOGOUT_FIX](./docs/solutions/ROUTING_AND_LOGOUT_FIX.md) | 路由状态与退出登录修复 | ✅ 已启用 |
 | [REACT_ROUTER_MIGRATION_SOLUTION](./docs/solutions/REACT_ROUTER_MIGRATION_SOLUTION.md) | React Router 迁移方案 | ✅ 已启用 |
 | [SMS_AUTH_SERVICE_MIGRATION](./docs/solutions/SMS_AUTH_SERVICE_MIGRATION.md) | 阿里云短信认证服务接入 | ✅ 已启用 |
+| [RESOURCE_LOADING_OPTIMIZATION](./docs/solutions/RESOURCE_LOADING_OPTIMIZATION.md) | 资源加载统一优化方案 | ✅ 已启用 |
 
 每次解决问题后按 `遇到问题 → 调试分析 → 实施修复 → 写 Solution 文档 → 提交代码` 的流程沉淀文档。
