@@ -16,10 +16,6 @@ const AVATAR_BUCKET = 'avatars';
 const AVATAR_MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png'];
 
-export const config = {
-  api: { bodyParser: { sizeLimit: '3mb' } },
-};
-
 interface ParsedBody {
   displayName?: string;
   courseType?: string;

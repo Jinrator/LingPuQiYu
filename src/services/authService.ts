@@ -172,6 +172,36 @@ const request = async <T>(path: string, init: RequestInit = {}, retry = true): P
   return data as T;
 };
 
+// ── Avatar compression ──
+
+function compressAvatar(
+  file: File,
+  maxSize: number,
+  quality: number,
+): Promise<{ base64: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // Crop to square, centered
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      canvas.width = maxSize;
+      canvas.height = maxSize;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { reject(new Error('Canvas not supported')); return; }
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, maxSize, maxSize);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      // Strip "data:image/jpeg;base64," prefix
+      const base64 = dataUrl.split(',')[1];
+      resolve({ base64 });
+    };
+    img.onerror = () => reject(new Error('图片加载失败'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // ── Auth Service ──
 
 export const authService = {
@@ -341,16 +371,14 @@ export const authService = {
   },
 
   async uploadAvatar(file: File): Promise<AuthUser> {
-    const buffer = await file.arrayBuffer();
-    const base64 = btoa(
-      new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-    );
+    // Compress to 256x256 JPEG on client to keep payload small
+    const compressed = await compressAvatar(file, 256, 0.85);
 
     const result = await request<{ success: boolean; user?: AuthUser; message?: string }>(
       '/api/profile/update',
       {
         method: 'POST',
-        body: JSON.stringify({ avatarImage: base64, avatarContentType: file.type }),
+        body: JSON.stringify({ avatarImage: compressed.base64, avatarContentType: 'image/jpeg' }),
       },
     );
 
