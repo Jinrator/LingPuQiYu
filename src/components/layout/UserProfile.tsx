@@ -34,7 +34,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
   const [unMsg, setUnMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const { t } = useSettings();
   const { user, setUsername: doSetUsername, isAuthenticated } = useAuth();
-  const displayAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const displayAvatar = user?.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
   const displayName = user?.displayName || user?.username || (user?.phone ? `用户 ${user.phone.slice(-4)}` : t('profile.userName'));
   const displayId = user?.username ? `@${user.username}` : (user?.id || 'PRO-9527');
 

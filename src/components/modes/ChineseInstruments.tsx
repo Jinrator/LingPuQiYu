@@ -96,10 +96,14 @@ const ChineseInstruments: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    void preloadPreviewSamples();
-    void preloadPlayableInstrumentSamples();
+    // 延迟预加载，避免与页面切换竞争网络资源
+    const timer = setTimeout(() => {
+      void preloadPreviewSamples();
+      void preloadPlayableInstrumentSamples();
+    }, 500);
 
     return () => {
+      clearTimeout(timer);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;

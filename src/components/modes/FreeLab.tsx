@@ -74,8 +74,18 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   useEffect(() => {
     synthRef.current = createSynth();
     audioService.resume();
-    // 提前异步加载民族乐器采样，避免进入演奏页面时没有声音
-    void preloadPlayableInstrumentSamples();
+    // 延迟加载民族乐器采样，避免与页面切换/其他资源竞争带宽
+    // 只在用户停留在 FreeLab 且浏览器空闲时才开始预加载
+    const timer = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          void preloadPlayableInstrumentSamples();
+        }, { timeout: 8000 });
+      } else {
+        void preloadPlayableInstrumentSamples();
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleNote = useCallback((note: Note) => {

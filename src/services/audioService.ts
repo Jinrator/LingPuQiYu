@@ -53,10 +53,8 @@ class AudioService {
     if (Tone.getContext().state !== 'running') {
       await Tone.start();
     }
-    if (!this.piano) this.initPiano();
-    if (!this.drumPlayers.has(this.currentDrumKit)) {
-      this.initDrumKit(this.currentDrumKit);
-    }
+    // 延迟初始化采样器，不在 resume 时立即加载
+    // 钢琴和鼓组会在首次播放时按需初始化
   }
 
   // ============ 钢琴 ============
@@ -105,6 +103,7 @@ class AudioService {
 
   public async playPianoNote(note: Note, duration: number = 0.5, velocity: number = 0.8) {
     await this.resume();
+    if (!this.piano) this.initPiano();
     await this.waitForPiano();
     if (this.piano) {
       this.piano.triggerAttackRelease(note.full, duration, undefined, velocity);
@@ -113,6 +112,7 @@ class AudioService {
 
   public async playPianoChord(notes: Note[], duration: number = 1.0, velocity: number = 0.7) {
     await this.resume();
+    if (!this.piano) this.initPiano();
     await this.waitForPiano();
     if (this.piano) {
       notes.forEach(note => {
@@ -182,6 +182,7 @@ class AudioService {
   public playDrum(type: DrumType) {
     this.init();
     const kit = this.currentDrumKit;
+    if (!this.drumPlayers.has(kit)) this.initDrumKit(kit);
     const players = this.drumPlayers.get(kit);
     const isReady = this.drumPlayersReady.get(kit);
     const hasFailed = this.drumSamplesFailed.get(kit);

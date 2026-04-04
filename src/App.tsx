@@ -1,6 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ViewMode } from './types';
-import FreeLab from './components/modes/FreeLab';
 import AIAssistant from './components/ui/AIAssistant';
 import AuthPage from './components/layout/AuthPage';
 import { useAuth } from './contexts/AuthContext';
@@ -8,7 +7,8 @@ import { Music4, Map, Palette, Disc, LogOut, Headphones, Loader2, User } from 'l
 import { PALETTE } from './constants/palette';
 import { useSettings } from './contexts/SettingsContext';
 
-// Lazy load heavy mode components to avoid blocking first render
+// Lazy load all mode components to avoid blocking first render
+const FreeLab = lazy(() => import('./components/modes/FreeLab'));
 const AdventureMode = lazy(() => import('./components/modes/AdventureMode'));
 const StageMode = lazy(() => import('./components/modes/StageMode'));
 const UserProfile = lazy(() => import('./components/layout/UserProfile'));
@@ -43,7 +43,7 @@ const Avatar: React.FC<{ src: string; className?: string }> = ({ src, className 
 const App: React.FC = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const { t } = useSettings();
-  const avatarUrl = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const avatarUrl = user?.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'
