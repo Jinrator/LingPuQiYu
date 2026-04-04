@@ -7,7 +7,19 @@ import {
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
-import { generateAvatarUrl } from '../../utils/avatar';
+
+/** Avatar with fallback for failed external URLs */
+const SafeAvatar: React.FC<{ src: string; className?: string }> = ({ src, className = '' }) => {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-slate-100`}>
+        <User size={24} className="text-slate-400" />
+      </div>
+    );
+  }
+  return <img src={src} alt="Avatar" className={`${className} object-cover`} onError={() => setFailed(true)} />;
+};
 
 interface UserProfileProps {
   theme?: 'light' | 'dark';
@@ -22,7 +34,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
   const [unMsg, setUnMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const { t } = useSettings();
   const { user, setUsername: doSetUsername, isAuthenticated } = useAuth();
-  const displayAvatar = user?.avatar || generateAvatarUrl(user?.id || 'JinBot');
+  const displayAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
   const displayName = user?.displayName || user?.username || (user?.phone ? `用户 ${user.phone.slice(-4)}` : t('profile.userName'));
   const displayId = user?.username ? `@${user.username}` : (user?.id || 'PRO-9527');
 
@@ -92,7 +104,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
-                <img src={userData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                <SafeAvatar src={userData.avatar} className="w-full h-full" />
               </div>
               <span
                 className="absolute -bottom-2 -right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"

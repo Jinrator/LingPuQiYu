@@ -11,7 +11,6 @@ import { useExitConfirmation } from '../../hooks/useExitConfirmation';
 import { Music4, Settings, User } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
-import { generateAvatarUrl } from '../../utils/avatar';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
@@ -36,7 +35,7 @@ const AppLayout: React.FC = () => {
   const [showMelodyDecoder, setShowMelodyDecoder] = useState(false);
   const { showExitConfirm, hideExitConfirm } = useExitConfirmation();
   const currentView = getViewModeFromPath(location.pathname);
-  const userAvatar = user?.avatar || generateAvatarUrl(user?.id || 'JinBot');
+  const userAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
 
   // 认证路由守卫：仅在后台验证完成后才做跳转，不阻塞渲染
   useEffect(() => {

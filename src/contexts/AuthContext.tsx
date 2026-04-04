@@ -169,8 +169,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const refreshUser = useCallback(async () => {
-    // 如果 hydrateAuth 正在进行中，不重复请求
-    if (isLoading) return;
     try {
       const session = await authService.getCurrentUser();
       setUser(session?.user || null);
@@ -178,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore
     }
-  }, [isLoading]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, loginWithPassword, register, loginWithWechat, loginWithQQ, logout, setPassword: setPasswordFn, setUsername: setUsernameFn, refreshUser }}>

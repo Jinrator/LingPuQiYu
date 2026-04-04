@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ViewMode } from './types';
-import AdventureMode from './components/modes/AdventureMode';
 import FreeLab from './components/modes/FreeLab';
-import StageMode from './components/modes/StageMode';
-import UserProfile from './components/layout/UserProfile';
 import AIAssistant from './components/ui/AIAssistant';
 import AuthPage from './components/layout/AuthPage';
 import { useAuth } from './contexts/AuthContext';
-import { Music4, Map, Palette, Disc, LogOut, Headphones } from 'lucide-react';
+import { Music4, Map, Palette, Disc, LogOut, Headphones, Loader2, User } from 'lucide-react';
 import { PALETTE } from './constants/palette';
 import { useSettings } from './contexts/SettingsContext';
-import { generateAvatarUrl } from './utils/avatar';
+
+// Lazy load heavy mode components to avoid blocking first render
+const AdventureMode = lazy(() => import('./components/modes/AdventureMode'));
+const StageMode = lazy(() => import('./components/modes/StageMode'));
+const UserProfile = lazy(() => import('./components/layout/UserProfile'));
+
+const LazyFallback: React.FC = () => (
+  <div className="h-full w-full flex items-center justify-center bg-[#F5F7FA]">
+    <Loader2 size={24} className="animate-spin" style={{ color: PALETTE.blue.accent }} />
+  </div>
+);
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
@@ -20,9 +27,23 @@ const NAV_ITEMS = [
   { id: ViewMode.STAGE,     labelKey: 'nav.stage',     icon: Disc,    accent: PALETTE.pink  },
 ];
 
+/** Avatar with fallback — handles external URL failures gracefully */
+const Avatar: React.FC<{ src: string; className?: string }> = ({ src, className = '' }) => {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-slate-100`}>
+        <User size={16} className="text-slate-400" />
+      </div>
+    );
+  }
+  return <img src={src} alt="User" className={`${className} object-cover`} onError={() => setFailed(true)} />;
+};
+
 const App: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { t } = useSettings();
+  const avatarUrl = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'
@@ -108,7 +129,7 @@ const App: React.FC = () => {
               : { boxShadow: '0 0 0 2px transparent' }
             }
           >
-            <img src={generateAvatarUrl('JinBot')} alt="User" className="w-full h-full object-cover" />
+            <Avatar src={avatarUrl} className="w-full h-full" />
           </button>
 
           {/* Logout */}
@@ -138,7 +159,7 @@ const App: React.FC = () => {
             className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
             style={view === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
           >
-            <img src={generateAvatarUrl('JinBot')} alt="User" className="w-full h-full object-cover" />
+            <Avatar src={avatarUrl} className="w-full h-full" />
           </button>
           <button
             onClick={handleLogout}
@@ -151,10 +172,12 @@ const App: React.FC = () => {
 
       {/* ── Main content ── */}
       <main className="flex-1 overflow-hidden relative">
-        {view === ViewMode.ADVENTURE    && <AdventureMode theme="light" />}
-        {view === ViewMode.FREE_LAB     && <FreeLab theme="light" />}
-        {view === ViewMode.STAGE        && <StageMode theme="light" />}
-        {view === ViewMode.USER_PROFILE && <UserProfile theme="light" onLogout={handleLogout} />}
+        <Suspense fallback={<LazyFallback />}>
+          {view === ViewMode.ADVENTURE    && <AdventureMode theme="light" />}
+          {view === ViewMode.FREE_LAB     && <FreeLab theme="light" />}
+          {view === ViewMode.STAGE        && <StageMode theme="light" />}
+          {view === ViewMode.USER_PROFILE && <UserProfile theme="light" onLogout={handleLogout} />}
+        </Suspense>
       </main>
 
       {/* ── Mobile bottom nav ── */}

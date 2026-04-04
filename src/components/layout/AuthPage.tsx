@@ -45,12 +45,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const [phoneHint, setPhoneHint] = useState('');
   const usernameTimer = useRef<number | null>(null);
   const phoneTimer = useRef<number | null>(null);
-  const usernameAbort = useRef<AbortController | null>(null);
-  const phoneAbort = useRef<AbortController | null>(null);
 
   const checkUsername = useCallback((value: string) => {
     if (usernameTimer.current) clearTimeout(usernameTimer.current);
-    usernameAbort.current?.abort();
     if (!value || value.length < 3) {
       setUsernameStatus(value ? 'invalid' : 'idle');
       setUsernameHint(value ? t('auth.usernameShort') : '');
@@ -63,48 +60,33 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     }
     setUsernameStatus('checking');
     setUsernameHint(t('auth.usernameChecking'));
-    const controller = new AbortController();
-    usernameAbort.current = controller;
     usernameTimer.current = window.setTimeout(async () => {
-      try {
-        const r = await authService.checkAvailability({ username: value });
-        if (controller.signal.aborted) return;
-        if (r.usernameAvailable === true) {
-          setUsernameStatus('available');
-          setUsernameHint(t('auth.usernameAvailable'));
-        } else if (r.usernameAvailable === false) {
-          setUsernameStatus('taken');
-          setUsernameHint(r.usernameMessage || t('auth.usernameTaken'));
-        }
-      } catch {
-        // 请求被取消或失败，忽略
+      const r = await authService.checkAvailability({ username: value });
+      if (r.usernameAvailable === true) {
+        setUsernameStatus('available');
+        setUsernameHint(t('auth.usernameAvailable'));
+      } else if (r.usernameAvailable === false) {
+        setUsernameStatus('taken');
+        setUsernameHint(r.usernameMessage || t('auth.usernameTaken'));
       }
     }, 500);
   }, [t]);
 
   const checkPhone = useCallback((value: string) => {
     if (phoneTimer.current) clearTimeout(phoneTimer.current);
-    phoneAbort.current?.abort();
     if (mode !== 'register') { setPhoneStatus('idle'); setPhoneHint(''); return; }
     if (value.length < 11) { setPhoneStatus('idle'); setPhoneHint(''); return; }
     if (!/^1\d{10}$/.test(value)) { setPhoneStatus('invalid'); setPhoneHint(t('auth.usernameInvalid')); return; }
     setPhoneStatus('checking');
     setPhoneHint(t('auth.phoneChecking'));
-    const controller = new AbortController();
-    phoneAbort.current = controller;
     phoneTimer.current = window.setTimeout(async () => {
-      try {
-        const r = await authService.checkAvailability({ phone: value });
-        if (controller.signal.aborted) return;
-        if (r.phoneAvailable === true) {
-          setPhoneStatus('available');
-          setPhoneHint(t('auth.phoneAvailable'));
-        } else if (r.phoneAvailable === false) {
-          setPhoneStatus('taken');
-          setPhoneHint(r.phoneMessage || t('auth.phoneTaken'));
-        }
-      } catch {
-        // 请求被取消或失败，忽略
+      const r = await authService.checkAvailability({ phone: value });
+      if (r.phoneAvailable === true) {
+        setPhoneStatus('available');
+        setPhoneHint(t('auth.phoneAvailable'));
+      } else if (r.phoneAvailable === false) {
+        setPhoneStatus('taken');
+        setPhoneHint(r.phoneMessage || t('auth.phoneTaken'));
       }
     }, 500);
   }, [t, mode]);
@@ -114,8 +96,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     return () => {
       if (usernameTimer.current) clearTimeout(usernameTimer.current);
       if (phoneTimer.current) clearTimeout(phoneTimer.current);
-      usernameAbort.current?.abort();
-      phoneAbort.current?.abort();
     };
   }, []);
 

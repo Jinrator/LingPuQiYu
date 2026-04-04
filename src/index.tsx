@@ -7,7 +7,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { router } from './router';
 import ErrorBoundary from './components/ui/ErrorBoundary';
-import OfflineBanner from './components/ui/OfflineBanner';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -20,7 +19,6 @@ root.render(
     <ErrorBoundary>
       <SettingsProvider>
         <AuthProvider>
-          <OfflineBanner />
           <RouterProvider router={router} />
         </AuthProvider>
       </SettingsProvider>

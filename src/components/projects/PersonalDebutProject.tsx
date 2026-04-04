@@ -35,7 +35,7 @@ const PersonalDebutProject: React.FC<{ onComplete: () => void; onBack: () => voi
       }
     } catch (err) {
       console.error("Image generation failed", err);
-      setCoverUrl("/images/InspirationGenie.jpg");
+      setCoverUrl("https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=800&auto=format&fit=crop");
     } finally { setIsGenerating(false); }
   };
 

@@ -147,42 +147,49 @@ const StageMode: React.FC<StageModeProps> = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Load ID3 metadata (cover art, title, artist) from MP3 files
+  // Load ID3 metadata (cover art, title, artist) from MP3 files — deferred & sequential to avoid blocking render
   useEffect(() => {
     let cancelled = false;
     const blobUrls: string[] = [];
 
     async function loadMeta() {
-      const results = await Promise.all(
-        SONG_META.map(m => readID3(m.src))
-      );
+      // Defer heavy work until after initial paint
+      await new Promise<void>(resolve => {
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(() => resolve());
+        } else {
+          setTimeout(resolve, 200);
+        }
+      });
       if (cancelled) return;
 
-      setSongs(prev => prev.map((song, i) => {
-        const meta = results[i];
-        if (!meta) return song;
-        const updated = { ...song };
-        if (meta.title) updated.title = meta.title;
-        if (meta.artist) updated.author = meta.artist;
-        if (meta.coverUrl) {
-          updated.coverUrl = meta.coverUrl;
-          blobUrls.push(meta.coverUrl);
-        }
-        return updated;
-      }));
+      // Load sequentially to avoid 7 concurrent 512KB fetches
+      for (let i = 0; i < SONG_META.length; i++) {
+        if (cancelled) return;
+        const meta = await readID3(SONG_META[i].src);
+        if (cancelled) return;
+        if (!meta || (!meta.title && !meta.artist && !meta.coverUrl)) continue;
 
-      // Also update activeSong if it's currently set
-      setActiveSong(prev => {
-        if (!prev) return null;
-        const idx = SONG_META.findIndex(m => m.id === prev.id);
-        const meta = idx >= 0 ? results[idx] : null;
-        if (!meta) return prev;
-        const updated = { ...prev };
-        if (meta.title) updated.title = meta.title;
-        if (meta.artist) updated.author = meta.artist;
-        if (meta.coverUrl) updated.coverUrl = meta.coverUrl;
-        return updated;
-      });
+        if (meta.coverUrl) blobUrls.push(meta.coverUrl);
+
+        setSongs(prev => prev.map((song, idx) => {
+          if (idx !== i) return song;
+          const updated = { ...song };
+          if (meta.title) updated.title = meta.title;
+          if (meta.artist) updated.author = meta.artist;
+          if (meta.coverUrl) updated.coverUrl = meta.coverUrl;
+          return updated;
+        }));
+
+        setActiveSong(prev => {
+          if (!prev || prev.id !== SONG_META[i].id) return prev;
+          const updated = { ...prev };
+          if (meta.title) updated.title = meta.title;
+          if (meta.artist) updated.author = meta.artist;
+          if (meta.coverUrl) updated.coverUrl = meta.coverUrl;
+          return updated;
+        });
+      }
     }
 
     loadMeta();
