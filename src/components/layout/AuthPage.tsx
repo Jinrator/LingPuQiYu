@@ -202,11 +202,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
       : (isAuthorizing || phone.length !== 11 || vCode.length < 4)
     : (isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken');
 
-  const inputCls = `w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-medium outline-none transition-all
+  const inputCls = `w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl text-sm font-medium outline-none transition-all
     bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
     focus:ring-2 focus:ring-[#5BA4F5]/10`;
 
-  const passwordInputCls = `w-full pl-11 pr-10 py-3.5 rounded-xl text-sm font-medium outline-none transition-all
+  const passwordInputCls = `w-full pl-11 pr-10 py-3 sm:py-3.5 rounded-xl text-sm font-medium outline-none transition-all
     bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
     focus:ring-2 focus:ring-[#5BA4F5]/10`;
 
@@ -217,10 +217,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#F5F7FA]"> 
+    <div className="fixed inset-0 z-[200] flex items-center sm:justify-center p-4 bg-[#F5F7FA] overflow-y-auto"> 
 
       {/* Language switcher — top right */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-1.5">
+      <div className="fixed top-4 right-4 sm:absolute sm:top-6 sm:right-6 z-10 flex items-center gap-1.5">
         <Globe size={14} className="text-slate-300" />
         {LANG_OPTIONS.map(l => (
           <button
@@ -237,7 +237,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
         ))}
       </div>
 
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] bg-white lg:h-[580px] max-h-[90vh]">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] bg-white lg:h-[580px] sm:max-h-[90vh] my-auto shrink-0">
 
         {/* ── Left panel (hidden on mobile) ── */}
         <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#F0F4FF]">
@@ -405,13 +405,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
             {/* ── REGISTER ── */}
             {mode === 'register' && (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="text-sm font-bold tracking-tight text-slate-700 mb-2.5">{t('auth.selectDirection')}</p>
-                  <div className="grid grid-cols-3 gap-2">
+                  <p className="text-sm font-bold tracking-tight text-slate-700 mb-2">{t('auth.selectDirection')}</p>
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                     {courses.map(c => (
                       <button key={c.id} onClick={() => setCourse(c.id)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl text-center transition-all hover:scale-[1.02]"
+                        className="flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl text-center transition-all hover:scale-[1.02]"
                         style={course === c.id
                           ? { background: c.color.bg, color: c.color.accent }
                           : { background: '#F8FAFC', color: '#94A3B8' }}>
@@ -484,7 +484,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                 </div>
                 <button onClick={handleAction}
                   disabled={isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken'}
-                  className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
+                  className="w-full py-3 sm:py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                   style={{background: '#1e293b'}}>
                   {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('auth.finishRegister')}</>}
                 </button>
