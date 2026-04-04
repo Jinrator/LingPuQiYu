@@ -340,6 +340,32 @@ export const authService = {
     return result.user;
   },
 
+  async uploadAvatar(file: File): Promise<AuthUser> {
+    const buffer = await file.arrayBuffer();
+    const base64 = btoa(
+      new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+    );
+
+    const result = await request<{ success: boolean; user?: AuthUser; message?: string }>(
+      '/api/profile/update',
+      {
+        method: 'POST',
+        body: JSON.stringify({ avatarImage: base64, avatarContentType: file.type }),
+      },
+    );
+
+    if (!result.success || !result.user) {
+      throw new Error(result.message || '头像上传失败');
+    }
+
+    const session = readStoredSession();
+    if (session) {
+      writeStoredSession({ ...session, user: result.user });
+    }
+
+    return result.user;
+  },
+
   async setUsername(username: string): Promise<{ success: boolean; user?: AuthUser; message?: string; code?: string }> {
     const result = await request<{ success: boolean; user?: AuthUser; message?: string; code?: string }>(
       '/api/profile/username',

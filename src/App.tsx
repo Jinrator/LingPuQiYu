@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 /** Avatar with fallback — handles external URL failures gracefully */
 const Avatar: React.FC<{ src: string; className?: string }> = ({ src, className = '' }) => {
   const [failed, setFailed] = useState(false);
-  if (failed) {
+  if (!src || failed) {
     return (
       <div className={`${className} flex items-center justify-center bg-slate-100`}>
         <User size={16} className="text-slate-400" />
@@ -43,7 +43,7 @@ const Avatar: React.FC<{ src: string; className?: string }> = ({ src, className 
 const App: React.FC = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const { t } = useSettings();
-  const avatarUrl = user?.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const avatarUrl = user?.avatar || '';
   const [view, setView] = useState<ViewMode>(ViewMode.FREE_LAB);
   const [isAudioInitialized, setIsAudioInitialized] = useState(() =>
     sessionStorage.getItem(AUDIO_INIT_KEY) === 'true'

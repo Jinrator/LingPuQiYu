@@ -15,6 +15,7 @@ interface AuthContextValue {
   setPassword: (data: { oldPassword?: string; newPassword: string }) => Promise<any>;
   setUsername: (username: string) => Promise<any>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
+  uploadAvatar: (file: File) => Promise<AuthUser>;
   refreshUser: () => Promise<void>;
 }
 
@@ -175,6 +176,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return updated;
   }, []);
 
+  const uploadAvatarFn = useCallback(async (file: File) => {
+    const updated = await authService.uploadAvatar(file);
+    setUser(updated);
+    return updated;
+  }, []);
+
   const refreshUser = useCallback(async () => {
     try {
       const session = await authService.getCurrentUser();
@@ -186,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, loginWithPassword, register, loginWithWechat, loginWithQQ, logout, setPassword: setPasswordFn, setUsername: setUsernameFn, updateProfile: updateProfileFn, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, loginWithPassword, register, loginWithWechat, loginWithQQ, logout, setPassword: setPasswordFn, setUsername: setUsernameFn, updateProfile: updateProfileFn, uploadAvatar: uploadAvatarFn, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

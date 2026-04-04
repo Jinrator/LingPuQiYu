@@ -421,6 +421,11 @@ const dict: Dict = {
   'account.avatarHint': { 'zh-CN': '支持 JPG、PNG 格式，不超过 2MB', 'zh-TW': '支援 JPG、PNG 格式，不超過 2MB', en: 'JPG or PNG, max 2MB' },
   'account.goToAccount': { 'zh-CN': '账号设置', 'zh-TW': '帳號設定', en: 'Account Settings' },
   'account.goToAccountDesc': { 'zh-CN': '头像、用户名、密码', 'zh-TW': '頭像、用戶名、密碼', en: 'Avatar, username, password' },
+  'account.displayName': { 'zh-CN': '显示名称', 'zh-TW': '顯示名稱', en: 'Display Name' },
+  'account.displayNamePlaceholder': { 'zh-CN': '输入昵称（最多30字）', 'zh-TW': '輸入暱稱（最多30字）', en: 'Nickname (max 30 chars)' },
+  'account.displayNameUpdated': { 'zh-CN': '昵称已更新', 'zh-TW': '暱稱已更新', en: 'Display name updated' },
+  'account.displayNameInvalid': { 'zh-CN': '昵称不能为空，最多30字', 'zh-TW': '暱稱不能為空，最多30字', en: 'Cannot be empty, max 30 chars' },
+  'account.editDisplayName': { 'zh-CN': '修改昵称', 'zh-TW': '修改暱稱', en: 'Edit' },
 };
 
 export default dict;

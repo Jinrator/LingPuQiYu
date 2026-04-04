@@ -45,7 +45,8 @@ const SafeImg: React.FC<{
   fallback?: React.ReactNode;
 }> = ({ src, alt, className, fallback }) => {
   const [failed, setFailed] = useState(false);
-  if (failed && fallback) return <>{fallback}</>;
+  if ((!src || failed) && fallback) return <>{fallback}</>;
+  if (!src) return null;
   return <img src={src} alt={alt} className={className} loading="lazy" onError={() => setFailed(true)} />;
 };
 
@@ -60,7 +61,7 @@ const AppLayout: React.FC = () => {
   const [showMelodyDecoder, setShowMelodyDecoder] = useState(false);
   const { showExitConfirm, hideExitConfirm } = useExitConfirmation();
   const currentView = getViewModeFromPath(location.pathname);
-  const userAvatar = user?.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const userAvatar = user?.avatar || '';
 
   // 认证路由守卫：仅在后台验证完成后才做跳转，不阻塞渲染
   useEffect(() => {

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Camera, User, Lock, AtSign, Eye, EyeOff,
-  Loader2, CheckCircle2, ShieldCheck,
+  Loader2, CheckCircle2, ShieldCheck, Pencil,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSettings } from '../contexts/SettingsContext';
@@ -11,7 +11,7 @@ import { PALETTE } from '../constants/palette';
 /** Avatar with fallback */
 const SafeAvatar: React.FC<{ src: string; className?: string }> = ({ src, className = '' }) => {
   const [failed, setFailed] = useState(false);
-  if (failed) {
+  if (!src || failed) {
     return (
       <div className={`${className} flex items-center justify-center bg-slate-100`}>
         <User size={32} className="text-slate-400" />
@@ -24,12 +24,18 @@ const SafeAvatar: React.FC<{ src: string; className?: string }> = ({ src, classN
 const AccountSettings: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useSettings();
-  const { user, setPassword, setUsername: doSetUsername, updateProfile, refreshUser } = useAuth();
+  const { user, setPassword, setUsername: doSetUsername, uploadAvatar, updateProfile, refreshUser } = useAuth();
 
   // Avatar state
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [avatarMsg, setAvatarMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+
+  // Display name state
+  const [showDnForm, setShowDnForm] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState('');
+  const [dnLoading, setDnLoading] = useState(false);
+  const [dnMsg, setDnMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
   // Username state
   const [showUnForm, setShowUnForm] = useState(false);
@@ -47,7 +53,7 @@ const AccountSettings: React.FC = () => {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
-  const displayAvatar = user?.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const displayAvatar = user?.avatar || '';
 
   const inputCls = `w-full pl-11 pr-10 py-3 rounded-xl text-sm font-medium outline-none transition-all
     bg-white border border-slate-200 text-slate-800 placeholder:text-slate-300
@@ -71,15 +77,7 @@ const AccountSettings: React.FC = () => {
     setAvatarLoading(true);
     setAvatarMsg(null);
     try {
-      // Convert to base64 data URL as avatar
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      await updateProfile({ avatarUrl: dataUrl });
+      await uploadAvatar(file);
       setAvatarMsg({ type: 'success', text: t('account.avatarUpdated') });
       setTimeout(() => setAvatarMsg(null), 2000);
     } catch (err: any) {
@@ -89,6 +87,23 @@ const AccountSettings: React.FC = () => {
       // Reset input so same file can be re-selected
       if (fileRef.current) fileRef.current.value = '';
     }
+  };
+
+  // ── Display name submit ──
+  const handleDisplayNameSubmit = async () => {
+    setDnMsg(null);
+    const trimmed = newDisplayName.trim();
+    if (!trimmed || trimmed.length > 30) {
+      setDnMsg({ type: 'error', text: t('account.displayNameInvalid') }); return;
+    }
+    setDnLoading(true);
+    try {
+      await updateProfile({ displayName: trimmed });
+      setDnMsg({ type: 'success', text: t('account.displayNameUpdated') });
+      setTimeout(() => { setShowDnForm(false); setDnMsg(null); }, 1500);
+    } catch (e: any) {
+      setDnMsg({ type: 'error', text: e.message || '操作失败' });
+    } finally { setDnLoading(false); }
   };
 
   // ── Username submit ──
@@ -190,6 +205,64 @@ const AccountSettings: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Display name section */}
+        <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-[0_1px_6px_rgba(0,0,0,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: PALETTE.orange.bg }}>
+                <Pencil size={16} style={{ color: PALETTE.orange.accent }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">{t('account.displayName')}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {user?.displayName
+                    ? <span className="font-semibold text-slate-600">{user.displayName}</span>
+                    : <span className="font-semibold" style={{ color: PALETTE.orange.accent }}>{t('profile.passwordNotSet')}</span>
+                  }
+                </p>
+              </div>
+            </div>
+            {!showDnForm && (
+              <button
+                onClick={() => { setShowDnForm(true); setDnMsg(null); setNewDisplayName(user?.displayName || ''); }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-95 border border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"
+              >
+                {t('account.editDisplayName')}
+              </button>
+            )}
+          </div>
+
+          {showDnForm && (
+            <div className="space-y-3 pt-1">
+              {dnMsg && (
+                <div className={`px-4 py-2 rounded-xl text-xs font-medium ${dnMsg.type === 'error' ? 'bg-red-50 text-red-500' : 'text-white'}`}
+                  style={dnMsg.type === 'success' ? { background: PALETTE.green.accent } : undefined}>
+                  {dnMsg.type === 'success' && <CheckCircle2 size={12} className="inline mr-1 -mt-0.5" />}
+                  {dnMsg.text}
+                </div>
+              )}
+              <div className="relative">
+                <Pencil size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                <input type="text" placeholder={t('account.displayNamePlaceholder')} value={newDisplayName}
+                  onChange={e => setNewDisplayName(e.target.value.slice(0, 30))}
+                  className={inputCls} />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setShowDnForm(false)}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+                  {t('profile.cancel')}
+                </button>
+                <button onClick={handleDisplayNameSubmit}
+                  disabled={dnLoading || !newDisplayName.trim()}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                  style={{ background: PALETTE.blue.accent }}>
+                  {dnLoading ? <Loader2 size={13} className="animate-spin" /> : t('profile.save')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Account Security: Username + Password */}
