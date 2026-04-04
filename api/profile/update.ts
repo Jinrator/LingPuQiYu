@@ -3,72 +3,43 @@ import { AuthError, requireAuth } from '../_lib/auth.js';
 import { setCorsHeaders } from '../_lib/cors.js';
 import { assertRateLimits, getClientIp, RateLimitError } from '../_lib/rate-limit.js';
 import { updateUserProfileById } from '../_lib/users.js';
-import { getSupabaseAdmin } from '../_lib/supabase.js';
 import {
   MAX_DISPLAY_NAME_LENGTH,
   MAX_COURSE_TYPE_LENGTH,
-  MAX_AVATAR_URL_LENGTH,
   sanitizeString,
-  isValidUrl,
 } from '../_lib/validate.js';
 
-const AVATAR_BUCKET = 'avatars';
-const AVATAR_MAX_SIZE = 2 * 1024 * 1024; // 2 MB
+/** 压缩后头像 data URL 最大长度（~100KB base64 足够 256x256 JPEG） */
+const MAX_AVATAR_DATA_URL_LENGTH = 150_000;
 const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png'];
 
 interface ParsedBody {
   displayName?: string;
   courseType?: string;
-  avatarUrl?: string;
-  // base64 avatar upload fields
   avatarImage?: string;
   avatarContentType?: string;
 }
 
 function readBody(req: VercelRequest): ParsedBody {
   const body = (req.body ?? {}) as Record<string, unknown>;
-
-  const avatarRaw = typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
-
   return {
     displayName: typeof body.displayName === 'string' ? sanitizeString(body.displayName, MAX_DISPLAY_NAME_LENGTH) : undefined,
     courseType: typeof body.courseType === 'string' ? sanitizeString(body.courseType, MAX_COURSE_TYPE_LENGTH) : undefined,
-    avatarUrl: avatarRaw && avatarRaw.length <= MAX_AVATAR_URL_LENGTH && isValidUrl(avatarRaw) ? avatarRaw : undefined,
     avatarImage: typeof body.avatarImage === 'string' ? body.avatarImage : undefined,
     avatarContentType: typeof body.avatarContentType === 'string' ? body.avatarContentType : undefined,
   };
 }
 
-/** Upload base64 image to Supabase Storage, return public URL */
-async function uploadAvatarImage(
-  userId: string,
-  base64Data: string,
-  contentType: string,
-): Promise<string> {
+/** Validate base64 image and return a data URL to store directly in DB */
+function buildAvatarDataUrl(base64Data: string, contentType: string): string {
   if (!AVATAR_ALLOWED_TYPES.includes(contentType)) {
     throw new Error('仅支持 JPG / PNG 格式');
   }
-
-  const buffer = Buffer.from(base64Data, 'base64');
-  if (buffer.length > AVATAR_MAX_SIZE) {
-    throw new Error('图片不能超过 2MB');
+  const dataUrl = `data:${contentType};base64,${base64Data}`;
+  if (dataUrl.length > MAX_AVATAR_DATA_URL_LENGTH) {
+    throw new Error('头像图片过大，请选择更小的图片');
   }
-
-  const ext = contentType === 'image/jpeg' ? 'jpg' : 'png';
-  const filePath = `${userId}/avatar_${Date.now()}.${ext}`;
-  const supabase = getSupabaseAdmin();
-
-  const { error: uploadError } = await supabase.storage
-    .from(AVATAR_BUCKET)
-    .upload(filePath, buffer, { contentType, upsert: true });
-
-  if (uploadError) {
-    console.error('[Avatar] 上传失败:', uploadError);
-    throw new Error('头像上传失败');
-  }
-
-  const { data: urlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(filePath);
-  return urlData.publicUrl;
+  return dataUrl;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -100,18 +71,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       },
     ]);
 
-    const { displayName, courseType, avatarUrl, avatarImage, avatarContentType } = readBody(req);
+    const { displayName, courseType, avatarImage, avatarContentType } = readBody(req);
 
-    // If base64 image provided, upload and get URL
-    let finalAvatarUrl = avatarUrl;
+    // Build data URL from base64 image if provided
+    let avatarUrl: string | undefined;
     if (avatarImage && avatarContentType) {
-      finalAvatarUrl = await uploadAvatarImage(auth.user.id, avatarImage, avatarContentType);
+      avatarUrl = buildAvatarDataUrl(avatarImage, avatarContentType);
     }
 
     const user = await updateUserProfileById(auth.user.id, {
       displayName,
       courseType,
-      avatarUrl: finalAvatarUrl,
+      avatarUrl,
     });
 
     res.json({ success: true, user });
