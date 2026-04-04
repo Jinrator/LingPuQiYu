@@ -4,23 +4,40 @@ import { Lock, CheckCircle2, Gift, X, Zap, Star, Target, MessageCircle, Loader2 
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
+import ErrorBoundary from '../ui/ErrorBoundary';
+
+/**
+ * 带重试的 lazy import（与 router 同逻辑）
+ */
+function lazyWithRetry(factory: () => Promise<{ default: React.ComponentType<any> }>, retries = 2) {
+  return lazy(() => {
+    const attempt = (remaining: number): Promise<{ default: React.ComponentType<any> }> =>
+      factory().catch((err) => {
+        if (remaining <= 0) throw err;
+        return new Promise<{ default: React.ComponentType<any> }>((resolve) =>
+          setTimeout(() => resolve(attempt(remaining - 1)), 1000 * (retries - remaining + 1)),
+        );
+      });
+    return attempt(retries);
+  });
+}
 
 // 懒加载项目组件，避免一次性加载 15 个组件阻塞渲染
-const SoundHuntingProject = lazy(() => import('../projects/SoundHuntingProject'));
-const RhythmColoringProject = lazy(() => import('../projects/RhythmColoringProject'));
-const RhythmLegoProject = lazy(() => import('../projects/RhythmLegoProject'));
-const PitchLadderProject = lazy(() => import('../projects/PitchLadderProject'));
-const MoodDoodleProject = lazy(() => import('../projects/MoodDoodleProject'));
-const MelodyMirrorProject = lazy(() => import('../projects/MelodyMirrorProject'));
-const InspirationRetroProject = lazy(() => import('../projects/InspirationRetroProject'));
-const ChordBurgerProject = lazy(() => import('../projects/ChordBurgerProject'));
-const ChordRouteProject = lazy(() => import('../projects/ChordRouteProject'));
-const StyleTransformProject = lazy(() => import('../projects/StyleTransformProject'));
-const MusicAtlasProject = lazy(() => import('../projects/MusicAtlasProject'));
-const MemoryHookProject = lazy(() => import('../projects/MemoryHookProject'));
-const MusicTrainProject = lazy(() => import('../projects/MusicTrainProject'));
-const AIRecordingStudioProject = lazy(() => import('../projects/AIRecordingStudioProject'));
-const PersonalDebutProject = lazy(() => import('../projects/PersonalDebutProject'));
+const SoundHuntingProject = lazyWithRetry(() => import('../projects/SoundHuntingProject'));
+const RhythmColoringProject = lazyWithRetry(() => import('../projects/RhythmColoringProject'));
+const RhythmLegoProject = lazyWithRetry(() => import('../projects/RhythmLegoProject'));
+const PitchLadderProject = lazyWithRetry(() => import('../projects/PitchLadderProject'));
+const MoodDoodleProject = lazyWithRetry(() => import('../projects/MoodDoodleProject'));
+const MelodyMirrorProject = lazyWithRetry(() => import('../projects/MelodyMirrorProject'));
+const InspirationRetroProject = lazyWithRetry(() => import('../projects/InspirationRetroProject'));
+const ChordBurgerProject = lazyWithRetry(() => import('../projects/ChordBurgerProject'));
+const ChordRouteProject = lazyWithRetry(() => import('../projects/ChordRouteProject'));
+const StyleTransformProject = lazyWithRetry(() => import('../projects/StyleTransformProject'));
+const MusicAtlasProject = lazyWithRetry(() => import('../projects/MusicAtlasProject'));
+const MemoryHookProject = lazyWithRetry(() => import('../projects/MemoryHookProject'));
+const MusicTrainProject = lazyWithRetry(() => import('../projects/MusicTrainProject'));
+const AIRecordingStudioProject = lazyWithRetry(() => import('../projects/AIRecordingStudioProject'));
+const PersonalDebutProject = lazyWithRetry(() => import('../projects/PersonalDebutProject'));
 
 const ProjectFallback: React.FC = () => (
   <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
@@ -92,7 +109,7 @@ const AdventureMode: React.FC<AdventureModeProps> = ({ theme = 'light' }) => {
   };
 
   const activeLevelView = renderActiveLevel();
-  if (activeLevelView) return <Suspense fallback={<ProjectFallback />}>{activeLevelView}</Suspense>;
+  if (activeLevelView) return <ErrorBoundary message="关卡加载失败，请检查网络后重试。"><Suspense fallback={<ProjectFallback />}>{activeLevelView}</Suspense></ErrorBoundary>;
 
   const completedCount = ADVENTURE_LEVELS.filter(l => l.completed).length;
   const totalCount = ADVENTURE_LEVELS.length;

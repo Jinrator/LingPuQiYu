@@ -78,8 +78,7 @@ export const PIANO_SAMPLES: Record<string, string> = {
   A5:    'A5.mp3',
 };
 
-// 钢琴采样源（优先本地自托管）
+// 钢琴采样源（仅使用本地自托管，不依赖外部 CDN）
 export const PIANO_BASE_URLS = [
   `${LOCAL_BASE}/piano/`,
-  'https://tonejs.github.io/audio/salamander/',
 ];

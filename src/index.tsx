@@ -6,6 +6,8 @@ import './index.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { router } from './router';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+import OfflineBanner from './components/ui/OfflineBanner';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -15,10 +17,13 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <SettingsProvider>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
-    </SettingsProvider>
+    <ErrorBoundary>
+      <SettingsProvider>
+        <AuthProvider>
+          <OfflineBanner />
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </SettingsProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

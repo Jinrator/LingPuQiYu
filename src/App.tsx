@@ -107,7 +107,7 @@ const App: React.FC = () => {
               : { boxShadow: '0 0 0 2px transparent' }
             }
           >
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+            <img src="/api/avatar?seed=JinBot" alt="User" className="w-full h-full object-cover" />
           </button>
 
           {/* Logout */}
@@ -137,7 +137,7 @@ const App: React.FC = () => {
             className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
             style={view === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
           >
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+            <img src="/api/avatar?seed=JinBot" alt="User" className="w-full h-full object-cover" />
           </button>
           <button
             onClick={handleLogout}

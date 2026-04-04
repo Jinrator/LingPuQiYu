@@ -3,6 +3,7 @@ import { X, Send, Bot } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import { authService } from '../../services/authService';
+import { fetchWithTimeout } from '../../utils/fetchWithTimeout';
 
 /** Image with graceful fallback to icon placeholder */
 const SafeImg: React.FC<{
@@ -35,6 +36,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Set initial greeting with translated text
   useEffect(() => {
@@ -45,9 +47,19 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
+  // 组件卸载时取消进行中的请求
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
+
   const handleSend = async (customInput?: string) => {
     const userMessage = (customInput || input).trim();
     if (!userMessage) return;
+
+    // 取消上一个进行中的请求
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -58,7 +70,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
     setIsTyping(true);
     try {
       const token = authService.getAccessToken();
-      const resp = await fetch('/api/ai/chat', {
+      const resp = await fetchWithTimeout('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,12 +82,16 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
             content: m.text,
           })),
         }),
+        timeoutMs: 60_000,
+        maxRetries: 1,
+        signal: controller.signal,
       });
       if (!resp.ok) {
         const errText = await resp.text();
         throw new Error(`HTTP ${resp.status}: ${errText}`);
       }
       const data = await resp.json();
+      if (controller.signal.aborted) return;
       setMessages((prev) => [
         ...prev,
         {
@@ -83,7 +99,8 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
           text: data.reply || t('ai.dataInterrupt') || '回复中断，请稍后再试。',
         },
       ]);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || controller.signal.aborted) return;
       console.error('AI chat error:', err);
       setMessages((prev) => [
         ...prev,
@@ -93,7 +110,7 @@ const AIAssistant: React.FC<AIAssistantProps> = () => {
         },
       ]);
     } finally {
-      setIsTyping(false);
+      if (!controller.signal.aborted) setIsTyping(false);
     }
   };
 

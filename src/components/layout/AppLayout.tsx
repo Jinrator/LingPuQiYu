@@ -35,7 +35,7 @@ const AppLayout: React.FC = () => {
   const [showMelodyDecoder, setShowMelodyDecoder] = useState(false);
   const { showExitConfirm, hideExitConfirm } = useExitConfirmation();
   const currentView = getViewModeFromPath(location.pathname);
-  const userAvatar = user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
+  const userAvatar = user?.avatar || `/api/avatar?seed=${encodeURIComponent(user?.id || 'JinBot')}`;
 
   // 认证路由守卫：仅在后台验证完成后才做跳转，不阻塞渲染
   useEffect(() => {

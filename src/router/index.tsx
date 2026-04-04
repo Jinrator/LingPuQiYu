@@ -2,15 +2,33 @@ import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ViewMode } from '../types';
 import ProtectedRoute from '../components/router/ProtectedRoute';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 
-const AppLayout = React.lazy(() => import('../components/layout/AppLayout'));
-const FreeLabPage = React.lazy(() => import('../pages/FreeLab'));
-const AdventurePage = React.lazy(() => import('../pages/Adventure'));
-const StagePage = React.lazy(() => import('../pages/Stage'));
-const ProfilePage = React.lazy(() => import('../pages/Profile'));
-const LoginPage = React.lazy(() => import('../pages/Login'));
-const NotFoundPage = React.lazy(() => import('../pages/NotFound'));
-const SettingsPage = React.lazy(() => import('../pages/Settings'));
+/**
+ * 带重试的 lazy import
+ * chunk 加载失败时自动重试 2 次（指数退避），全部失败后抛出错误由 ErrorBoundary 捕获
+ */
+function lazyWithRetry(factory: () => Promise<{ default: React.ComponentType<any> }>, retries = 2) {
+  return React.lazy(() => {
+    const attempt = (remaining: number): Promise<{ default: React.ComponentType<any> }> =>
+      factory().catch((err) => {
+        if (remaining <= 0) throw err;
+        return new Promise<{ default: React.ComponentType<any> }>((resolve) =>
+          setTimeout(() => resolve(attempt(remaining - 1)), 1000 * (retries - remaining + 1)),
+        );
+      });
+    return attempt(retries);
+  });
+}
+
+const AppLayout = lazyWithRetry(() => import('../components/layout/AppLayout'));
+const FreeLabPage = lazyWithRetry(() => import('../pages/FreeLab'));
+const AdventurePage = lazyWithRetry(() => import('../pages/Adventure'));
+const StagePage = lazyWithRetry(() => import('../pages/Stage'));
+const ProfilePage = lazyWithRetry(() => import('../pages/Profile'));
+const LoginPage = lazyWithRetry(() => import('../pages/Login'));
+const NotFoundPage = lazyWithRetry(() => import('../pages/NotFound'));
+const SettingsPage = lazyWithRetry(() => import('../pages/Settings'));
 
 import { Loader2 } from 'lucide-react';
 
@@ -21,9 +39,11 @@ const RouteFallback: React.FC = () => (
 );
 
 const withRouteSuspense = (element: React.ReactElement) => (
-  <React.Suspense fallback={<RouteFallback />}>
-    {element}
-  </React.Suspense>
+  <ErrorBoundary message="页面模块加载失败，请检查网络后重试。">
+    <React.Suspense fallback={<RouteFallback />}>
+      {element}
+    </React.Suspense>
+  </ErrorBoundary>
 );
 
 // 路由配置 - 支持多层级嵌套

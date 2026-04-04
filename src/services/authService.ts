@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
+
 export interface AuthUser {
   id: string;
   phone: string;
@@ -85,10 +87,12 @@ async function tryRefreshToken(): Promise<boolean> {
   if (!session?.refreshToken) return false;
 
   try {
-    const response = await fetch(buildUrl('/api/auth/refresh'), {
+    const response = await fetchWithTimeout(buildUrl('/api/auth/refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: session.refreshToken }),
+      timeoutMs: 10_000,
+      maxRetries: 1,
     });
 
     if (!response.ok) {
@@ -135,7 +139,12 @@ const request = async <T>(path: string, init: RequestInit = {}, retry = true): P
     headers.set('Authorization', `Bearer ${session.token}`);
   }
 
-  const response = await fetch(buildUrl(path), { ...init, headers });
+  const response = await fetchWithTimeout(buildUrl(path), {
+    ...init,
+    headers,
+    timeoutMs: 15_000,
+    maxRetries: 2,
+  });
 
   let data: any = null;
   try {
@@ -260,13 +269,15 @@ export const authService = {
     const session = readStoredSession();
     if (session?.token && session?.refreshToken) {
       try {
-        await fetch(buildUrl('/api/auth/logout'), {
+        await fetchWithTimeout(buildUrl('/api/auth/logout'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.token}`,
           },
           body: JSON.stringify({ refreshToken: session.refreshToken }),
+          timeoutMs: 5_000,
+          noRetry: true,
         });
       } catch {
         // 即使服务端吊销失败，本地也要清除
