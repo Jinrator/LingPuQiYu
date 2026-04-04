@@ -10,6 +10,7 @@ import { useAuth } from './contexts/AuthContext';
 import { Music4, Map, Palette, Disc, LogOut, Headphones } from 'lucide-react';
 import { PALETTE } from './constants/palette';
 import { useSettings } from './contexts/SettingsContext';
+import { generateAvatarUrl } from './utils/avatar';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
@@ -107,7 +108,7 @@ const App: React.FC = () => {
               : { boxShadow: '0 0 0 2px transparent' }
             }
           >
-            <img src="/api/avatar?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+            <img src={generateAvatarUrl('JinBot')} alt="User" className="w-full h-full object-cover" />
           </button>
 
           {/* Logout */}
@@ -137,7 +138,7 @@ const App: React.FC = () => {
             className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
             style={view === ViewMode.USER_PROFILE ? { boxShadow: `0 0 0 2px ${PALETTE.blue.accent}` } : {}}
           >
-            <img src="/api/avatar?seed=JinBot" alt="User" className="w-full h-full object-cover" />
+            <img src={generateAvatarUrl('JinBot')} alt="User" className="w-full h-full object-cover" />
           </button>
           <button
             onClick={handleLogout}
