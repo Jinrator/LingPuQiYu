@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authService, AuthUser } from '../services/authService';
+import { authService, AuthUser, UpdateProfilePayload } from '../services/authService';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -14,6 +14,7 @@ interface AuthContextValue {
   logout: () => void;
   setPassword: (data: { oldPassword?: string; newPassword: string }) => Promise<any>;
   setUsername: (username: string) => Promise<any>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
   refreshUser: () => Promise<void>;
 }
 
@@ -168,6 +169,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return result;
   }, []);
 
+  const updateProfileFn = useCallback(async (payload: UpdateProfilePayload) => {
+    const updated = await authService.updateProfile(payload);
+    setUser(updated);
+    return updated;
+  }, []);
+
   const refreshUser = useCallback(async () => {
     try {
       const session = await authService.getCurrentUser();
@@ -179,7 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, loginWithPassword, register, loginWithWechat, loginWithQQ, logout, setPassword: setPasswordFn, setUsername: setUsernameFn, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, sendSmsCode, loginWithPhone, loginWithPassword, register, loginWithWechat, loginWithQQ, logout, setPassword: setPasswordFn, setUsername: setUsernameFn, updateProfile: updateProfileFn, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

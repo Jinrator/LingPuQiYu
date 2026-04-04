@@ -410,6 +410,17 @@ const dict: Dict = {
   'profile.passwordNotSet': { 'zh-CN': '未设置', 'zh-TW': '未設定', en: 'Not set' },
   'profile.passwordSet': { 'zh-CN': '已设置', 'zh-TW': '已設定', en: 'Set' },
   'profile.save': { 'zh-CN': '保存', 'zh-TW': '儲存', en: 'Save' },
+
+  // ── Account Settings ──
+  'account.title': { 'zh-CN': '账号设置', 'zh-TW': '帳號設定', en: 'Account Settings' },
+  'account.avatar': { 'zh-CN': '头像', 'zh-TW': '頭像', en: 'Avatar' },
+  'account.avatarDesc': { 'zh-CN': '点击更换头像', 'zh-TW': '點擊更換頭像', en: 'Click to change avatar' },
+  'account.avatarUpdated': { 'zh-CN': '头像已更新', 'zh-TW': '頭像已更新', en: 'Avatar updated' },
+  'account.avatarFail': { 'zh-CN': '头像更新失败', 'zh-TW': '頭像更新失敗', en: 'Failed to update avatar' },
+  'account.avatarUploading': { 'zh-CN': '上传中...', 'zh-TW': '上傳中...', en: 'Uploading...' },
+  'account.avatarHint': { 'zh-CN': '支持 JPG、PNG 格式，不超过 2MB', 'zh-TW': '支援 JPG、PNG 格式，不超過 2MB', en: 'JPG or PNG, max 2MB' },
+  'account.goToAccount': { 'zh-CN': '账号设置', 'zh-TW': '帳號設定', en: 'Account Settings' },
+  'account.goToAccountDesc': { 'zh-CN': '头像、用户名、密码', 'zh-TW': '頭像、用戶名、密碼', en: 'Avatar, username, password' },
 };
 
 export default dict;

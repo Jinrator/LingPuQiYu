@@ -29,6 +29,7 @@ const ProfilePage = lazyWithRetry(() => import('../pages/Profile'));
 const LoginPage = lazyWithRetry(() => import('../pages/Login'));
 const NotFoundPage = lazyWithRetry(() => import('../pages/NotFound'));
 const SettingsPage = lazyWithRetry(() => import('../pages/Settings'));
+const AccountSettingsPage = lazyWithRetry(() => import('../pages/AccountSettings'));
 
 import { Loader2 } from 'lucide-react';
 
@@ -251,6 +252,14 @@ export const routes = [
         element: (
           <ProtectedRoute>
             {withRouteSuspense(<SettingsPage />)}
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'settings/account',
+        element: (
+          <ProtectedRoute>
+            {withRouteSuspense(<AccountSettingsPage />)}
           </ProtectedRoute>
         )
       },
