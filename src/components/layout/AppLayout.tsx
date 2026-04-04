@@ -14,6 +14,31 @@ import { useSettings } from '../../contexts/SettingsContext';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
+/**
+ * 预取其他页面的 JS chunk
+ * 用户登录后默认在 /lab，空闲时预取 Stage / Adventure / Profile
+ * 这样切换 tab 时 chunk 已在浏览器缓存中，不会卡顿
+ */
+let prefetchStarted = false;
+function prefetchPageChunks() {
+  if (prefetchStarted) return;
+  prefetchStarted = true;
+
+  const idle = (fn: () => void) => {
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(fn, { timeout: 5000 });
+    } else {
+      setTimeout(fn, 2000);
+    }
+  };
+
+  idle(() => {
+    void import('../../pages/Stage');
+    setTimeout(() => void import('../../pages/Adventure'), 1000);
+    setTimeout(() => void import('../../pages/Profile'), 2000);
+  });
+}
+
 /** Image with graceful fallback */
 const SafeImg: React.FC<{
   src: string; alt: string; className?: string;
@@ -53,6 +78,13 @@ const AppLayout: React.FC = () => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isAudioInitialized, isAuthenticated]);
+
+  // 已登录且音频已初始化 → 预取其他页面 chunk
+  useEffect(() => {
+    if (isAuthenticated && isAudioInitialized) {
+      prefetchPageChunks();
+    }
+  }, [isAuthenticated, isAudioInitialized]);
 
   const initAudio = async () => {
     if (isAudioInitialized) return;

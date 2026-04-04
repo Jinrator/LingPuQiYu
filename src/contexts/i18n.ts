@@ -369,6 +369,8 @@ const dict: Dict = {
   'lab.cnInst.short': { 'zh-CN': '短音', 'zh-TW': '短音', en: 'Short' },
   'lab.cnInst.noOneshot': { 'zh-CN': '该乐器暂无弹奏采样', 'zh-TW': '該樂器暫無彈奏採樣', en: 'No playable samples for this instrument' },
   'lab.cnInst.playHint': { 'zh-CN': '点击琴键弹奏，也可以使用琴键上标注的键盘按键快捷演奏', 'zh-TW': '點擊琴鍵彈奏，也可以使用琴鍵上標註的鍵盤按鍵快捷演奏', en: 'Click keys to play, or use the keyboard shortcuts shown on each key for quick performance' },
+  'lab.cnInst.loading': { 'zh-CN': '正在加载采样…', 'zh-TW': '正在載入採樣…', en: 'Loading samples…' },
+  'lab.cnInst.loadingSamples': { 'zh-CN': '个采样已就绪', 'zh-TW': '個採樣已就緒', en: 'samples ready' },
 
   // ── Auth password & username ──
   'auth.password': { 'zh-CN': '密码', 'zh-TW': '密碼', en: 'Password' },

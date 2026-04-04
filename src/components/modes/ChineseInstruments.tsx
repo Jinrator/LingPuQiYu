@@ -3,6 +3,7 @@ import { Play, Square, Piano } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import InstrumentPlayer, { PLAYABLE_IDS, preloadPlayableInstrumentSamples } from './InstrumentPlayer';
+import { preloadAudioUrls } from '../../services/resourceLoader';
 
 interface Instrument {
   id: string;
@@ -22,7 +23,6 @@ const INSTRUMENTS: Instrument[] = [
   { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav',    iconUrl: '/images/erhu.svg' },
 ];
 
-const PREVIEW_PRELOAD_TIMEOUT_MS = 4000;
 const previewAudioCache = new Map<string, HTMLAudioElement>();
 let previewPreloadPromise: Promise<void> | null = null;
 
@@ -36,44 +36,14 @@ function getPreviewAudio(inst: Instrument): HTMLAudioElement {
   return audio;
 }
 
-function primeAudioElement(audio: HTMLAudioElement): Promise<void> {
-  if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const cleanup = () => {
-      audio.removeEventListener('loadeddata', onReady);
-      audio.removeEventListener('canplaythrough', onReady);
-      audio.removeEventListener('error', onReady);
-    };
-
-    const onReady = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve();
-    };
-
-    audio.addEventListener('loadeddata', onReady);
-    audio.addEventListener('canplaythrough', onReady);
-    audio.addEventListener('error', onReady);
-    audio.load();
-    window.setTimeout(onReady, PREVIEW_PRELOAD_TIMEOUT_MS);
-  });
-}
-
 async function preloadPreviewSamples(): Promise<void> {
   if (previewPreloadPromise) return previewPreloadPromise;
 
-  previewPreloadPromise = Promise.all(
-    INSTRUMENTS.map(async (inst) => {
-      const audio = getPreviewAudio(inst);
-      await primeAudioElement(audio);
-    }),
-  ).then(() => undefined);
+  // 通过 resourceLoader 统一排队，控制并发
+  previewPreloadPromise = preloadAudioUrls(
+    INSTRUMENTS.map(inst => inst.sampleUrl),
+    'low',
+  );
 
   return previewPreloadPromise;
 }
@@ -96,14 +66,25 @@ const ChineseInstruments: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // 延迟预加载，避免与页面切换竞争网络资源
-    const timer = setTimeout(() => {
+    // 预览采样较小，延迟 300ms 后开始
+    const previewTimer = setTimeout(() => {
       void preloadPreviewSamples();
-      void preloadPlayableInstrumentSamples();
-    }, 500);
+    }, 300);
+
+    // 可演奏采样较大，延迟到浏览器空闲时再加载
+    const playableTimer = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          void preloadPlayableInstrumentSamples();
+        }, { timeout: 8000 });
+      } else {
+        void preloadPlayableInstrumentSamples();
+      }
+    }, 2000);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(previewTimer);
+      clearTimeout(playableTimer);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;

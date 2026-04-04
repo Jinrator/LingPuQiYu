@@ -1,10 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { ArrowLeft, Music2, Volume2 } from 'lucide-react';
+import { ArrowLeft, Music2, Volume2, Loader2 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { PaletteKey } from '../../constants/palette';
 import { createKeyboardShortcutMaps, isEditableTarget, LETTER_SHORTCUTS } from '../../utils/keyboardShortcuts';
 import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
+import { preloadAudioUrls, preloadAudioUrlsWithProgress, type PreloadProgress } from '../../services/resourceLoader';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,10 +43,6 @@ const NEXT_NATURAL_FOR_BLACK: Record<string, (typeof NATURAL_NOTES)[number]> = {
   'F#': 'G',
   'G#': 'A',
   'A#': 'B',
-};
-const SOLFEGE: Record<string, string> = {
-  'C': 'Do', 'C#': 'Di', 'D': 'Re', 'D#': 'Ri', 'E': 'Mi', 'F': 'Fa',
-  'F#': 'Fi', 'G': 'Sol', 'G#': 'Si', 'A': 'La', 'A#': 'Li', 'B': 'Ti',
 };
 
 function noteSort(a: NoteKey, b: NoteKey): number {
@@ -299,8 +296,13 @@ const PLAYABLE_INSTRUMENTS: Record<string, InstrumentDef> = {
 
 export const PLAYABLE_IDS = Object.keys(PLAYABLE_INSTRUMENTS);
 
-const AUDIO_POOL_SIZE = 3;
-const AUDIO_PRELOAD_TIMEOUT_MS = 4000;
+/**
+ * 音频池策略：
+ * - 每个音符 2 个 HTMLAudioElement（支持快速连击）
+ * - 预加载通过 resourceLoader 统一排队，控制并发
+ * - 支持进度回调，驱动 UI 进度条
+ */
+const AUDIO_POOL_SIZE = 2;
 const audioPoolCache = new Map<string, Map<string, HTMLAudioElement[]>>();
 const audioPoolPromises = new Map<string, Promise<Map<string, HTMLAudioElement[]>>>();
 
@@ -310,56 +312,45 @@ function getPoolCacheKey(instrumentId: string, articulation: 'Long' | 'Short' = 
   return instrument.hasArticulation ? `${instrumentId}:${articulation}` : instrumentId;
 }
 
-function primeAudioElement(audio: HTMLAudioElement): Promise<void> {
-  if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-    return Promise.resolve();
+/**
+ * 创建音频池：先通过 resourceLoader 预热 URL（带进度），然后创建 HTMLAudioElement
+ */
+async function createAudioPool(
+  notes: NoteKey[],
+  priority: 'high' | 'low' = 'low',
+  onProgress?: (p: PreloadProgress) => void,
+): Promise<Map<string, HTMLAudioElement[]>> {
+  const urls = notes.map(n => n.url);
+
+  if (onProgress) {
+    await preloadAudioUrlsWithProgress(urls, priority, onProgress);
+  } else {
+    await preloadAudioUrls(urls, priority);
   }
 
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const cleanup = () => {
-      audio.removeEventListener('loadeddata', onReady);
-      audio.removeEventListener('canplaythrough', onReady);
-      audio.removeEventListener('error', onReady);
-    };
-
-    const onReady = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve();
-    };
-
-    audio.addEventListener('loadeddata', onReady);
-    audio.addEventListener('canplaythrough', onReady);
-    audio.addEventListener('error', onReady);
-    audio.load();
-    window.setTimeout(onReady, AUDIO_PRELOAD_TIMEOUT_MS);
-  });
-}
-
-async function createAudioPool(notes: NoteKey[]): Promise<Map<string, HTMLAudioElement[]>> {
-  const entries = await Promise.all(notes.map(async (noteKey) => {
+  // URL 已缓存在浏览器，创建 HTMLAudioElement 会命中缓存
+  const entries = notes.map((noteKey) => {
     const audios = Array.from({ length: AUDIO_POOL_SIZE }, () => {
       const audio = new Audio(noteKey.url);
       audio.preload = 'auto';
       disablePitchPreservation(audio);
-      audio.load();
       return audio;
     });
-
-    await primeAudioElement(audios[0]);
     return [noteKey.label, audios] as const;
-  }));
+  });
 
   return new Map(entries);
 }
 
+/**
+ * 确保音频池存在（带缓存 + 去重）
+ * 后台预加载用：无进度回调
+ */
 async function ensureAudioPool(
   instrumentId: string,
   notes: NoteKey[],
   articulation: 'Long' | 'Short' = 'Long',
+  priority: 'high' | 'low' = 'low',
 ): Promise<Map<string, HTMLAudioElement[]>> {
   const cacheKey = getPoolCacheKey(instrumentId, articulation);
   const cachedPool = audioPoolCache.get(cacheKey);
@@ -368,20 +359,47 @@ async function ensureAudioPool(
   const pendingPool = audioPoolPromises.get(cacheKey);
   if (pendingPool) return pendingPool;
 
-  const poolPromise = createAudioPool(notes)
-    .then((pool) => {
-      audioPoolCache.set(cacheKey, pool);
-      return pool;
-    })
-    .finally(() => {
-      audioPoolPromises.delete(cacheKey);
-    });
+  const poolPromise = createAudioPool(notes, priority)
+    .then((pool) => { audioPoolCache.set(cacheKey, pool); return pool; })
+    .finally(() => { audioPoolPromises.delete(cacheKey); });
 
   audioPoolPromises.set(cacheKey, poolPromise);
   return poolPromise;
 }
 
-export async function preloadPlayableInstrumentSamples(instrumentId?: string): Promise<void> {
+/**
+ * 加载音频池并报告进度（用于 InstrumentPlayer 组件）
+ * - 已缓存 → 立即返回
+ * - 后台正在加载 → 不等它的 promise，而是自己调 preloadAudioUrlsWithProgress
+ *   （URL 级别去重保证不会重复下载，但能拿到精确进度）
+ * - 全新加载 → 高优先级 + 进度
+ */
+async function loadAudioPoolWithProgress(
+  instrumentId: string,
+  notes: NoteKey[],
+  articulation: 'Long' | 'Short' = 'Long',
+  onProgress: (p: PreloadProgress) => void,
+): Promise<Map<string, HTMLAudioElement[]>> {
+  const cacheKey = getPoolCacheKey(instrumentId, articulation);
+
+  // 已缓存 → 立即返回
+  const cachedPool = audioPoolCache.get(cacheKey);
+  if (cachedPool) {
+    onProgress({ loaded: notes.length, total: notes.length });
+    return cachedPool;
+  }
+
+  // 无论后台是否在加载，都用带进度的方式加载
+  // preloadAudioUrl 内部有 URL 级去重，不会重复下载
+  const pool = await createAudioPool(notes, 'high', onProgress);
+  audioPoolCache.set(cacheKey, pool);
+  return pool;
+}
+
+/**
+ * 后台预加载可演奏乐器采样（低优先级，不阻塞 UI）
+ */
+export async function preloadPlayableInstrumentSamples(instrumentId?: string, priority: 'high' | 'low' = 'low'): Promise<void> {
   const targetIds = instrumentId ? [instrumentId] : PLAYABLE_IDS;
 
   await Promise.all(targetIds.flatMap((id) => {
@@ -390,12 +408,12 @@ export async function preloadPlayableInstrumentSamples(instrumentId?: string): P
 
     if (instrument.hasArticulation) {
       return [
-        ensureAudioPool(id, instrument.buildNotes('Long'), 'Long'),
-        ensureAudioPool(id, instrument.buildNotes('Short'), 'Short'),
+        ensureAudioPool(id, instrument.buildNotes('Long'), 'Long', priority),
+        ensureAudioPool(id, instrument.buildNotes('Short'), 'Short', priority),
       ];
     }
 
-    return [ensureAudioPool(id, instrument.buildNotes())];
+    return [ensureAudioPool(id, instrument.buildNotes(), 'Long', priority)];
   }));
 }
 
@@ -415,6 +433,8 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
   const [volume, setVolume] = useState(0.8);
   const [keyboardPlayEnabled, setKeyboardPlayEnabled] = useState(true);
+  const [loadProgress, setLoadProgress] = useState<{ loaded: number; total: number }>({ loaded: 0, total: 0 });
+  const [isReady, setIsReady] = useState(false);
   const audioPoolRef = useRef<Map<string, HTMLAudioElement[]>>(new Map());
   const volumeRef = useRef(volume);
 
@@ -429,21 +449,39 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const noteByLabel = useMemo(() => new Map(notes.map(noteKey => [noteKey.label, noteKey])), [notes]);
   const whiteSlots = useMemo(() => buildWhiteSlots(notes), [notes]);
 
+  // 加载采样并跟踪进度
   useEffect(() => {
     if (!config) return;
 
     let cancelled = false;
+    const art = config.hasArticulation ? articulation : 'Long';
+    const cacheKey = getPoolCacheKey(instrumentId, art);
+
+    // 如果缓存已存在，不闪烁 loading 状态
+    if (audioPoolCache.has(cacheKey)) {
+      const pool = audioPoolCache.get(cacheKey)!;
+      audioPoolRef.current = pool;
+      pool.forEach(arr => arr.forEach(a => { a.volume = volumeRef.current; }));
+      setLoadProgress({ loaded: notes.length, total: notes.length });
+      setIsReady(true);
+      return;
+    }
+
+    setIsReady(false);
+    setLoadProgress({ loaded: 0, total: notes.length });
 
     const syncPool = async () => {
-      const pool = await ensureAudioPool(
+      const pool = await loadAudioPoolWithProgress(
         instrumentId,
         notes,
-        config.hasArticulation ? articulation : 'Long',
+        art,
+        (p) => { if (!cancelled) setLoadProgress(p); },
       );
       if (cancelled) return;
 
       audioPoolRef.current = pool;
       pool.forEach(arr => arr.forEach(a => { a.volume = volumeRef.current; }));
+      setIsReady(true);
     };
 
     void syncPool();
@@ -463,6 +501,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   }, [volume]);
 
   const playNote = useCallback((nk: NoteKey) => {
+    if (!isReady) return; // 未加载完成时不响应
     const audios = audioPoolRef.current.get(nk.label);
     if (!audios) return;
     const idle = audios.find(a => a.paused || a.ended);
@@ -477,11 +516,11 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     setTimeout(() => {
       setActiveKeys(prev => { const n = new Set(prev); n.delete(nk.label); return n; });
     }, 200);
-  }, [volume]);
+  }, [volume, isReady]);
 
   // Keyboard shortcut mapping
   useEffect(() => {
-    if (!keyboardPlayEnabled) {
+    if (!keyboardPlayEnabled || !isReady) {
       setActiveKeys(new Set());
       return;
     }
@@ -493,11 +532,15 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [keyMap, keyboardPlayEnabled, playNote]);
+  }, [keyMap, keyboardPlayEnabled, playNote, isReady]);
 
   if (!config) {
     return <div className="text-center py-20 text-slate-400 text-sm">{t('lab.cnInst.noOneshot')}</div>;
   }
+
+  const progressPct = loadProgress.total > 0
+    ? Math.round((loadProgress.loaded / loadProgress.total) * 100)
+    : 0;
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -520,8 +563,32 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
         </div>
       </div>
 
+      {/* Loading progress bar */}
+      {!isReady && (
+        <div className="bg-white rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+          <div className="flex items-center gap-3 mb-2.5">
+            <Loader2 size={14} className="animate-spin" style={{ color: pal.accent }} />
+            <span className="text-xs font-semibold text-slate-500">
+              {t('lab.cnInst.loading')}
+            </span>
+            <span className="text-xs font-bold ml-auto" style={{ color: pal.accent }}>
+              {progressPct}%
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${progressPct}%`, background: pal.accent }}
+            />
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">
+            {loadProgress.loaded} / {loadProgress.total} {t('lab.cnInst.loadingSamples')}
+          </p>
+        </div>
+      )}
+
       {/* Controls */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className={`flex items-center gap-3 flex-wrap${!isReady ? ' opacity-40 pointer-events-none' : ''}`}>
         {config.hasArticulation && (
           <div className="flex gap-1.5">
             {(['Long', 'Short'] as const).map(art => (
@@ -550,10 +617,12 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
         </div>
       </div>
 
-      <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
+      <div className={!isReady ? 'opacity-40 pointer-events-none' : ''}>
+        <KeyboardPlayToggle enabled={keyboardPlayEnabled} onChange={setKeyboardPlayEnabled} />
+      </div>
 
       {/* Play area */}
-      <div className="rounded-xl bg-slate-100 border border-slate-200">
+      <div className={`rounded-xl bg-slate-100 border border-slate-200${!isReady ? ' opacity-40 pointer-events-none' : ''}`}>
         <div className="overflow-x-auto p-2" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}>
         <div className="relative flex justify-center items-start pt-2 min-w-max mx-auto pb-2">
           <div className="flex relative h-full">

@@ -2,6 +2,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+// 自托管字体（替代 Google Fonts CDN，消除外部依赖和 FOUT）
+import '@fontsource/fredoka-one/400.css';
+import '@fontsource/quicksand/400.css';
+import '@fontsource/quicksand/600.css';
+import '@fontsource/quicksand/700.css';
 import './index.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
