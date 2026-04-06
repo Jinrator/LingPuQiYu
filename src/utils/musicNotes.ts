@@ -31,6 +31,10 @@ export const NOTES = {
   
   // 高音区
   C5: { name: 'C', octave: 5, full: 'C5', frequency: 523.25 } as Note,
+  D5: { name: 'D', octave: 5, full: 'D5', frequency: 587.33 } as Note,
+  E5: { name: 'E', octave: 5, full: 'E5', frequency: 659.25 } as Note,
+  F5: { name: 'F', octave: 5, full: 'F5', frequency: 698.46 } as Note,
+  G5: { name: 'G', octave: 5, full: 'G5', frequency: 783.99 } as Note,
 };
 
 // 常用和弦定义 - 直接用音名

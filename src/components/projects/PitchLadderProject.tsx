@@ -15,28 +15,35 @@ interface RhythmBar {
 }
 
 const LADDER_NOTES: NoteData[] = [
-  { id: 0, num: '5', sol: 'sol', pitch: 'G3', note: NOTES.G3, isLow: true },
-  { id: 1, num: '6', sol: 'la', pitch: 'A3', note: NOTES.A3, isLow: true },
-  { id: 2, num: '7', sol: 'si', pitch: 'B3', note: NOTES.B3, isLow: true },
-  { id: 3, num: '1', sol: 'do', pitch: 'C4', note: NOTES.C4 },
-  { id: 4, num: '2', sol: 're', pitch: 'D4', note: NOTES.D4 },
-  { id: 5, num: '3', sol: 'mi', pitch: 'E4', note: NOTES.E4 },
-  { id: 6, num: '4', sol: 'fa', pitch: 'F4', note: NOTES.F4 },
-  { id: 7, num: '5', sol: 'sol', pitch: 'G4', note: NOTES.G4 },
-  { id: 8, num: '6', sol: 'la', pitch: 'A4', note: NOTES.A4 },
-  { id: 9, num: '7', sol: 'si', pitch: 'B4', note: NOTES.B4 },
-  { id: 10, num: 'i', sol: "do'", pitch: 'C5', note: NOTES.C5 },
+  // 低音区 (5 notes: id 0–4)
+  { id: 0, num: '3', sol: 'mi', pitch: 'E3', note: NOTES.C3, isLow: true },
+  { id: 1, num: '4', sol: 'fa', pitch: 'F3', note: NOTES.F3, isLow: true },
+  { id: 2, num: '5', sol: 'sol', pitch: 'G3', note: NOTES.G3, isLow: true },
+  { id: 3, num: '6', sol: 'la', pitch: 'A3', note: NOTES.A3, isLow: true },
+  { id: 4, num: '7', sol: 'si', pitch: 'B3', note: NOTES.B3, isLow: true },
+  // 中音区 (5 notes: id 5–9)
+  { id: 5, num: '1', sol: 'do', pitch: 'C4', note: NOTES.C4 },
+  { id: 6, num: '2', sol: 're', pitch: 'D4', note: NOTES.D4 },
+  { id: 7, num: '3', sol: 'mi', pitch: 'E4', note: NOTES.E4 },
+  { id: 8, num: '4', sol: 'fa', pitch: 'F4', note: NOTES.F4 },
+  { id: 9, num: '5', sol: 'sol', pitch: 'G4', note: NOTES.G4 },
+  // 高音区 (5 notes: id 10–14)
+  { id: 10, num: '6', sol: 'la', pitch: 'A4', note: NOTES.A4 },
+  { id: 11, num: '7', sol: 'si', pitch: 'B4', note: NOTES.B4 },
+  { id: 12, num: 'ì', sol: "do'", pitch: 'C5', note: NOTES.C5 },
+  { id: 13, num: '2̇', sol: "re'", pitch: 'D5', note: NOTES.D5 },
+  { id: 14, num: '3̇', sol: "mi'", pitch: 'E5', note: NOTES.E5 },
 ];
 
 const TWO_TIGERS: RhythmBar[] = [
-  { notes: [{id:3,num:'1'},{id:4,num:'2'},{id:5,num:'3'},{id:3,num:'1'}], text: '两只老虎' },
-  { notes: [{id:3,num:'1'},{id:4,num:'2'},{id:5,num:'3'},{id:3,num:'1'}], text: '两只老虎' },
-  { notes: [{id:5,num:'3'},{id:6,num:'4'},{id:7,num:'5'}], text: '跑得快' },
-  { notes: [{id:5,num:'3'},{id:6,num:'4'},{id:7,num:'5'}], text: '跑得快' },
-  { notes: [{id:7,num:'5'},{id:8,num:'6'},{id:7,num:'5'},{id:6,num:'4'},{id:5,num:'3'},{id:3,num:'1'}], text: '一只没有耳朵' },
-  { notes: [{id:7,num:'5'},{id:8,num:'6'},{id:7,num:'5'},{id:6,num:'4'},{id:5,num:'3'},{id:3,num:'1'}], text: '一只没有尾巴' },
-  { notes: [{id:4,num:'2'},{id:0,num:'5',isLow:true},{id:3,num:'1'}], text: '真奇怪' },
-  { notes: [{id:4,num:'2'},{id:0,num:'5',isLow:true},{id:3,num:'1'}], text: '真奇怪' },
+  { notes: [{id:5,num:'1'},{id:6,num:'2'},{id:7,num:'3'},{id:5,num:'1'}], text: '两只老虎' },
+  { notes: [{id:5,num:'1'},{id:6,num:'2'},{id:7,num:'3'},{id:5,num:'1'}], text: '两只老虎' },
+  { notes: [{id:7,num:'3'},{id:8,num:'4'},{id:9,num:'5'}], text: '跑得快' },
+  { notes: [{id:7,num:'3'},{id:8,num:'4'},{id:9,num:'5'}], text: '跑得快' },
+  { notes: [{id:9,num:'5'},{id:10,num:'6'},{id:9,num:'5'},{id:8,num:'4'},{id:7,num:'3'},{id:5,num:'1'}], text: '一只没有耳朵' },
+  { notes: [{id:9,num:'5'},{id:10,num:'6'},{id:9,num:'5'},{id:8,num:'4'},{id:7,num:'3'},{id:5,num:'1'}], text: '一只没有尾巴' },
+  { notes: [{id:6,num:'2'},{id:2,num:'5',isLow:true},{id:5,num:'1'}], text: '真奇怪' },
+  { notes: [{id:6,num:'2'},{id:2,num:'5',isLow:true},{id:5,num:'1'}], text: '真奇怪' },
 ];
 
 interface PitchLadderProjectProps {
@@ -46,14 +53,14 @@ interface PitchLadderProjectProps {
 }
 
 const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onBack }) => {
-  const [currentIndex, setCurrentIndex] = useState(3);
+  const [currentIndex, setCurrentIndex] = useState(5);
   const playNote = useCallback((note: any) => { audioService.playPianoNote(note, 0.8, 0.7); }, []);
   const handleJump = (index: number) => {
     const i = Math.max(0, Math.min(LADDER_NOTES.length - 1, index));
     setCurrentIndex(i);
     playNote(LADDER_NOTES[i].note);
   };
-  const getArea = (id: number) => id >= 10 ? 'high' : id >= 3 ? 'mid' : 'low';
+  const getArea = (id: number) => id >= 10 ? 'high' : id >= 5 ? 'mid' : 'low';
   const currentArea = getArea(currentIndex);
 
   return (
@@ -64,26 +71,26 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
         <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-6">
           <div className="flex gap-3 sm:gap-4">
             {/* Zone indicators — aligned to note rows via identical grid */}
-            <div className="w-20 sm:w-24 grid py-2 gap-1.5" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '480px' }}>
-              {/* High zone: row 1 (note id=10) */}
+            <div className="w-20 sm:w-24 grid py-2 gap-1.5" style={{ gridTemplateRows: `repeat(15, 1fr)`, minHeight: '540px' }}>
+              {/* High zone: rows 1–5 (note id=14 down to id=10) */}
               <div className="flex items-center justify-center rounded-xl border-2 border-dashed transition-all"
-                style={currentArea === 'high'
+                style={{ gridRow: '1 / 6', ...(currentArea === 'high'
                   ? { background: PALETTE.pink.bg, borderColor: PALETTE.pink.accent + '55', transform: 'scale(1.05)' }
-                  : { borderColor: 'transparent', opacity: 0.2 }}>
-                <span className="text-xs font-bold whitespace-nowrap"
-                  style={{ color: currentArea === 'high' ? PALETTE.pink.accent : '#94A3B8' }}>高音</span>
+                  : { borderColor: 'transparent', opacity: 0.2 }) }}>
+                <span className="[writing-mode:vertical-lr] text-xs font-bold tracking-wider"
+                  style={{ color: currentArea === 'high' ? PALETTE.pink.accent : '#94A3B8' }}>High 高音</span>
               </div>
-              {/* Mid zone: rows 2–8 (note id=9 down to id=3) */}
+              {/* Mid zone: rows 6–10 (note id=9 down to id=5) */}
               <div className="flex items-center justify-center rounded-xl border-2 border-dashed transition-all"
-                style={{ gridRow: '2 / 9', ...(currentArea === 'mid'
+                style={{ gridRow: '6 / 11', ...(currentArea === 'mid'
                   ? { background: PALETTE.blue.bg, borderColor: PALETTE.blue.accent + '55', transform: 'scale(1.05)' }
                   : { borderColor: 'transparent', opacity: 0.2 }) }}>
                 <span className="[writing-mode:vertical-lr] text-xs font-bold tracking-wider"
                   style={{ color: currentArea === 'mid' ? PALETTE.blue.accent : '#94A3B8' }}>Mid 中音</span>
               </div>
-              {/* Low zone: rows 9–11 (note id=2 down to id=0) */}
+              {/* Low zone: rows 11–15 (note id=4 down to id=0) */}
               <div className="flex items-center justify-center rounded-xl border-2 border-dashed transition-all"
-                style={{ gridRow: '9 / 12', ...(currentArea === 'low'
+                style={{ gridRow: '11 / 16', ...(currentArea === 'low'
                   ? { background: PALETTE.orange.bg, borderColor: PALETTE.orange.accent + '55', transform: 'scale(1.05)' }
                   : { borderColor: 'transparent', opacity: 0.2 }) }}>
                 <span className="[writing-mode:vertical-lr] text-xs font-bold tracking-wider"
@@ -91,7 +98,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
               </div>
             </div>
             {/* Note ladder */}
-            <div className="flex-1 grid relative py-2" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '480px' }}>
+            <div className="flex-1 grid relative py-2" style={{ gridTemplateRows: `repeat(15, 1fr)`, minHeight: '540px' }}>
               <div className="absolute left-1/2 -translate-x-1/2 w-3.5 top-0 bottom-0 rounded-full bg-slate-100" />
               {[...LADDER_NOTES].reverse().map((note) => (
                 <button key={note.id} onClick={() => handleJump(note.id)} className="relative z-10 flex items-center justify-center gap-3 sm:gap-5 w-full transition-all">
