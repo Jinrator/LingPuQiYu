@@ -14,6 +14,7 @@ import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
 import ChineseInstruments from './ChineseInstruments';
+import { preloadPlayableInstrumentSamples } from './InstrumentPlayer';
 import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
 
 type InstrumentType = 'sine' | 'square' | 'triangle' | 'recorded';
@@ -73,8 +74,18 @@ const FreeLab: React.FC<FreeLabProps> = () => {
   useEffect(() => {
     synthRef.current = createSynth();
     audioService.resume();
-    // 民族乐器采样由 ChineseInstruments 组件按需加载
-    // FreeLab 不再提前预加载，避免与当前页面资源竞争带宽
+    // 延迟加载民族乐器采样，避免与页面切换/其他资源竞争带宽
+    // 只在用户停留在 FreeLab 且浏览器空闲时才开始预加载
+    const timer = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => {
+          void preloadPlayableInstrumentSamples();
+        }, { timeout: 8000 });
+      } else {
+        void preloadPlayableInstrumentSamples();
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleNote = useCallback((note: Note) => {

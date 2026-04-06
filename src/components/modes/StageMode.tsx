@@ -3,10 +3,7 @@ import { Play, Pause, Heart, ChevronLeft, ChevronRight, SkipBack, SkipForward, D
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import PageDecoration from '../ui/PageDecoration';
-import { readID3, type ID3Meta } from '../../utils/id3';
-
-// ID3 元数据缓存，避免重复 fetch 512KB/首
-const id3Cache = new Map<string, ID3Meta>();
+import { readID3 } from '../../utils/id3';
 
 interface StageModeProps { theme?: 'light' | 'dark'; }
 interface SongData {
@@ -169,13 +166,7 @@ const StageMode: React.FC<StageModeProps> = () => {
       // Load sequentially to avoid 7 concurrent 512KB fetches
       for (let i = 0; i < SONG_META.length; i++) {
         if (cancelled) return;
-
-        // 使用缓存避免重复 fetch
-        let meta = id3Cache.get(SONG_META[i].src);
-        if (!meta) {
-          meta = await readID3(SONG_META[i].src);
-          if (meta) id3Cache.set(SONG_META[i].src, meta);
-        }
+        const meta = await readID3(SONG_META[i].src);
         if (cancelled) return;
         if (!meta || (!meta.title && !meta.artist && !meta.coverUrl)) continue;
 
@@ -204,7 +195,7 @@ const StageMode: React.FC<StageModeProps> = () => {
     loadMeta();
     return () => {
       cancelled = true;
-      // 不 revoke 缓存中的 blob URL，它们会被复用
+      blobUrls.forEach(url => URL.revokeObjectURL(url));
     };
   }, []);
 
