@@ -62,15 +62,15 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
         {/* Ladder */}
         <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4 sm:p-6">
-          <div className="flex gap-4 sm:gap-5">
+          <div className="flex gap-3 sm:gap-4">
             {/* Zone indicators — aligned to note rows via identical grid */}
-            <div className="w-14 sm:w-16 grid py-2" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '420px' }}>
+            <div className="w-20 sm:w-24 grid py-2 gap-1.5" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '480px' }}>
               {/* High zone: row 1 (note id=10) */}
               <div className="flex items-center justify-center rounded-xl border-2 border-dashed transition-all"
                 style={currentArea === 'high'
                   ? { background: PALETTE.pink.bg, borderColor: PALETTE.pink.accent + '55', transform: 'scale(1.05)' }
                   : { borderColor: 'transparent', opacity: 0.2 }}>
-                <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap"
+                <span className="text-xs font-bold whitespace-nowrap"
                   style={{ color: currentArea === 'high' ? PALETTE.pink.accent : '#94A3B8' }}>高音</span>
               </div>
               {/* Mid zone: rows 2–8 (note id=9 down to id=3) */}
@@ -78,7 +78,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
                 style={{ gridRow: '2 / 9', ...(currentArea === 'mid'
                   ? { background: PALETTE.blue.bg, borderColor: PALETTE.blue.accent + '55', transform: 'scale(1.05)' }
                   : { borderColor: 'transparent', opacity: 0.2 }) }}>
-                <span className="[writing-mode:vertical-lr] text-[10px] font-semibold uppercase tracking-widest"
+                <span className="[writing-mode:vertical-lr] text-xs font-bold tracking-wider"
                   style={{ color: currentArea === 'mid' ? PALETTE.blue.accent : '#94A3B8' }}>Mid 中音</span>
               </div>
               {/* Low zone: rows 9–11 (note id=2 down to id=0) */}
@@ -86,28 +86,28 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
                 style={{ gridRow: '9 / 12', ...(currentArea === 'low'
                   ? { background: PALETTE.orange.bg, borderColor: PALETTE.orange.accent + '55', transform: 'scale(1.05)' }
                   : { borderColor: 'transparent', opacity: 0.2 }) }}>
-                <span className="[writing-mode:vertical-lr] text-[10px] font-semibold uppercase tracking-widest"
+                <span className="[writing-mode:vertical-lr] text-xs font-bold tracking-wider"
                   style={{ color: currentArea === 'low' ? PALETTE.orange.accent : '#94A3B8' }}>Low 低音</span>
               </div>
             </div>
             {/* Note ladder */}
-            <div className="flex-1 grid relative py-2" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '420px' }}>
-              <div className="absolute left-1/2 -translate-x-1/2 w-3 top-0 bottom-0 rounded-full bg-slate-100" />
+            <div className="flex-1 grid relative py-2" style={{ gridTemplateRows: `repeat(11, 1fr)`, minHeight: '480px' }}>
+              <div className="absolute left-1/2 -translate-x-1/2 w-3.5 top-0 bottom-0 rounded-full bg-slate-100" />
               {[...LADDER_NOTES].reverse().map((note) => (
                 <button key={note.id} onClick={() => handleJump(note.id)} className="relative z-10 flex items-center justify-center gap-3 sm:gap-5 w-full transition-all">
-                  <div className={`flex-1 text-right text-sm font-bold transition-all ${currentIndex === note.id ? 'scale-110' : 'opacity-20'}`}
+                  <div className={`flex-1 text-right text-sm sm:text-base font-bold transition-all ${currentIndex === note.id ? 'scale-110' : 'opacity-20'}`}
                     style={{ color: currentIndex === note.id ? PALETTE.blue.accent : '#94A3B8' }}>{note.sol}</div>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all"
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-all"
                     style={currentIndex === note.id ? { background: PALETTE.orange.accent, borderColor: '#fff', transform: 'scale(1.1)' } : { background: '#F8FAFC', borderColor: '#E2E8F0' }} />
                   <div className={`flex-1 text-left flex items-center gap-1.5 transition-all ${currentIndex === note.id ? 'scale-110' : 'opacity-20'}`}>
-                    <span className="font-bold text-sm" style={{ color: currentIndex === note.id ? PALETTE.orange.accent : '#94A3B8' }}>{note.num}</span>
-                    {note.isLow && <div className="w-1 h-1 rounded-full" style={{ background: currentIndex === note.id ? PALETTE.orange.accent : '#94A3B8' }} />}
-                    <span className="text-xs font-medium text-slate-400 ml-1">{note.pitch}</span>
+                    <span className="font-bold text-sm sm:text-base" style={{ color: currentIndex === note.id ? PALETTE.orange.accent : '#94A3B8' }}>{note.num}</span>
+                    {note.isLow && <div className="w-1.5 h-1.5 rounded-full" style={{ background: currentIndex === note.id ? PALETTE.orange.accent : '#94A3B8' }} />}
+                    <span className="text-xs sm:text-sm font-medium text-slate-400 ml-1">{note.pitch}</span>
                   </div>
                 </button>
               ))}
-              <div className="absolute left-1/2 -translate-x-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full z-20 transition-all duration-500 flex items-center justify-center pointer-events-none"
-                style={{ bottom: `calc(${(currentIndex / 10) * 100}% - 1.25rem)`, background: PALETTE.orange.accent }}>
+              <div className="absolute left-1/2 -translate-x-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full z-20 transition-all duration-500 flex items-center justify-center pointer-events-none"
+                style={{ bottom: `calc(${(currentIndex / 10) * 100}% - 1.5rem)`, background: PALETTE.orange.accent }}>
                 <Sparkles className="text-white" size={16} />
               </div>
             </div>
