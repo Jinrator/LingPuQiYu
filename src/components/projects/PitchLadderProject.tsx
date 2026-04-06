@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Sparkles, ArrowUp, Music } from 'lucide-react';
+import { ArrowUp, Music } from 'lucide-react';
 import { audioService } from '../../services/audioService';
 import { NOTES } from '../../utils/musicNotes';
 import { PALETTE } from '../../constants/palette';
@@ -106,10 +106,7 @@ const PitchLadderProject: React.FC<PitchLadderProjectProps> = ({ onComplete, onB
                   </div>
                 </button>
               ))}
-              <div className="absolute left-1/2 -translate-x-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full z-20 transition-all duration-500 flex items-center justify-center pointer-events-none"
-                style={{ bottom: `calc(${(currentIndex / 10) * 100}% - 1.5rem)`, background: PALETTE.orange.accent }}>
-                <Sparkles className="text-white" size={16} />
-              </div>
+
             </div>
           </div>
         </div>
