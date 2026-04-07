@@ -3,7 +3,7 @@ import { Play, Square, Piano, Loader2 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import InstrumentPlayer, { PLAYABLE_IDS, preloadPlayableInstrumentSamples } from './InstrumentPlayer';
-import { preloadAudioUrlsWithProgress } from '../../services/resourceLoader';
+import { preloadAudioUrlsWithProgress, takeWarmAudioElement } from '../../services/resourceLoader';
 
 interface Instrument {
   id: string;
@@ -32,6 +32,13 @@ let previewReady = false;
 function getPreviewAudio(inst: Instrument): HTMLAudioElement {
   const cached = previewAudioCache.get(inst.id);
   if (cached) return cached;
+
+  // 优先复用 resourceLoader 已预热的 Audio 元素（已解码，零延迟）
+  const warm = takeWarmAudioElement(inst.sampleUrl);
+  if (warm) {
+    previewAudioCache.set(inst.id, warm);
+    return warm;
+  }
 
   const audio = new Audio(inst.sampleUrl);
   audio.preload = 'auto';

@@ -144,6 +144,18 @@ export function isAudioUrlLoaded(url: string): boolean {
   return loadedUrls.has(url);
 }
 
+/** 获取已预热的 Audio 元素（用于直接复用，避免重新解码） */
+export function getWarmAudioElement(url: string): HTMLAudioElement | undefined {
+  return warmAudioElements.get(url);
+}
+
+/** 从 warm 缓存中移除（调用方接管该元素的生命周期） */
+export function takeWarmAudioElement(url: string): HTMLAudioElement | undefined {
+  const el = warmAudioElements.get(url);
+  if (el) warmAudioElements.delete(url);
+  return el;
+}
+
 export interface PreloadProgress {
   loaded: number;
   total: number;

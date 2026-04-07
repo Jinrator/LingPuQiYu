@@ -5,7 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import type { PaletteKey } from '../../constants/palette';
 import { createKeyboardShortcutMaps, isEditableTarget, LETTER_SHORTCUTS } from '../../utils/keyboardShortcuts';
 import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
-import { preloadAudioUrls, preloadAudioUrlsWithProgress, type PreloadProgress } from '../../services/resourceLoader';
+import { preloadAudioUrls, preloadAudioUrlsWithProgress, takeWarmAudioElement, type PreloadProgress } from '../../services/resourceLoader';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -313,7 +313,9 @@ function getPoolCacheKey(instrumentId: string, articulation: 'Long' | 'Short' = 
 }
 
 /**
- * 创建音频池：先通过 resourceLoader 预热 URL（带进度），然后创建 HTMLAudioElement
+ * 创建音频池：先通过 resourceLoader 预热 URL（带进度），然后创建 HTMLAudioElement。
+ * 第一个池元素直接复用 resourceLoader 已预热的 Audio（已解码，零延迟），
+ * 其余池元素 new Audio + load() 等 canplaythrough，确保也解码到内存。
  */
 async function createAudioPool(
   notes: NoteKey[],
@@ -328,16 +330,44 @@ async function createAudioPool(
     await preloadAudioUrls(urls, priority);
   }
 
-  // URL 已缓存在浏览器，创建 HTMLAudioElement 会命中缓存
-  const entries = notes.map((noteKey) => {
-    const audios = Array.from({ length: AUDIO_POOL_SIZE }, () => {
+  // 为每个音符创建音频池
+  const entries = await Promise.all(notes.map(async (noteKey) => {
+    const audios: HTMLAudioElement[] = [];
+
+    // 第一个元素：尝试复用 resourceLoader 已预热的 Audio（已解码到内存，播放零延迟）
+    const warm = takeWarmAudioElement(noteKey.url);
+    if (warm) {
+      disablePitchPreservation(warm);
+      audios.push(warm);
+    }
+
+    // 补齐到 AUDIO_POOL_SIZE 个元素
+    while (audios.length < AUDIO_POOL_SIZE) {
       const audio = new Audio(noteKey.url);
       audio.preload = 'auto';
       disablePitchPreservation(audio);
-      return audio;
-    });
+      // 主动 load 并等待解码完成，避免首次 play() 时的解码延迟
+      audio.load();
+      await new Promise<void>(resolve => {
+        if (audio.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+          resolve();
+          return;
+        }
+        const done = () => {
+          audio.removeEventListener('canplaythrough', done);
+          audio.removeEventListener('error', done);
+          resolve();
+        };
+        audio.addEventListener('canplaythrough', done);
+        audio.addEventListener('error', done);
+        // 兜底超时：2 秒后不管了，至少 warm 元素能用
+        setTimeout(done, 2000);
+      });
+      audios.push(audio);
+    }
+
     return [noteKey.label, audios] as const;
-  });
+  }));
 
   return new Map(entries);
 }
