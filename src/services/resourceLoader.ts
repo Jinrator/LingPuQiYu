@@ -149,13 +149,6 @@ export function getWarmAudioElement(url: string): HTMLAudioElement | undefined {
   return warmAudioElements.get(url);
 }
 
-/** 从 warm 缓存中移除（调用方接管该元素的生命周期） */
-export function takeWarmAudioElement(url: string): HTMLAudioElement | undefined {
-  const el = warmAudioElements.get(url);
-  if (el) warmAudioElements.delete(url);
-  return el;
-}
-
 export interface PreloadProgress {
   loaded: number;
   total: number;
