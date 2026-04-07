@@ -11,6 +11,7 @@ import { useExitConfirmation } from '../../hooks/useExitConfirmation';
 import { Music4, Settings, User } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
+import { preloadPlayableInstrumentSamples } from '../modes/InstrumentPlayer';
 
 const AUDIO_INIT_KEY = 'shenyin_audio_initialized';
 
@@ -80,10 +81,13 @@ const AppLayout: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isAudioInitialized, isAuthenticated]);
 
-  // 已登录且音频已初始化 → 预取其他页面 chunk
+  // 已登录且音频已初始化 → 预取其他页面 chunk + 预加载民乐采样
   useEffect(() => {
     if (isAuthenticated && isAudioInitialized) {
       prefetchPageChunks();
+      // 进入网站后立即开始后台预加载所有民乐采样（低优先级）
+      // 这样用户进入民乐页面时大部分采样已经解码到内存
+      void preloadPlayableInstrumentSamples();
     }
   }, [isAuthenticated, isAudioInitialized]);
 

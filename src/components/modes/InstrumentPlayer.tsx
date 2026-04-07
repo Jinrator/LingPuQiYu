@@ -5,7 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import type { PaletteKey } from '../../constants/palette';
 import { createKeyboardShortcutMaps, isEditableTarget, LETTER_SHORTCUTS } from '../../utils/keyboardShortcuts';
 import KeyboardPlayToggle from '../ui/KeyboardPlayToggle';
-import { preloadAudioUrls, preloadAudioUrlsWithProgress, getWarmAudioElement, type PreloadProgress } from '../../services/resourceLoader';
+import { preloadAudioUrls, preloadAudioUrlsWithProgress, getAudioBuffer, getAudioContext, resumeAudioContext, type PreloadProgress } from '../../services/resourceLoader';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,24 +103,7 @@ function fileNote(note: string): string {
   return note.replace('#', 's');
 }
 
-function disablePitchPreservation(audio: HTMLAudioElement): void {
-  // Important for transposed one-shots: playbackRate must affect pitch.
-  if ('preservesPitch' in audio) {
-    audio.preservesPitch = false;
-  }
-
-  const media = audio as HTMLAudioElement & {
-    mozPreservesPitch?: boolean;
-    webkitPreservesPitch?: boolean;
-  };
-
-  if ('mozPreservesPitch' in media) {
-    media.mozPreservesPitch = false;
-  }
-  if ('webkitPreservesPitch' in media) {
-    media.webkitPreservesPitch = false;
-  }
-}
+// disablePitchPreservation not needed — AudioContext BufferSource has native detune/playbackRate
 
 // ── Sample mappings (note -> first available variant) ────────────────────────
 // Built from actual file listing. Format: [note, octave, variant]
@@ -297,14 +280,15 @@ const PLAYABLE_INSTRUMENTS: Record<string, InstrumentDef> = {
 export const PLAYABLE_IDS = Object.keys(PLAYABLE_INSTRUMENTS);
 
 /**
- * 音频池策略：
- * - 每个音符 2 个 HTMLAudioElement（支持快速连击）
- * - 预加载通过 resourceLoader 统一排队，控制并发
- * - 支持进度回调，驱动 UI 进度条
+ * AudioBuffer 缓存策略：
+ * - 通过 resourceLoader 将 WAV fetch + decodeAudioData 为 AudioBuffer
+ * - AudioBuffer 是已解码的 PCM 数据，存在内存中
+ * - 播放时 createBufferSource().start() 零延迟
+ * - 进度条走完 = 所有 AudioBuffer 已在内存中 = 立即可演奏
  */
-const AUDIO_POOL_SIZE = 2;
-const audioPoolCache = new Map<string, Map<string, HTMLAudioElement[]>>();
-const audioPoolPromises = new Map<string, Promise<Map<string, HTMLAudioElement[]>>>();
+type BufferMap = Map<string, AudioBuffer>;
+const bufferMapCache = new Map<string, BufferMap>();
+const bufferMapPromises = new Map<string, Promise<BufferMap>>();
 
 function getPoolCacheKey(instrumentId: string, articulation: 'Long' | 'Short' = 'Long'): string {
   const instrument = PLAYABLE_INSTRUMENTS[instrumentId];
@@ -313,15 +297,13 @@ function getPoolCacheKey(instrumentId: string, articulation: 'Long' | 'Short' = 
 }
 
 /**
- * 创建音频池：先通过 resourceLoader 预热 URL（带进度），然后创建 HTMLAudioElement。
- * 第一个池元素直接复用 resourceLoader 已预热的 Audio（已解码，零延迟），
- * 其余池元素 new Audio + load()，不阻塞等待解码——它们会在后台自行解码好。
+ * 创建 AudioBuffer 映射：通过 resourceLoader 下载 + 解码所有音符
  */
-async function createAudioPool(
+async function createBufferMap(
   notes: NoteKey[],
   priority: 'high' | 'low' = 'low',
   onProgress?: (p: PreloadProgress) => void,
-): Promise<Map<string, HTMLAudioElement[]>> {
+): Promise<BufferMap> {
   const urls = notes.map(n => n.url);
 
   if (onProgress) {
@@ -330,87 +312,57 @@ async function createAudioPool(
     await preloadAudioUrls(urls, priority);
   }
 
-  const entries = notes.map((noteKey) => {
-    const audios: HTMLAudioElement[] = [];
-
-    // 第一个元素：复用 resourceLoader 已预热的 Audio（已解码到内存，播放零延迟）
-    const warm = getWarmAudioElement(noteKey.url);
-    if (warm) {
-      disablePitchPreservation(warm);
-      audios.push(warm);
-    }
-
-    // 补齐到 AUDIO_POOL_SIZE：直接创建 + load()，不阻塞等待
-    while (audios.length < AUDIO_POOL_SIZE) {
-      const audio = new Audio(noteKey.url);
-      audio.preload = 'auto';
-      disablePitchPreservation(audio);
-      audio.load();
-      audios.push(audio);
-    }
-
-    return [noteKey.label, audios] as const;
-  });
-
-  return new Map(entries);
+  // 所有 URL 已解码为 AudioBuffer，从缓存中取出
+  const map: BufferMap = new Map();
+  for (const noteKey of notes) {
+    const buf = getAudioBuffer(noteKey.url);
+    if (buf) map.set(noteKey.label, buf);
+  }
+  return map;
 }
 
-/**
- * 确保音频池存在（带缓存 + 去重）
- * 后台预加载用：无进度回调
- */
-async function ensureAudioPool(
+async function ensureBufferMap(
   instrumentId: string,
   notes: NoteKey[],
   articulation: 'Long' | 'Short' = 'Long',
   priority: 'high' | 'low' = 'low',
-): Promise<Map<string, HTMLAudioElement[]>> {
+): Promise<BufferMap> {
   const cacheKey = getPoolCacheKey(instrumentId, articulation);
-  const cachedPool = audioPoolCache.get(cacheKey);
-  if (cachedPool) return cachedPool;
+  const cached = bufferMapCache.get(cacheKey);
+  if (cached) return cached;
 
-  const pendingPool = audioPoolPromises.get(cacheKey);
-  if (pendingPool) return pendingPool;
+  const pending = bufferMapPromises.get(cacheKey);
+  if (pending) return pending;
 
-  const poolPromise = createAudioPool(notes, priority)
-    .then((pool) => { audioPoolCache.set(cacheKey, pool); return pool; })
-    .finally(() => { audioPoolPromises.delete(cacheKey); });
+  const promise = createBufferMap(notes, priority)
+    .then((map) => { bufferMapCache.set(cacheKey, map); return map; })
+    .finally(() => { bufferMapPromises.delete(cacheKey); });
 
-  audioPoolPromises.set(cacheKey, poolPromise);
-  return poolPromise;
+  bufferMapPromises.set(cacheKey, promise);
+  return promise;
 }
 
-/**
- * 加载音频池并报告进度（用于 InstrumentPlayer 组件）
- * - 已缓存 → 立即返回
- * - 后台正在加载 → 不等它的 promise，而是自己调 preloadAudioUrlsWithProgress
- *   （URL 级别去重保证不会重复下载，但能拿到精确进度）
- * - 全新加载 → 高优先级 + 进度
- */
-async function loadAudioPoolWithProgress(
+async function loadBufferMapWithProgress(
   instrumentId: string,
   notes: NoteKey[],
   articulation: 'Long' | 'Short' = 'Long',
   onProgress: (p: PreloadProgress) => void,
-): Promise<Map<string, HTMLAudioElement[]>> {
+): Promise<BufferMap> {
   const cacheKey = getPoolCacheKey(instrumentId, articulation);
 
-  // 已缓存 → 立即返回
-  const cachedPool = audioPoolCache.get(cacheKey);
-  if (cachedPool) {
+  const cached = bufferMapCache.get(cacheKey);
+  if (cached) {
     onProgress({ loaded: notes.length, total: notes.length });
-    return cachedPool;
+    return cached;
   }
 
-  // 无论后台是否在加载，都用带进度的方式加载
-  // preloadAudioUrl 内部有 URL 级去重，不会重复下载
-  const pool = await createAudioPool(notes, 'high', onProgress);
-  audioPoolCache.set(cacheKey, pool);
-  return pool;
+  const map = await createBufferMap(notes, 'high', onProgress);
+  bufferMapCache.set(cacheKey, map);
+  return map;
 }
 
 /**
- * 后台预加载可演奏乐器采样（低优先级，不阻塞 UI）
+ * 预加载可演奏乐器采样（解码为 AudioBuffer）
  */
 export async function preloadPlayableInstrumentSamples(instrumentId?: string, priority: 'high' | 'low' = 'low'): Promise<void> {
   const targetIds = instrumentId ? [instrumentId] : PLAYABLE_IDS;
@@ -421,12 +373,12 @@ export async function preloadPlayableInstrumentSamples(instrumentId?: string, pr
 
     if (instrument.hasArticulation) {
       return [
-        ensureAudioPool(id, instrument.buildNotes('Long'), 'Long', priority),
-        ensureAudioPool(id, instrument.buildNotes('Short'), 'Short', priority),
+        ensureBufferMap(id, instrument.buildNotes('Long'), 'Long', priority),
+        ensureBufferMap(id, instrument.buildNotes('Short'), 'Short', priority),
       ];
     }
 
-    return [ensureAudioPool(id, instrument.buildNotes(), 'Long', priority)];
+    return [ensureBufferMap(id, instrument.buildNotes(), 'Long', priority)];
   }));
 }
 
@@ -448,8 +400,10 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const [keyboardPlayEnabled, setKeyboardPlayEnabled] = useState(true);
   const [loadProgress, setLoadProgress] = useState<{ loaded: number; total: number }>({ loaded: 0, total: 0 });
   const [isReady, setIsReady] = useState(false);
-  const audioPoolRef = useRef<Map<string, HTMLAudioElement[]>>(new Map());
+  const bufferMapRef = useRef<BufferMap>(new Map());
   const volumeRef = useRef(volume);
+  // 用于 GainNode 控制音量
+  const gainNodeRef = useRef<GainNode | null>(null);
 
   const notes = useMemo(() => {
     if (!config) return [];
@@ -462,6 +416,16 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   const noteByLabel = useMemo(() => new Map(notes.map(noteKey => [noteKey.label, noteKey])), [notes]);
   const whiteSlots = useMemo(() => buildWhiteSlots(notes), [notes]);
 
+  // 初始化 GainNode
+  useEffect(() => {
+    const ctx = getAudioContext();
+    const gain = ctx.createGain();
+    gain.gain.value = volumeRef.current;
+    gain.connect(ctx.destination);
+    gainNodeRef.current = gain;
+    return () => { gain.disconnect(); };
+  }, []);
+
   // 加载采样并跟踪进度
   useEffect(() => {
     if (!config) return;
@@ -471,10 +435,8 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     const cacheKey = getPoolCacheKey(instrumentId, art);
 
     // 如果缓存已存在，不闪烁 loading 状态
-    if (audioPoolCache.has(cacheKey)) {
-      const pool = audioPoolCache.get(cacheKey)!;
-      audioPoolRef.current = pool;
-      pool.forEach(arr => arr.forEach(a => { a.volume = volumeRef.current; }));
+    if (bufferMapCache.has(cacheKey)) {
+      bufferMapRef.current = bufferMapCache.get(cacheKey)!;
       setLoadProgress({ loaded: notes.length, total: notes.length });
       setIsReady(true);
       return;
@@ -483,8 +445,8 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     setIsReady(false);
     setLoadProgress({ loaded: 0, total: notes.length });
 
-    const syncPool = async () => {
-      const pool = await loadAudioPoolWithProgress(
+    const syncLoad = async () => {
+      const map = await loadBufferMapWithProgress(
         instrumentId,
         notes,
         art,
@@ -492,48 +454,40 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
       );
       if (cancelled) return;
 
-      audioPoolRef.current = pool;
-      pool.forEach(arr => arr.forEach(a => { a.volume = volumeRef.current; }));
+      bufferMapRef.current = map;
       setIsReady(true);
     };
 
-    void syncPool();
+    void syncLoad();
 
-    return () => {
-      cancelled = true;
-      audioPoolRef.current.forEach(arr => arr.forEach(a => {
-        a.pause();
-        a.currentTime = 0;
-      }));
-    };
+    return () => { cancelled = true; };
   }, [config, instrumentId, notes, articulation]);
 
   useEffect(() => {
     volumeRef.current = volume;
-    audioPoolRef.current.forEach(arr => arr.forEach(a => { a.volume = volume; }));
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume;
+    }
   }, [volume]);
 
   const playNote = useCallback((nk: NoteKey) => {
-    const audios = audioPoolRef.current.get(nk.label);
-    if (!audios || audios.length === 0) return;
+    const buffer = bufferMapRef.current.get(nk.label);
+    if (!buffer || !gainNodeRef.current) return;
 
-    // 优先选已解码且空闲的元素，其次选已解码但在播放的（会被 reset），
-    // 最后才用未解码的（可能静默失败，但不会卡住）
-    const readyIdle = audios.find(a => a.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA && (a.paused || a.ended));
-    const readyAny = audios.find(a => a.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA);
-    const audio = readyIdle || readyAny || audios[0];
+    const ctx = getAudioContext();
+    resumeAudioContext();
 
-    disablePitchPreservation(audio);
-    audio.currentTime = 0;
-    audio.volume = volume;
-    audio.playbackRate = nk.playbackRate ?? 1;
-    audio.play().catch(() => {});
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = nk.playbackRate ?? 1;
+    source.connect(gainNodeRef.current);
+    source.start(0);
 
     setActiveKeys(prev => new Set(prev).add(nk.label));
     setTimeout(() => {
       setActiveKeys(prev => { const n = new Set(prev); n.delete(nk.label); return n; });
     }, 200);
-  }, [volume]);
+  }, []);
 
   // Keyboard shortcut mapping
   useEffect(() => {
