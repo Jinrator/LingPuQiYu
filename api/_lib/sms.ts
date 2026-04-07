@@ -109,7 +109,7 @@ async function verifyViaAliyun(phone: string, code: string): Promise<SmsVerifica
 
   const checkReq = new Dypnsapi.CheckSmsVerifyCodeRequest({
     phoneNumber: phone,
-    countryCode: '86',
+    countryCode: 'cn',
     verifyCode: code,
   });
 
