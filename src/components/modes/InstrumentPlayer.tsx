@@ -501,7 +501,6 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
   }, [volume]);
 
   const playNote = useCallback((nk: NoteKey) => {
-    if (!isReady) return; // 未加载完成时不响应
     const audios = audioPoolRef.current.get(nk.label);
     if (!audios) return;
     const idle = audios.find(a => a.paused || a.ended);
@@ -516,7 +515,7 @@ const InstrumentPlayer: React.FC<InstrumentPlayerProps> = ({ instrumentId, onBac
     setTimeout(() => {
       setActiveKeys(prev => { const n = new Set(prev); n.delete(nk.label); return n; });
     }, 200);
-  }, [volume, isReady]);
+  }, [volume]);
 
   // Keyboard shortcut mapping
   useEffect(() => {

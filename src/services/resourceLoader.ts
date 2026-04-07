@@ -8,15 +8,17 @@
  * - 支持进度回调，驱动 UI 进度条
  */
 
-const MAX_CONCURRENT_HIGH = 6;
-const MAX_CONCURRENT_LOW = 2;
-const PRIME_TIMEOUT_MS = 8000;
+const MAX_CONCURRENT_HIGH = 8;
+const MAX_CONCURRENT_LOW = 3;
+const PRIME_TIMEOUT_MS = 15000;
+const MAX_RETRIES = 2;
 
 interface QueueItem {
   url: string;
   resolve: () => void;
   reject: (err: Error) => void;
   priority: 'high' | 'low';
+  retries: number;
 }
 
 let activeHigh = 0;
@@ -30,6 +32,9 @@ const loadedUrls = new Set<string>();
 const pendingUrls = new Map<string, Promise<void>>();
 /** 保持对预热 Audio 元素的引用，防止 GC 导致浏览器丢弃缓存 */
 const warmAudioElements = new Map<string, HTMLAudioElement>();
+
+/** URLs that failed to load (for retry logic) */
+const failedUrls = new Set<string>();
 
 function processQueue() {
   while (highQueue.length > 0 && activeHigh < MAX_CONCURRENT_HIGH) {
@@ -56,12 +61,22 @@ function doLoad(item: QueueItem): Promise<void> {
       audio.removeEventListener('canplaythrough', onReady);
       audio.removeEventListener('loadeddata', onReady);
       audio.removeEventListener('error', onError);
+
       if (success) {
         loadedUrls.add(item.url);
-        // 保持引用，防止 GC 丢弃浏览器缓存
+        failedUrls.delete(item.url);
         warmAudioElements.set(item.url, audio);
+        item.resolve();
+      } else if (item.retries < MAX_RETRIES) {
+        // Retry: re-queue with incremented retry count
+        item.retries++;
+        (item.priority === 'high' ? highQueue : lowQueue).unshift(item);
+        // Don't resolve the outer promise yet — it stays pending via pendingUrls
+      } else {
+        // Exhausted retries — mark as failed but resolve to unblock progress
+        failedUrls.add(item.url);
+        item.resolve();
       }
-      item.resolve();
       resolve();
     };
 
@@ -87,9 +102,13 @@ function doLoad(item: QueueItem): Promise<void> {
 export function preloadAudioUrl(url: string, priority: 'high' | 'low' = 'low'): Promise<void> {
   if (loadedUrls.has(url)) return Promise.resolve();
 
+  // If previously failed, allow retry by clearing the failure flag
+  if (failedUrls.has(url)) {
+    failedUrls.delete(url);
+  }
+
   const pending = pendingUrls.get(url);
   if (pending) {
-    // 如果已有 pending 且新请求是 high，尝试从 lowQueue 提升到 highQueue
     if (priority === 'high') {
       const idx = lowQueue.findIndex(item => item.url === url);
       if (idx !== -1) {
@@ -103,7 +122,7 @@ export function preloadAudioUrl(url: string, priority: 'high' | 'low' = 'low'): 
   }
 
   const promise = new Promise<void>((resolve, reject) => {
-    const item: QueueItem = { url, resolve, reject, priority };
+    const item: QueueItem = { url, resolve, reject, priority, retries: 0 };
     (priority === 'high' ? highQueue : lowQueue).push(item);
     processQueue();
   });
@@ -118,6 +137,11 @@ export function preloadAudioUrl(url: string, priority: 'high' | 'low' = 'low'): 
  */
 export function preloadAudioUrls(urls: string[], priority: 'high' | 'low' = 'low'): Promise<void> {
   return Promise.all(urls.map(u => preloadAudioUrl(u, priority))).then(() => undefined);
+}
+
+/** 检查某个 URL 是否已加载完成 */
+export function isAudioUrlLoaded(url: string): boolean {
+  return loadedUrls.has(url);
 }
 
 export interface PreloadProgress {

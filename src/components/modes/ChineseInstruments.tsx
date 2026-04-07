@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Play, Square, Piano } from 'lucide-react';
+import { Play, Square, Piano, Loader2 } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import InstrumentPlayer, { PLAYABLE_IDS, preloadPlayableInstrumentSamples } from './InstrumentPlayer';
+import { preloadAudioUrlsWithProgress } from '../../services/resourceLoader';
 
 interface Instrument {
   id: string;
@@ -22,9 +23,11 @@ const INSTRUMENTS: Instrument[] = [
   { id: 'erhu',    nameKey: 'lab.cnInst.erhu',    descKey: 'lab.cnInst.erhu.desc',    category: 'strings',   color: 'pink',   sampleUrl: '/samples/china/Loops/Strings/Erhu/120_Am_Erhu_01_541.wav',    iconUrl: '/images/erhu.svg' },
 ];
 
-const PREVIEW_PRELOAD_TIMEOUT_MS = 4000;
+// ── 预览采样：统一走 resourceLoader ──────────────────────────────────────────
+
 const previewAudioCache = new Map<string, HTMLAudioElement>();
 let previewPreloadPromise: Promise<void> | null = null;
+let previewReady = false;
 
 function getPreviewAudio(inst: Instrument): HTMLAudioElement {
   const cached = previewAudioCache.get(inst.id);
@@ -36,44 +39,19 @@ function getPreviewAudio(inst: Instrument): HTMLAudioElement {
   return audio;
 }
 
-function primeAudioElement(audio: HTMLAudioElement): Promise<void> {
-  if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-
-    const cleanup = () => {
-      audio.removeEventListener('loadeddata', onReady);
-      audio.removeEventListener('canplaythrough', onReady);
-      audio.removeEventListener('error', onReady);
-    };
-
-    const onReady = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve();
-    };
-
-    audio.addEventListener('loadeddata', onReady);
-    audio.addEventListener('canplaythrough', onReady);
-    audio.addEventListener('error', onReady);
-    audio.load();
-    window.setTimeout(onReady, PREVIEW_PRELOAD_TIMEOUT_MS);
-  });
-}
-
-async function preloadPreviewSamples(): Promise<void> {
+/**
+ * 预加载所有预览采样，走 resourceLoader 统一队列（高优先级）。
+ * 加载完成后创建 HTMLAudioElement 并缓存。
+ */
+function preloadPreviewSamples(): Promise<void> {
   if (previewPreloadPromise) return previewPreloadPromise;
 
-  previewPreloadPromise = Promise.all(
-    INSTRUMENTS.map(async (inst) => {
-      const audio = getPreviewAudio(inst);
-      await primeAudioElement(audio);
-    }),
-  ).then(() => undefined);
+  const urls = INSTRUMENTS.map(inst => inst.sampleUrl);
+  previewPreloadPromise = preloadAudioUrlsWithProgress(urls, 'high', () => {}).then(() => {
+    // URL 已被 resourceLoader 预热到浏览器缓存，创建 Audio 元素会命中缓存
+    INSTRUMENTS.forEach(inst => getPreviewAudio(inst));
+    previewReady = true;
+  });
 
   return previewPreloadPromise;
 }
@@ -93,17 +71,20 @@ const ChineseInstruments: React.FC = () => {
   const { t } = useSettings();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [activePlayer, setActivePlayer] = useState<string | null>(null);
+  const [previewsReady, setPreviewsReady] = useState(() => previewReady);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // 记录已触发 hover 预加载的乐器，避免重复触发
+  const hoveredRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    // 延迟预加载，避免与页面切换竞争网络资源
-    const timer = setTimeout(() => {
-      void preloadPreviewSamples();
+    // 预览采样（高优先级，只有 5 个文件，很快）
+    // 加载完后立即开始后台预加载所有演奏采样
+    void preloadPreviewSamples().then(() => {
+      setPreviewsReady(true);
       void preloadPlayableInstrumentSamples();
-    }, 500);
+    });
 
     return () => {
-      clearTimeout(timer);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -135,6 +116,13 @@ const ChineseInstruments: React.FC = () => {
     setPlayingId(inst.id);
   }, [playingId]);
 
+  // hover 时高优先级预加载该乐器的演奏采样
+  const handlePerformHover = useCallback((instId: string) => {
+    if (hoveredRef.current.has(instId)) return;
+    hoveredRef.current.add(instId);
+    void preloadPlayableInstrumentSamples(instId, 'high');
+  }, []);
+
   // If a player is active, show it
   if (activePlayer) {
     return (
@@ -147,12 +135,21 @@ const ChineseInstruments: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {/* 采样加载提示 */}
+      {!previewsReady && (
+        <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+          <Loader2 size={14} className="animate-spin text-slate-400" />
+          <span className="text-xs font-semibold text-slate-500">{t('lab.cnInst.loading')}</span>
+        </div>
+      )}
+
       {/* Instrument cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {INSTRUMENTS.map(inst => {
           const pal = PALETTE[inst.color];
           const isPlaying = playingId === inst.id;
           const hasOneShot = PLAYABLE_IDS.includes(inst.id);
+          const previewDisabled = !previewsReady && !isPlaying;
           return (
             <div
               key={inst.id}
@@ -186,7 +183,8 @@ const ChineseInstruments: React.FC = () => {
               <div className="flex gap-2 mt-auto">
                 <button
                   onClick={() => handlePlay(inst)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95`}
+                  disabled={previewDisabled}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95${previewDisabled ? ' opacity-40 cursor-not-allowed' : ''}`}
                   style={isPlaying
                     ? { background: pal.accent, color: '#fff' }
                     : { background: pal.bg, color: pal.accent }
@@ -198,6 +196,8 @@ const ChineseInstruments: React.FC = () => {
 
                 {hasOneShot && (
                   <button
+                    onMouseEnter={() => handlePerformHover(inst.id)}
+                    onTouchStart={() => handlePerformHover(inst.id)}
                     onClick={() => {
                       // Stop any loop playback first
                       if (audioRef.current) {
@@ -206,6 +206,8 @@ const ChineseInstruments: React.FC = () => {
                         audioRef.current = null;
                         setPlayingId(null);
                       }
+                      // 高优先级预加载（hover 可能已触发，这里确保）
+                      void preloadPlayableInstrumentSamples(inst.id, 'high');
                       setActivePlayer(inst.id);
                     }}
                     className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all hover:scale-[1.02] active:scale-95"
