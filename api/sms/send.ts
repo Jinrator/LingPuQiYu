@@ -28,10 +28,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       {
         scope: 'sms:send:ip',
         identifier: ip,
-        limit: 5,
+        limit: 10,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '请求太频繁，请稍后再试',
+        blockMs: 5 * 60 * 1000,
+        message: '请求太频繁，请 5 分钟后再试',
       },
       {
         scope: 'sms:send:phone:minute',
@@ -39,12 +39,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         limit: 1,
         windowMs: 60 * 1000,
         blockMs: 60 * 1000,
-        message: '发送太频繁，请稍后再试',
+        message: '发送太频繁，请 1 分钟后再试',
       },
       {
         scope: 'sms:send:phone:day',
         identifier: phone,
-        limit: 10,
+        limit: 15,
         windowMs: 24 * 60 * 60 * 1000,
         message: '今日发送次数已达上限',
       },

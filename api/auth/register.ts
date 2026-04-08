@@ -84,18 +84,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       {
         scope: 'auth:register:ip',
         identifier: ip,
-        limit: 8,
+        limit: 15,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '注册尝试过于频繁，请稍后再试',
+        blockMs: 5 * 60 * 1000,
+        message: '注册尝试过于频繁，请 5 分钟后再试',
       },
       {
         scope: 'auth:register:phone',
         identifier: phone,
-        limit: 5,
+        limit: 10,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '该手机号尝试次数过多，请稍后再试',
+        blockMs: 3 * 60 * 1000,
+        message: '该手机号尝试次数过多，请 3 分钟后再试',
       },
     ]);
 

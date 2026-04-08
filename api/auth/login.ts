@@ -54,10 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       {
         scope: 'auth:login:ip',
         identifier: ip,
-        limit: 10,
+        limit: 20,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '登录尝试过于频繁，请稍后再试',
+        blockMs: 5 * 60 * 1000,
+        message: '登录尝试过于频繁，请 5 分钟后再试',
       },
     ]);
 
@@ -76,10 +76,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       assertRateLimits([{
         scope: 'auth:login:account',
         identifier,
-        limit: 6,
+        limit: 12,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '该账号尝试次数过多，请稍后再试',
+        blockMs: 3 * 60 * 1000,
+        message: '该账号尝试次数过多，请 3 分钟后再试',
       }]);
 
       // 根据格式判断是手机号还是 username
@@ -135,10 +135,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       assertRateLimits([{
         scope: 'auth:login:phone',
         identifier: phone,
-        limit: 6,
+        limit: 12,
         windowMs: 10 * 60 * 1000,
-        blockMs: 10 * 60 * 1000,
-        message: '该手机号尝试次数过多，请稍后再试',
+        blockMs: 3 * 60 * 1000,
+        message: '该手机号尝试次数过多，请 3 分钟后再试',
       }]);
 
       const verification = await verifyPhoneCode(phone, code);
