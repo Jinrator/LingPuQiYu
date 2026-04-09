@@ -2,6 +2,9 @@ import type { SmsSendResult, SmsVerificationResult } from './types.js';
 
 type AliyunModuleNamespace = Record<string, any>;
 
+const ALIYUN_COUNTRY_CODE = '86';
+const ALIYUN_RETRYABLE_ERROR_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'UND_ERR_CONNECT_TIMEOUT']);
+
 interface AliyunSmsClientContext {
   Dypnsapi: AliyunModuleNamespace;
   client: any;
@@ -48,6 +51,41 @@ async function createAliyunSmsClient(): Promise<AliyunSmsClientContext> {
   return { Dypnsapi: DypnsapiModule, client: new DypnsapiClient(config) };
 }
 
+function getErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object' || !('code' in error)) {
+    return undefined;
+  }
+
+  const { code } = error as { code?: unknown };
+  return typeof code === 'string' ? code : undefined;
+}
+
+function getErrorMessage(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object' || !('message' in error)) {
+    return undefined;
+  }
+
+  const { message } = error as { message?: unknown };
+  return typeof message === 'string' ? message : undefined;
+}
+
+function isRetryableAliyunError(error: unknown): boolean {
+  const code = getErrorCode(error);
+  return Boolean(code && ALIYUN_RETRYABLE_ERROR_CODES.has(code));
+}
+
+async function withAliyunRetry<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isRetryableAliyunError(error)) {
+      throw error;
+    }
+  }
+
+  return operation();
+}
+
 // ── 发送验证码 ──
 
 async function sendViaAliyun(phone: string): Promise<SmsSendResult> {
@@ -56,7 +94,7 @@ async function sendViaAliyun(phone: string): Promise<SmsSendResult> {
 
   const sendReq = new Dypnsapi.SendSmsVerifyCodeRequest({
     phoneNumber: phone,
-    countryCode: '86',
+    countryCode: ALIYUN_COUNTRY_CODE,
     codeLength: 6,
     validTime: 300,
     interval: 60,
@@ -67,7 +105,7 @@ async function sendViaAliyun(phone: string): Promise<SmsSendResult> {
     templateParam: JSON.stringify({ code: '##code##', min: '5' }),
   });
 
-  const result = await client.sendSmsVerifyCode(sendReq);
+  const result = await withAliyunRetry<any>(() => client.sendSmsVerifyCode(sendReq));
   const body = result.body as { code?: string; message?: string };
 
   if (body.code === 'OK') {
@@ -109,11 +147,28 @@ async function verifyViaAliyun(phone: string, code: string): Promise<SmsVerifica
 
   const checkReq = new Dypnsapi.CheckSmsVerifyCodeRequest({
     phoneNumber: phone,
-    countryCode: 'cn',
+    countryCode: ALIYUN_COUNTRY_CODE,
     verifyCode: code,
   });
 
-  const result = await client.checkSmsVerifyCode(checkReq);
+  let result: any;
+  try {
+    result = await withAliyunRetry<any>(() => client.checkSmsVerifyCode(checkReq));
+  } catch (error) {
+    const errorCode = getErrorCode(error);
+    const errorMessage = getErrorMessage(error) ?? '';
+
+    if (errorCode === 'isv.ValidateFail') {
+      return { success: false, message: '验证码错误' };
+    }
+
+    if (errorMessage.toLowerCase().includes('expired')) {
+      return { success: false, message: '验证码已过期，请重新获取' };
+    }
+
+    throw error;
+  }
+
   const body = result.body as {
     code?: string;
     message?: string;
