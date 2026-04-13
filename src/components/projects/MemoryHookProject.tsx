@@ -4,9 +4,10 @@ import { audioService } from '../../services/audioService';
 import { NOTES } from '../../utils/musicNotes';
 import { PALETTE } from '../../constants/palette';
 import ProjectShell from './ProjectShell';
+import { Note } from '../../types';
 
 interface MelodyFragment {
-  id: string; name: string; notes: number[]; paletteKey: keyof typeof PALETTE; emoji: string;
+  id: string; name: string; notes: Note[]; paletteKey: keyof typeof PALETTE; emoji: string;
 }
 
 const SCALE_NOTES = [
