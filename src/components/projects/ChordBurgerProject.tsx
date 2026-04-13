@@ -251,20 +251,28 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
     if (ingredient.kind === 'top') {
       return (
         <div className="relative flex flex-col items-center">
-          <div className="z-10" style={{ width: 170, height: 16, borderRadius: 9999, background: '#F5A05B' }} />
           <div
-            className="-mt-1 flex items-center justify-center flex-col"
+            className="flex items-center justify-center flex-col z-10"
             style={{
               width: 184,
-              height: 12,
-              borderRadius: '0 0 16px 16px',
-              background: '#4ADE80',
-              boxShadow: 'none',
-              zIndex: 0
+              height: 46,
+              borderRadius: '60px 60px 12px 12px',
+              background: '#F5A05B',
+              boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.05)',
             }}
           >
-            <span style={{ fontSize: 10, fontWeight: 800, color: '#14532D', letterSpacing: 1.5 }}>5th 纯五度</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: '#7C2D12', letterSpacing: 1.5 }}>5th 纯五度</span>
           </div>
+          <div
+            className="-mt-2"
+            style={{
+              width: 196,
+              height: 14,
+              borderRadius: '8px',
+              background: '#4ADE80',
+              zIndex: 0
+            }}
+          />
         </div>
       );
     }
@@ -274,16 +282,16 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
         <div
           className="flex items-center justify-center transition-transform"
           style={{
-            width: 176,
-            height: 48,
-            borderRadius: 16,
+            width: 190,
+            height: 40,
+            borderRadius: '14px',
             background: isMajor ? '#FBBF24' : '#60A5FA',
-            boxShadow: 'none',
+            boxShadow: 'inset 0 -4px 0 rgba(0,0,0,0.06)',
           }}
         >
           <span className="text-xs font-black tracking-[0.1em] text-white uppercase flex flex-col items-center leading-tight">
-            <span>{isMajor ? 'Major 3rd' : 'Minor 3rd'}</span>
-            <span className="text-[10px] opacity-90">{ingredient.name}</span>
+            <span style={{ color: isMajor ? '#78350F' : '#1E3A8A' }}>{isMajor ? 'MAJOR 3rd' : 'MINOR 3rd'}</span>
+            <span className="text-[10px] opacity-80" style={{ color: isMajor ? '#78350F' : '#1E3A8A' }}>{ingredient.name}</span>
           </span>
         </div>
       );
@@ -293,16 +301,16 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
         className="flex items-center justify-center transition-transform"
         style={{
           width: 184,
-          height: 52,
-          borderRadius: 16,
+          height: 48,
+          borderRadius: '12px 12px 40px 40px',
           background: '#F5A05B',
-          boxShadow: 'none',
+          boxShadow: 'inset 0 -5px 0 rgba(0,0,0,0.06)',
         }}
       >
         <div className="flex items-center gap-2">
-          <div className="flex flex-col items-start leading-none gap-0.5">
-            <span style={{ fontSize: 9, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.2, textTransform: 'uppercase' }}>Root</span>
-            <span style={{ fontSize: 16, fontWeight: 900, color: '#7C4A12' }}>{SCALE[ingredient.noteIndex].label} {SCALE[ingredient.noteIndex].name}</span>
+          <div className="flex flex-col items-center leading-none gap-1">
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#7C2D12', letterSpacing: 1.2, textTransform: 'uppercase' }}>Root</span>
+            <span style={{ fontSize: 16, fontWeight: 900, color: '#7C2D12' }}>{SCALE[ingredient.noteIndex].label} {SCALE[ingredient.noteIndex].name}</span>
           </div>
         </div>
       </div>
@@ -345,20 +353,28 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
         >
           {topNote ? (
             <div className="relative flex flex-col items-center animate-[fadeIn_0.25s_ease]">
-              <div className="z-10" style={{ width: 210, height: 18, borderRadius: 9999, background: '#F5A05B' }} />
               <div
-                className="-mt-1 flex items-center justify-center"
+                className="flex items-center justify-center flex-col z-10"
                 style={{
                   width: 224,
-                  height: 14,
-                  borderRadius: '0 0 16px 16px',
-                  background: '#4ADE80',
-                  boxShadow: 'none',
-                  zIndex: 0
+                  height: 52,
+                  borderRadius: '70px 70px 14px 14px',
+                  background: '#F5A05B',
+                  boxShadow: 'inset 0 -5px 0 rgba(0,0,0,0.05)',
                 }}
               >
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#14532D', letterSpacing: 1.5 }}>5th</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#7C2D12', letterSpacing: 1.5 }}>5th 纯五度</span>
               </div>
+              <div
+                className="-mt-2"
+                style={{
+                  width: 236,
+                  height: 16,
+                  borderRadius: '10px',
+                  background: '#4ADE80',
+                  zIndex: 0
+                }}
+              />
             </div>
           ) : (
             <span className="text-xs font-semibold text-slate-400">拖拽纯五度到这里</span>
@@ -386,17 +402,22 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             <div
               className="flex items-center justify-center transition-transform"
               style={{
-                width: 194,
-                height: 46,
-                borderRadius: 18,
+                width: 230,
+                height: 48,
+                borderRadius: '16px',
                 background: middleNote === 'major'
                   ? '#FBBF24'
                   : '#60A5FA',
-                boxShadow: 'none',
+                boxShadow: 'inset 0 -5px 0 rgba(0,0,0,0.06)',
               }}
             >
-              <span className="text-[11px] font-black tracking-[0.18em] text-white uppercase">
-                {middleNote === 'major' ? 'Major 3rd' : 'Minor 3rd'}
+              <span className="text-[12px] font-black tracking-[0.18em] uppercase flex flex-col items-center leading-tight">
+                <span style={{ color: middleNote === 'major' ? '#78350F' : '#1E3A8A' }}>
+                  {middleNote === 'major' ? 'MAJOR 3rd' : 'MINOR 3rd'}
+                </span>
+                <span className="text-[10px] opacity-80" style={{ color: middleNote === 'major' ? '#78350F' : '#1E3A8A' }}>
+                  {middleNote === 'major' ? '大三度' : '小三度'}
+                </span>
               </span>
             </div>
           ) : (
@@ -424,16 +445,16 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             className="flex items-center justify-center transition-transform"
             style={{
               width: 224,
-              height: 66,
-              borderRadius: 20,
+              height: 56,
+              borderRadius: '16px 16px 45px 45px',
               background: '#F5A05B',
-              boxShadow: 'none',
+              boxShadow: 'inset 0 -6px 0 rgba(0,0,0,0.06)',
             }}
           >
             <div className="flex items-center gap-3">
-              <div className="flex flex-col items-start">
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.5, textTransform: 'uppercase' }}>Root</span>
-                <span style={{ fontSize: 22, fontWeight: 900, color: '#7C4A12', lineHeight: 1 }}>{SCALE[bottomNote].label}</span>
+              <div className="flex flex-col items-center">
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#7C2D12', letterSpacing: 1.5, textTransform: 'uppercase' }}>Root</span>
+                <span style={{ fontSize: 20, fontWeight: 900, color: '#7C2D12', lineHeight: 1 }}>{SCALE[bottomNote].label} {SCALE[bottomNote].name}</span>
               </div>
             </div>
           </div>
@@ -447,10 +468,10 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   const burger = (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       <div className="relative">
-        <div className="relative flex flex-col items-center gap-[-8px]">
-          {renderSlot('top')}
-          {renderSlot('middle')}
-          {renderSlot('bottom')}
+        <div className="relative flex flex-col items-center">
+          <div className="z-20 -mb-2">{renderSlot('top')}</div>
+          <div className="z-10 -mb-2">{renderSlot('middle')}</div>
+          <div className="z-0">{renderSlot('bottom')}</div>
         </div>
       </div>
 
