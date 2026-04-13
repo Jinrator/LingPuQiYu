@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Layers, Trash2, X, Play, Move3D } from 'lucide-react';
+import { Layers, Trash2, X, Play } from 'lucide-react';
 import { audioService } from '../../services/audioService';
 import { NOTES } from '../../utils/musicNotes';
 import { PALETTE } from '../../constants/palette';
@@ -76,7 +77,7 @@ const MIDDLE_INGREDIENTS: MiddleIngredient[] = [
 const TOP_INGREDIENT: TopIngredient = {
   id: 'top-lettuce',
   kind: 'top',
-  name: '生菜上盖',
+  name: '生菜盖',
   emoji: '🥬',
 };
 
@@ -213,7 +214,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
     };
   }, [dragState, getCompatibleSlotAtPoint, placeIngredient]);
 
-  const startDrag = useCallback((ingredient: Ingredient, event: React.PointerEvent<HTMLButtonElement>) => {
+  const startDrag = useCallback((ingredient: Ingredient, event: React.PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragState({
       ingredient,
@@ -246,41 +247,85 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
     ? '单音版会按 1-3-5 依次播放，更适合启蒙和跟唱。'
     : '和弦版会让食材一起发声，直接听到和声厚度。';
 
-  const renderTrayItem = (ingredient: Ingredient, subtitle: string, active: boolean) => (
-    <button
-      key={ingredient.id}
-      onPointerDown={(event) => startDrag(ingredient, event)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          placeIngredient(ingredient);
-        }
-      }}
-      className="w-full rounded-[22px] border px-3 py-3 text-left transition-all active:scale-[0.98]"
-      style={{
-        background: active ? '#FFF7ED' : '#FFFFFF',
-        borderColor: active ? PALETTE.orange.accent : '#E2E8F0',
-        boxShadow: active ? '0 12px 28px rgba(245,160,91,0.18)' : '0 6px 20px rgba(15,23,42,0.05)',
-        touchAction: 'none',
-      }}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+  const renderPhysicalShape = (ingredient: Ingredient) => {
+    if (ingredient.kind === 'top') {
+      return (
+        <div className="relative flex flex-col items-center">
+          <div style={{ width: 170, height: 16, borderRadius: 9999, background: 'linear-gradient(90deg, #6dd27e 0%, #4fb968 100%)' }} />
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
-            style={{ background: active ? PALETTE.orange.bg : '#F8FAFC' }}
+            className="-mt-1 flex items-center justify-center flex-col"
+            style={{
+              width: 184,
+              height: 48,
+              borderRadius: '9999px 9999px 16px 16px',
+              background: 'linear-gradient(180deg, #FAD7A2 0%, #F5A05B 100%)',
+              boxShadow: '0 8px 18px rgba(245,160,91,0.2)',
+            }}
           >
-            {ingredient.emoji}
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-bold text-slate-800 truncate">{ingredient.name}</div>
-            <div className="text-[11px] font-medium text-slate-500 leading-snug">{subtitle}</div>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.5 }}>5th 生菜</span>
           </div>
         </div>
-        <Move3D size={16} className="text-slate-300 flex-shrink-0" />
+      );
+    }
+    if (ingredient.kind === 'middle') {
+      return (
+        <div
+          className="flex items-center justify-center"
+          style={{
+            width: 160,
+            height: 42,
+            borderRadius: 16,
+            background: ingredient.mode === 'major'
+              ? 'linear-gradient(180deg, #D97706 0%, #92400E 100%)'
+              : 'linear-gradient(180deg, #64748B 0%, #334155 100%)',
+            boxShadow: '0 8px 16px rgba(15,23,42,0.18)',
+          }}
+        >
+          <span className="text-[10px] font-black tracking-[0.1em] text-white uppercase flex flex-col items-center leading-tight">
+            <span>{ingredient.mode === 'major' ? 'Major 3rd' : 'Minor 3rd'}</span>
+            <span className="text-[9px] opacity-90">{ingredient.name}</span>
+          </span>
+        </div>
+      );
+    }
+    return (
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 184,
+          height: 52,
+          borderRadius: '18px 18px 24px 24px',
+          background: 'linear-gradient(180deg, #F9D298 0%, #F5A05B 100%)',
+          boxShadow: '0 10px 20px rgba(245,160,91,0.22)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: 18 }}>{ingredient.emoji}</span>
+          <div className="flex flex-col items-start leading-none gap-0.5">
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.2, textTransform: 'uppercase' }}>Root</span>
+            <span style={{ fontSize: 16, fontWeight: 900, color: '#7C4A12' }}>{SCALE[ingredient.noteIndex].label} {SCALE[ingredient.noteIndex].name}</span>
+          </div>
+        </div>
       </div>
-    </button>
-  );
+    );
+  };
+
+  const renderDraggableIngredient = (ingredient: Ingredient, active: boolean) => {
+    return (
+      <div
+        key={ingredient.id}
+        onPointerDown={(event) => startDrag(ingredient, event)}
+        className="cursor-grab transition-transform active:cursor-grabbing hover:scale-105 select-none"
+        style={{
+          touchAction: 'none',
+          opacity: active ? 0.35 : 1,
+          filter: active ? 'grayscale(0.5)' : 'none',
+        }}
+      >
+        {renderPhysicalShape(ingredient)}
+      </div>
+    );
+  };
 
   const renderSlot = (slot: SlotKey) => {
     const isActiveSlot = dragState ? getCompatibleSlotAtPoint(dragState.ingredient, dragState.x, dragState.y) === slot : false;
@@ -316,7 +361,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
               </div>
             </div>
           ) : (
-            <span className="text-xs font-semibold text-slate-400">把生菜上盖拖到这里</span>
+            <span className="text-xs font-semibold text-slate-400">把上盖拖到这里</span>
           )}
         </div>
       );
@@ -497,45 +542,63 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   );
 
   const ingredientPanels = (
-    <div className="space-y-3">
-      <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
-        <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>面包底托盘 Root</span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {ROOT_INGREDIENTS.map((ingredient) => renderTrayItem(
-            ingredient,
-            `${SCALE[ingredient.noteIndex].name} ${SCALE[ingredient.noteIndex].label}级，拖进底层当根音`,
-            bottomNote === ingredient.noteIndex,
+    <div className="space-y-4 w-full max-w-[460px] mx-auto pb-8">
+      <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: PALETTE.orange.accent }}>食材配料区 INGREDIENTS</span>
+          <button onClick={resetBurger}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-red-500 transition-colors font-semibold text-xs bg-slate-50 px-3 py-1.5 rounded-full">
+            <Trash2 size={13} /> 重置汉堡
+          </button>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">5th 生菜上盖</div>
+            <div className="flex justify-center py-2 bg-slate-50 rounded-[20px] border border-slate-100">
+              {renderDraggableIngredient(TOP_INGREDIENT, topNote)}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">3rd 肉排 (明亮/柔和)</div>
+            <div className="flex justify-center gap-4 py-3 bg-slate-50 rounded-[20px] border border-slate-100 px-4">
+              {MIDDLE_INGREDIENTS.map((ingredient) => 
+                renderDraggableIngredient(ingredient, middleNote === ingredient.mode)
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">Root 面包底</div>
+            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-[24px] border border-slate-100">
+              {ROOT_INGREDIENTS.map((ingredient) => 
+                renderDraggableIngredient(ingredient, bottomNote === ingredient.noteIndex)
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Layers size={16} style={{ color: PALETTE.blue.accent }} />
+          <h4 className="text-sm font-bold text-slate-700">汉堡公式</h4>
+        </div>
+        <div className="space-y-3">
+          {[
+            { n: '1', label: '面包底：先站稳根音', color: PALETTE.orange },
+            { n: '3', label: '肉排：决定明亮还是柔和', color: isMajor ? PALETTE.yellow : PALETTE.blue },
+            { n: '5', label: '生菜上盖：让声音更完整', color: PALETTE.green },
+          ].map(item => (
+            <div key={item.n} className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                style={{ background: item.color.accent }}>{item.n}</div>
+              <span className="text-xs font-medium text-slate-500">{item.label}</span>
+            </div>
           ))}
         </div>
       </div>
-
-      <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
-        <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>肉排托盘 3rd</span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MIDDLE_INGREDIENTS.map((ingredient) => {
-            const currentNote = bottomNote !== null ? getMiddleNote(bottomNote, ingredient.mode).full : '先选根音';
-            return renderTrayItem(
-              ingredient,
-              ingredient.mode === 'major' ? `明亮版三音 ${currentNote}` : `柔和版三音 ${currentNote}`,
-              middleNote === ingredient.mode,
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-[28px] border border-slate-200 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
-        <span className="text-[10px] font-semibold uppercase tracking-widest mb-3 block" style={{ color: PALETTE.orange.accent }}>生菜上盖 5th</span>
-        {renderTrayItem(
-          TOP_INGREDIENT,
-          bottomNote !== null ? `收口五音 ${FIFTHS[bottomNote].full}，拖进顶层更完整` : '先选根音，再把上盖放上去',
-          topNote,
-        )}
-      </div>
-
-      <button onClick={resetBurger}
-        className="flex items-center gap-2 text-slate-400 hover:text-red-400 transition-colors font-semibold text-xs px-1">
-        <Trash2 size={13} /> 重置汉堡
-      </button>
     </div>
   );
 
@@ -547,23 +610,10 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
     >
       {dragState && (
         <div
-          className="fixed left-0 top-0 z-[260] pointer-events-none"
+          className="fixed left-0 top-0 z-[260] pointer-events-none drop-shadow-2xl"
           style={{ transform: `translate(${dragState.x - 84}px, ${dragState.y - 42}px)` }}
         >
-          <div
-            className="rounded-[24px] border border-orange-200 bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur-sm"
-            style={{ minWidth: 168 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl" style={{ background: PALETTE.orange.bg }}>
-                {dragState.ingredient.emoji}
-              </div>
-              <div>
-                <div className="text-sm font-bold text-slate-800">{dragState.ingredient.name}</div>
-                <div className="text-[11px] font-medium text-slate-500">拖到对应的汉堡层里</div>
-              </div>
-            </div>
-          </div>
+          {renderPhysicalShape(dragState.ingredient)}
         </div>
       )}
 
@@ -576,7 +626,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             <div className="flex-1">
               <h3 className="text-sm font-bold text-slate-800 mb-0.5">声音的"叠罗汉"</h3>
               <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                把面包、肉排和生菜真的拖进汉堡里。和弦版会一起响，单音版会按 1-3-5 依次响，更适合启蒙。
+                把面包、肉排和生菜真的拖进左侧的汉堡里！和弦版会一起响听到厚度，单音版会按 1-3-5 依次响更适合启蒙。
               </p>
             </div>
             <button onClick={() => setShowExplanation(false)} className="p-1 text-slate-300 hover:text-slate-500">
@@ -586,47 +636,15 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
         </div>
       )}
 
-      <div className="grid gap-4 lg:hidden">
-        <div className="flex justify-center py-4">
-          {burger}
-        </div>
-        {ingredientPanels}
-      </div>
-
-      <div className="hidden lg:grid gap-6 items-start" style={{ gridTemplateColumns: '1fr 260px 1fr' }}>
-        <div>{ingredientPanels}</div>
-
-        <div className="flex flex-col items-center justify-start pt-2">
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12 w-full max-w-5xl mx-auto">
+        {/* Left Side: Burger Assembly */}
+        <div className="flex flex-col items-center justify-start pt-2 w-full">
           {burger}
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Layers size={16} style={{ color: PALETTE.blue.accent }} />
-            <h4 className="text-sm font-bold text-slate-700">汉堡公式</h4>
-          </div>
-          <div className="space-y-3">
-            {[
-              { n: '1', label: '面包底：先站稳根音', color: PALETTE.orange },
-              { n: '3', label: '肉排：决定明亮还是柔和', color: isMajor ? PALETTE.yellow : PALETTE.blue },
-              { n: '5', label: '生菜上盖：让声音更完整', color: PALETTE.green },
-            ].map(item => (
-              <div key={item.n} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                  style={{ background: item.color.accent }}>{item.n}</div>
-                <span className="text-xs font-medium text-slate-500">{item.label}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 p-3 rounded-xl border-2 border-dashed"
-            style={{
-              background: (isMajor ? PALETTE.yellow : PALETTE.blue).bg,
-              borderColor: (isMajor ? PALETTE.yellow : PALETTE.blue).accent + '33',
-            }}>
-            <p className="text-[10px] font-medium leading-relaxed text-slate-400 italic">
-              单音版先教孩子听懂 1、3、5 的顺序，再切到和弦版，就能感受到三个音叠起来的厚度。
-            </p>
-          </div>
+        {/* Right Side: Ingredients */}
+        <div className="w-full">
+          {ingredientPanels}
         </div>
       </div>
     </ProjectShell>
