@@ -64,20 +64,20 @@ const ROOT_INGREDIENTS: RootIngredient[] = SCALE.map((item, index) => ({
   id: `bottom-${item.name}`,
   kind: 'bottom',
   noteIndex: index,
-  name: `${item.name}面包底`,
+  name: `${item.name}根音底`,
   label: item.label,
   emoji: '🍞',
 }));
 
 const MIDDLE_INGREDIENTS: MiddleIngredient[] = [
-  { id: 'middle-major', kind: 'middle', mode: 'major', name: '阳光牛肉排', emoji: '🥩' },
+  { id: 'middle-major', kind: 'middle', mode: 'major', name: '阳光牛音符', emoji: '🥩' },
   { id: 'middle-minor', kind: 'middle', mode: 'minor', name: '夜色黑椒排', emoji: '🍖' },
 ];
 
 const TOP_INGREDIENT: TopIngredient = {
   id: 'top-lettuce',
   kind: 'top',
-  name: '生菜盖',
+  name: '纯五度盖',
   emoji: '🥬',
 };
 
@@ -236,7 +236,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   const isComplete = bottomNote !== null && middleNote !== null && topNote;
 
   const noteSummary = useMemo(() => {
-    if (bottomNote === null) return '先放下底层面包，汉堡才会有根音。';
+    if (bottomNote === null) return '先放上根音底，才有坚实的根音基础哦！';
     const parts = [SCALE[bottomNote].note.full];
     if (middleNote) parts.push(getMiddleNote(bottomNote, middleNote).full);
     if (topNote) parts.push(FIFTHS[bottomNote].full);
@@ -244,25 +244,25 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   }, [bottomNote, middleNote, topNote, getMiddleNote]);
 
   const playbackHint = playbackMode === 'single'
-    ? '单音版会按 1-3-5 依次播放，更适合启蒙和跟唱。'
-    : '和弦版会让食材一起发声，直接听到和声厚度。';
+    ? '慢慢品尝：按 1-3-5 顺序依次响起，听清每一层的味道。'
+    : '大口咬下：所有食材同时发声，感受和弦丰富的口感！';
 
   const renderPhysicalShape = (ingredient: Ingredient) => {
     if (ingredient.kind === 'top') {
       return (
         <div className="relative flex flex-col items-center">
-          <div style={{ width: 170, height: 16, borderRadius: 9999, background: 'linear-gradient(90deg, #6dd27e 0%, #4fb968 100%)' }} />
+          <div style={{ width: 170, height: 16, borderRadius: 9999, background: '#FB923C' }} />
           <div
             className="-mt-1 flex items-center justify-center flex-col"
             style={{
               width: 184,
               height: 48,
               borderRadius: '9999px 9999px 16px 16px',
-              background: 'linear-gradient(180deg, #FAD7A2 0%, #F5A05B 100%)',
-              boxShadow: '0 8px 18px rgba(245,160,91,0.2)',
+              background: '#FB923C',
+              boxShadow: 'none',
             }}
           >
-            <span style={{ fontSize: 10, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.5 }}>5th 生菜</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.5 }}>5th 纯五度</span>
           </div>
         </div>
       );
@@ -276,9 +276,9 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             height: 42,
             borderRadius: 16,
             background: ingredient.mode === 'major'
-              ? 'linear-gradient(180deg, #D97706 0%, #92400E 100%)'
-              : 'linear-gradient(180deg, #64748B 0%, #334155 100%)',
-            boxShadow: '0 8px 16px rgba(15,23,42,0.18)',
+              ? '#FFB74D'
+              : '#FFB74D',
+            boxShadow: 'none',
           }}
         >
           <span className="text-[10px] font-black tracking-[0.1em] text-white uppercase flex flex-col items-center leading-tight">
@@ -295,8 +295,8 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
           width: 184,
           height: 52,
           borderRadius: '18px 18px 24px 24px',
-          background: 'linear-gradient(180deg, #F9D298 0%, #F5A05B 100%)',
-          boxShadow: '0 10px 20px rgba(245,160,91,0.22)',
+          background: '#FB923C',
+          boxShadow: 'none',
         }}
       >
         <div className="flex items-center gap-2">
@@ -346,22 +346,22 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
         >
           {topNote ? (
             <div className="relative flex flex-col items-center animate-[fadeIn_0.25s_ease]">
-              <div style={{ width: 210, height: 18, borderRadius: 9999, background: 'linear-gradient(90deg, #6dd27e 0%, #4fb968 100%)' }} />
+              <div style={{ width: 210, height: 18, borderRadius: 9999, background: '#FB923C' }} />
               <div
                 className="-mt-1 flex items-center justify-center"
                 style={{
                   width: 224,
                   height: 58,
                   borderRadius: '9999px 9999px 16px 16px',
-                  background: 'linear-gradient(180deg, #FAD7A2 0%, #F5A05B 100%)',
-                  boxShadow: '0 10px 22px rgba(245,160,91,0.2)',
+                  background: '#FB923C',
+                  boxShadow: 'none',
                 }}
               >
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#7C4A12', letterSpacing: 1.5 }}>5th</span>
               </div>
             </div>
           ) : (
-            <span className="text-xs font-semibold text-slate-400">把上盖拖到这里</span>
+            <span className="text-xs font-semibold text-slate-400">拖拽纯五度上盖到这里</span>
           )}
         </div>
       );
@@ -390,9 +390,9 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                 height: 46,
                 borderRadius: 18,
                 background: middleNote === 'major'
-                  ? 'linear-gradient(180deg, #D97706 0%, #92400E 100%)'
-                  : 'linear-gradient(180deg, #64748B 0%, #334155 100%)',
-                boxShadow: '0 10px 20px rgba(15,23,42,0.18)',
+                  ? '#FFB74D'
+                  : '#FFB74D',
+                boxShadow: 'none',
               }}
             >
               <span className="text-[11px] font-black tracking-[0.18em] text-white uppercase">
@@ -400,7 +400,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
               </span>
             </div>
           ) : (
-            <span className="text-xs font-semibold text-slate-400">把肉排拖到这里</span>
+            <span className="text-xs font-semibold text-slate-400">拖拽口味音符到这里</span>
           )}
         </div>
       );
@@ -426,8 +426,8 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
               width: 224,
               height: 66,
               borderRadius: '20px 20px 28px 28px',
-              background: 'linear-gradient(180deg, #F9D298 0%, #F5A05B 100%)',
-              boxShadow: '0 12px 26px rgba(245,160,91,0.22)',
+              background: '#FB923C',
+              boxShadow: 'none',
             }}
           >
             <div className="flex items-center gap-3">
@@ -439,7 +439,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             </div>
           </div>
         ) : (
-          <span className="text-xs font-semibold text-slate-400">把面包底拖到这里</span>
+          <span className="text-xs font-semibold text-slate-400">拖拽根音底到这里</span>
         )}
       </div>
     );
@@ -453,7 +453,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             position: 'absolute',
             inset: '18px 22px 26px',
             borderRadius: 36,
-            background: 'radial-gradient(circle at center, rgba(255, 219, 161, 0.55) 0%, rgba(255,255,255,0) 72%)',
+            background: '#FFA726 0%, rgba(255,255,255,0) 72%)',
             filter: 'blur(12px)',
           }}
         />
@@ -498,7 +498,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
                 onClick={() => setPlaybackMode(item.key as PlaybackMode)}
                 className="px-3 py-2 rounded-[14px] text-xs font-bold transition-all"
                 style={playbackMode === item.key
-                  ? { background: '#FFFFFF', color: PALETTE.orange.accent, boxShadow: '0 4px 12px rgba(15,23,42,0.08)' }
+                  ? { background: '#FFFFFF', color: PALETTE.orange.accent, boxShadow: 'none' }
                   : { color: '#64748B' }}
               >
                 {item.label}
@@ -524,7 +524,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             gap: 8,
             padding: '12px 18px',
             borderRadius: 18,
-            background: bottomNote === null ? '#E2E8F0' : 'linear-gradient(135deg, #F5A05B 0%, #EA580C 100%)',
+            background: bottomNote === null ? '#E2E8F0' : '#FFB74D',
             color: bottomNote === null ? '#94A3B8' : '#fff',
             fontWeight: 700,
             fontSize: 13,
@@ -535,7 +535,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
           }}
         >
           <Play size={15} fill="currentColor" />
-          {isPlaying ? '播放中…' : playbackMode === 'single' ? '播放单音汉堡' : '播放和弦汉堡'}
+          {isPlaying ? '播放中…' : playbackMode === 'single' ? '听听每一层 (单音)' : '大口咬下去! (和弦)'}
         </button>
       </div>
     </div>
@@ -545,23 +545,23 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
     <div className="space-y-4 w-full max-w-[460px] mx-auto pb-8">
       <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: PALETTE.orange.accent }}>食材配料区 INGREDIENTS</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: PALETTE.orange.accent }}>音符模块区 MODULES</span>
           <button onClick={resetBurger}
             className="flex items-center gap-1.5 text-slate-400 hover:text-red-500 transition-colors font-semibold text-xs bg-slate-50 px-3 py-1.5 rounded-full">
-            <Trash2 size={13} /> 重置汉堡
+            <Trash2 size={13} /> 清空餐盘
           </button>
         </div>
         
         <div className="space-y-6">
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold text-slate-400 pl-2">5th 生菜上盖</div>
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">第三步：盖上清脆纯五度 (5th)</div>
             <div className="flex justify-center py-2 bg-slate-50 rounded-[20px] border border-slate-100">
               {renderDraggableIngredient(TOP_INGREDIENT, topNote)}
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold text-slate-400 pl-2">3rd 肉排 (明亮/柔和)</div>
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">第二步：加上口味音符 (3rd)</div>
             <div className="flex justify-center gap-4 py-3 bg-slate-50 rounded-[20px] border border-slate-100 px-4">
               {MIDDLE_INGREDIENTS.map((ingredient) => 
                 renderDraggableIngredient(ingredient, middleNote === ingredient.mode)
@@ -570,7 +570,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
           </div>
 
           <div className="space-y-2">
-            <div className="text-[10px] font-semibold text-slate-400 pl-2">Root 面包底</div>
+            <div className="text-[10px] font-semibold text-slate-400 pl-2">第一步：挑选基础根音 (Root)</div>
             <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-[24px] border border-slate-100">
               {ROOT_INGREDIENTS.map((ingredient) => 
                 renderDraggableIngredient(ingredient, bottomNote === ingredient.noteIndex)
@@ -583,13 +583,13 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
       <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.02)] p-4">
         <div className="flex items-center gap-2 mb-4">
           <Layers size={16} style={{ color: PALETTE.blue.accent }} />
-          <h4 className="text-sm font-bold text-slate-700">汉堡公式</h4>
+          <h4 className="text-sm font-bold text-slate-700">秘籍</h4>
         </div>
         <div className="space-y-3">
           {[
-            { n: '1', label: '面包底：先站稳根音', color: PALETTE.orange },
-            { n: '3', label: '肉排：决定明亮还是柔和', color: isMajor ? PALETTE.yellow : PALETTE.blue },
-            { n: '5', label: '生菜上盖：让声音更完整', color: PALETTE.green },
+            { n: '1', label: '打底：选个稳当的根音 (根音)', color: PALETTE.orange },
+            { n: '3', label: '主菜：加块音符定口味 (三音)', color: isMajor ? PALETTE.yellow : PALETTE.blue },
+            { n: '5', label: '点缀：盖上纯五度更完美 (五音)', color: PALETTE.green },
           ].map(item => (
             <div key={item.n} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -605,7 +605,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
   return (
     <ProjectShell
       lessonId={8} title="和弦叠叠乐" subtitle="CHORD BURGER LAB" color="orange"
-      actionLabel="提交和弦汉堡" actionEnabled={isComplete} onAction={onComplete} onBack={onBack}
+      actionLabel="提交和弦" actionEnabled={isComplete} onAction={onComplete} onBack={onBack}
       footerText="Harmonic Stacking · Triad Mod 2.0"
     >
       {dragState && (
@@ -626,7 +626,7 @@ const ChordBurgerProject: React.FC<ChordBurgerProjectProps> = ({ onComplete, onB
             <div className="flex-1">
               <h3 className="text-sm font-bold text-slate-800 mb-0.5">声音的"叠罗汉"</h3>
               <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                把面包、肉排和生菜真的拖进左侧的汉堡里！和弦版会一起响听到厚度，单音版会按 1-3-5 依次响更适合启蒙。
+                把不同的食材拖进中间的盘子里，组合出你专属的声音吧！
               </p>
             </div>
             <button onClick={() => setShowExplanation(false)} className="p-1 text-slate-300 hover:text-slate-500">
