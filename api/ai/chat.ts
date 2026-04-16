@@ -43,7 +43,7 @@ function getDashScopeConfig() {
   const apiKey = process.env.DASHSCOPE_API_KEY?.trim();
   const baseUrl = process.env.DASHSCOPE_BASE_URL?.trim()
     || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
-  const model = process.env.DEFAULT_MODEL?.trim() || 'qwen-plus';
+  const model = process.env.DEFAULT_MODEL?.trim() || 'qwen3.6-plus';
   return { apiKey, baseUrl, model };
 }
 
