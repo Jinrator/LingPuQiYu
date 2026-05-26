@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings, Language } from '../contexts/SettingsContext';
 import {
   GraduationCap,
   Monitor,
@@ -14,7 +15,14 @@ import {
   Mail,
   Menu,
   X,
+  Globe,
 } from 'lucide-react';
+
+const LANGUAGES: { id: Language; label: string }[] = [
+  { id: 'zh-CN', label: '简体' },
+  { id: 'zh-TW', label: '繁體' },
+  { id: 'en', label: 'EN' },
+];
 
 function useScrollFadeIn() {
   const ref = useRef<HTMLDivElement>(null);
@@ -58,12 +66,14 @@ function FadeInSection({ children, className = '' }: { children: React.ReactNode
 
 function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const { t, language, setLanguage } = useSettings();
 
   const navLinks = [
-    { label: '关于我们', href: '#about' },
-    { label: '产品生态', href: '#ecosystem' },
-    { label: '使命愿景', href: '#mission' },
-    { label: '联系我们', href: '#contact' },
+    { label: t('landing.nav.about'), href: '#about' },
+    { label: t('landing.nav.ecosystem'), href: '#ecosystem' },
+    { label: t('landing.nav.mission'), href: '#mission' },
+    { label: t('landing.nav.contact'), href: '#contact' },
   ];
 
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -83,8 +93,8 @@ function Landing() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <img src="/logo/logo.png" alt="灵谱奇域" className="h-8 w-8 object-contain" />
-              <span className="font-fredoka text-xl font-bold text-gray-900">生音科技</span>
+              <img src="/logo/logo.png" alt="生音科技" className="h-8 w-8 object-contain" />
+              <span className="font-fredoka text-xl font-bold text-gray-900">{t('landing.brand')}</span>
             </div>
 
             {/* Desktop Nav Links */}
@@ -99,22 +109,75 @@ function Landing() {
                   {link.label}
                 </a>
               ))}
+
+              {/* Language Switcher */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Globe size={14} />
+                  {LANGUAGES.find(l => l.id === language)?.label}
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-100 py-1 min-w-[80px]">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.id}
+                        onClick={() => { setLanguage(lang.id); setLangMenuOpen(false); }}
+                        className={`block w-full text-left px-3 py-1.5 text-sm transition-colors ${
+                          language === lang.id ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Link
                 to="/app/lab"
                 className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:shadow-lg"
                 style={{ backgroundColor: '#5BA4F5' }}
               >
-                进入应用 →
+                {t('landing.nav.enterApp')}
               </Link>
             </div>
 
             {/* Mobile Hamburger */}
-            <button
-              className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="md:hidden flex items-center gap-2">
+              {/* Mobile Language Switcher */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  <Globe size={14} />
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-100 py-1 min-w-[80px] z-50">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.id}
+                        onClick={() => { setLanguage(lang.id); setLangMenuOpen(false); }}
+                        className={`block w-full text-left px-3 py-1.5 text-sm transition-colors ${
+                          language === lang.id ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                className="p-2 text-gray-600 hover:text-gray-900"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -137,7 +200,7 @@ function Landing() {
                 className="block text-center px-4 py-2 rounded-lg text-sm font-medium text-white"
                 style={{ backgroundColor: '#5BA4F5' }}
               >
-                进入应用 →
+                {t('landing.nav.enterApp')}
               </Link>
             </div>
           </div>
@@ -161,17 +224,17 @@ function Landing() {
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <FadeInSection>
             <h1 className="font-fredoka text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              让每个人都能感受到音乐创造带来的快乐
+              {t('landing.hero.title')}
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-10">
-              生音科技 · 用AI重新定义音乐教育
+              {t('landing.hero.subtitle')}
             </p>
             <Link
               to="/app/lab"
               className="inline-flex items-center px-8 py-3 rounded-xl text-lg font-medium text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
               style={{ backgroundColor: '#5BA4F5' }}
             >
-              立即体验
+              {t('landing.hero.cta')}
             </Link>
           </FadeInSection>
         </div>
@@ -183,10 +246,10 @@ function Landing() {
           <FadeInSection>
             <div className="text-center mb-16">
               <h2 className="font-fredoka text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                三位一体生态系统
+                {t('landing.ecosystem.title')}
               </h2>
               <p className="text-gray-500 text-lg">
-                构建AI音乐「教育+软件+硬件」闭环生态
+                {t('landing.ecosystem.subtitle')}
               </p>
             </div>
           </FadeInSection>
@@ -195,20 +258,20 @@ function Landing() {
             {[
               {
                 icon: GraduationCap,
-                title: '教育 | 生音工坊',
-                description: 'AI音乐教育课程体系，系统化培养创作潜能',
+                titleKey: 'landing.ecosystem.edu.title',
+                descKey: 'landing.ecosystem.edu.desc',
                 color: '#5BCC8A',
               },
               {
                 icon: Monitor,
-                title: '软件 | 灵谱奇域',
-                description: '趣味AI创作软件，降低门槛轻松变身大师',
+                titleKey: 'landing.ecosystem.software.title',
+                descKey: 'landing.ecosystem.software.desc',
                 color: '#5BA4F5',
               },
               {
                 icon: Cpu,
-                title: '硬件 | 灵感精灵',
-                description: '多模态传感器捕捉稍纵即逝的创作灵感',
+                titleKey: 'landing.ecosystem.hardware.title',
+                descKey: 'landing.ecosystem.hardware.desc',
                 color: '#F57EB6',
               },
             ].map((card, index) => (
@@ -220,8 +283,8 @@ function Landing() {
                   >
                     <card.icon size={28} style={{ color: card.color }} />
                   </div>
-                  <h3 className="font-fredoka text-xl font-bold text-gray-900 mb-3">{card.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{card.description}</p>
+                  <h3 className="font-fredoka text-xl font-bold text-gray-900 mb-3">{t(card.titleKey)}</h3>
+                  <p className="text-gray-500 leading-relaxed">{t(card.descKey)}</p>
                 </div>
               </FadeInSection>
             ))}
@@ -235,7 +298,7 @@ function Landing() {
           <FadeInSection>
             <div className="text-center mb-16">
               <h2 className="font-fredoka text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                使命 & 愿景
+                {t('landing.mission.title')}
               </h2>
             </div>
           </FadeInSection>
@@ -253,10 +316,10 @@ function Landing() {
                   >
                     <Target size={24} style={{ color: '#5BA4F5' }} />
                   </div>
-                  <h3 className="font-fredoka text-xl font-bold text-gray-900">使命</h3>
+                  <h3 className="font-fredoka text-xl font-bold text-gray-900">{t('landing.mission.mission')}</h3>
                 </div>
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  用我们的产品，让教师舒心、孩子开心、家长放心。
+                  {t('landing.mission.missionDesc')}
                 </p>
               </div>
             </FadeInSection>
@@ -273,10 +336,10 @@ function Landing() {
                   >
                     <Rocket size={24} style={{ color: '#5BCC8A' }} />
                   </div>
-                  <h3 className="font-fredoka text-xl font-bold text-gray-900">愿景</h3>
+                  <h3 className="font-fredoka text-xl font-bold text-gray-900">{t('landing.mission.vision')}</h3>
                 </div>
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  成为AI时代音乐教育变革引领者，推动教育数字化普惠。
+                  {t('landing.mission.visionDesc')}
                 </p>
               </div>
             </FadeInSection>
@@ -290,7 +353,7 @@ function Landing() {
           <FadeInSection>
             <div className="text-center mb-16">
               <h2 className="font-fredoka text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                灵谱奇域 — 趣味AI音乐创作平台
+                {t('landing.product.title')}
               </h2>
             </div>
           </FadeInSection>
@@ -299,26 +362,26 @@ function Landing() {
             {[
               {
                 icon: Map,
-                title: '冒险关卡',
-                description: '系统化音乐学习，闯关式进阶体验',
+                titleKey: 'landing.product.adventure',
+                descKey: 'landing.product.adventureDesc',
                 color: '#F5A05B',
               },
               {
                 icon: Palette,
-                title: '自由创作',
-                description: '开放式音乐工坊，释放无限创意',
+                titleKey: 'landing.product.lab',
+                descKey: 'landing.product.labDesc',
                 color: '#5BA4F5',
               },
               {
                 icon: Disc,
-                title: '演出舞台',
-                description: '展示音乐作品，收获成就与掌声',
+                titleKey: 'landing.product.stage',
+                descKey: 'landing.product.stageDesc',
                 color: '#F57EB6',
               },
               {
                 icon: Bot,
-                title: 'AI 助手',
-                description: '智能引导教学，个性化学习路径',
+                titleKey: 'landing.product.ai',
+                descKey: 'landing.product.aiDesc',
                 color: '#5BCC8A',
               },
             ].map((feature, index) => (
@@ -331,8 +394,8 @@ function Landing() {
                     <feature.icon size={22} style={{ color: feature.color }} />
                   </div>
                   <div>
-                    <h3 className="font-fredoka text-lg font-bold text-gray-900 mb-1">{feature.title}</h3>
-                    <p className="text-gray-500">{feature.description}</p>
+                    <h3 className="font-fredoka text-lg font-bold text-gray-900 mb-1">{t(feature.titleKey)}</h3>
+                    <p className="text-gray-500">{t(feature.descKey)}</p>
                   </div>
                 </div>
               </FadeInSection>
@@ -345,7 +408,7 @@ function Landing() {
               className="inline-flex items-center px-8 py-3 rounded-xl text-lg font-medium text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
               style={{ backgroundColor: '#5BA4F5' }}
             >
-              开始创作之旅 →
+              {t('landing.product.cta')}
             </Link>
           </FadeInSection>
         </div>
@@ -361,9 +424,9 @@ function Landing() {
           <FadeInSection>
             <div className="text-center mb-16">
               <h2 className="font-fredoka text-3xl sm:text-4xl font-bold text-white mb-4">
-                联系我们
+                {t('landing.contact.title')}
               </h2>
-              <p className="text-gray-400 text-lg">生音科技</p>
+              <p className="text-gray-400 text-lg">{t('landing.contact.company')}</p>
             </div>
           </FadeInSection>
 
@@ -377,7 +440,7 @@ function Landing() {
                   <Phone size={18} style={{ color: '#5BA4F5' }} />
                 </div>
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">电话</p>
+                  <p className="text-gray-400 text-sm mb-1">{t('landing.contact.phone')}</p>
                   <p className="text-white text-sm">(853) 6556 5179</p>
                   <p className="text-white text-sm">(86) 181 6556 5179</p>
                 </div>
@@ -391,7 +454,7 @@ function Landing() {
                   <Mail size={18} style={{ color: '#5BCC8A' }} />
                 </div>
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">邮箱</p>
+                  <p className="text-gray-400 text-sm mb-1">{t('landing.contact.email')}</p>
                   <p className="text-white text-sm">jinbeimusicai@gmail.com</p>
                   <p className="text-white text-sm">1215578879@qq.com</p>
                 </div>
@@ -402,12 +465,12 @@ function Landing() {
           {/* Footer */}
           <div className="mt-20 pt-8 border-t border-gray-800">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-gray-500 text-sm">© 2025 生音科技. All rights reserved.</p>
+              <p className="text-gray-500 text-sm">{t('landing.footer.copyright')}</p>
               <div className="flex items-center gap-6">
                 {[
-                  { label: '关于我们', href: '#about' },
-                  { label: '产品', href: '#ecosystem' },
-                  { label: '联系我们', href: '#contact' },
+                  { label: t('landing.footer.about'), href: '#about' },
+                  { label: t('landing.footer.product'), href: '#ecosystem' },
+                  { label: t('landing.footer.contact'), href: '#contact' },
                 ].map((link) => (
                   <a
                     key={link.href}
