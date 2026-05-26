@@ -16,7 +16,7 @@ const NotFoundPage: React.FC = () => {
         {t('notfound.desc')}
       </p>
       <button 
-        onClick={() => navigate('/lab')}
+        onClick={() => navigate('/app/lab')}
         className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 transition-all active:scale-95"
       >
         {t('notfound.back')}

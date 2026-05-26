@@ -10,7 +10,7 @@ export const useExitConfirmation = () => {
 
     const handlePopState = (event: PopStateEvent) => {
       // 只在根路径或入口页面时处理
-      if (location.pathname === '/lab' || location.pathname === '/') {
+      if (location.pathname === '/app/lab' || location.pathname === '/app') {
         if (isFirstBackAtRoot) {
           // 第一次尝试退出，显示确认提示
           event.preventDefault();

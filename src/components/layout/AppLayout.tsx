@@ -8,7 +8,7 @@ import AIAssistant from '../ui/AIAssistant';
 import ExitConfirmation from '../ui/ExitConfirmation';
 import MelodyDecoderModal from '../ui/MelodyDecoderModal';
 import { useExitConfirmation } from '../../hooks/useExitConfirmation';
-import { Music4, Settings, User } from 'lucide-react';
+import { Loader2, Music4, Settings, User } from 'lucide-react';
 import { PALETTE } from '../../constants/palette';
 import { useSettings } from '../../contexts/SettingsContext';
 import { preloadPlayableInstrumentSamples } from '../modes/InstrumentPlayer';
@@ -67,12 +67,10 @@ const AppLayout: React.FC = () => {
   // 认证路由守卫：仅在后台验证完成后才做跳转，不阻塞渲染
   useEffect(() => {
     if (isLoading) return;
-    if (!isAuthenticated && location.pathname !== '/login') {
+    if (!isAuthenticated) {
       navigate('/login', { replace: true });
-    } else if (isAuthenticated && location.pathname === '/login') {
-      navigate('/lab', { replace: true });
     }
-  }, [isAuthenticated, isLoading, location.pathname, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     if (isAudioInitialized || !isAuthenticated) return;
@@ -110,20 +108,11 @@ const AppLayout: React.FC = () => {
 
   const handleViewChange = (view: ViewMode) => navigate(viewModeToPath[view]);
 
-  // 未登录且不在登录页：渲染登录页 outlet（useEffect 会异步跳转）
-  if (!isAuthenticated && location.pathname !== '/login') {
-    return (
-      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#F5F7FA] select-none">
-        <Outlet context={{ theme: 'light' }} />
-      </div>
-    );
-  }
-
-  // 未登录 + 在登录页
+  // 未登录时显示加载状态（useEffect 会异步跳转到登录页）
   if (!isAuthenticated) {
     return (
-      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#F5F7FA] select-none">
-        <Outlet context={{ theme: 'light' }} />
+      <div className="h-screen w-full flex items-center justify-center bg-[#F5F7FA]">
+        <Loader2 size={22} className="animate-spin text-[#5BA4F5]" />
       </div>
     );
   }
@@ -176,9 +165,9 @@ const AppLayout: React.FC = () => {
               {t('nav.profile')}
             </button>
             <button
-              onClick={() => navigate('/settings')}
+              onClick={() => navigate('/app/settings')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
-              style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
+              style={location.pathname === '/app/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
             >
               <Settings size={16} />
             </button>
@@ -217,9 +206,9 @@ const AppLayout: React.FC = () => {
               fallback={<div className="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center"><User size={14} className="text-slate-400" /></div>} />
           </button>
           <button
-            onClick={() => navigate('/settings')}
+            onClick={() => navigate('/app/settings')}
             className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
-            style={location.pathname === '/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
+            style={location.pathname === '/app/settings' ? { color: PALETTE.blue.accent, background: PALETTE.blue.bg } : {}}
           >
             <Settings size={16} />
           </button>

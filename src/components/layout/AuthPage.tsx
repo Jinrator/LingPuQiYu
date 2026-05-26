@@ -107,7 +107,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const from = (location.state as any)?.from?.pathname || '/lab';
+      const from = (location.state as any)?.from?.pathname || '/app/lab';
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location.state]);

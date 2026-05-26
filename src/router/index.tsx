@@ -22,6 +22,7 @@ function lazyWithRetry(factory: () => Promise<{ default: React.ComponentType<any
 }
 
 const AppLayout = lazyWithRetry(() => import('../components/layout/AppLayout'));
+const LandingPage = lazyWithRetry(() => import('../pages/Landing'));
 const FreeLabPage = lazyWithRetry(() => import('../pages/FreeLab'));
 const AdventurePage = lazyWithRetry(() => import('../pages/Adventure'));
 const StagePage = lazyWithRetry(() => import('../pages/Stage'));
@@ -49,36 +50,30 @@ const withRouteSuspense = (element: React.ReactElement) => (
 
 // 路由配置 - 支持多层级嵌套
 export const routes = [
+  // Landing page — public, no AppLayout wrapper
   {
     path: '/',
+    element: withRouteSuspense(<LandingPage />),
+  },
+  // Login — public, no AppLayout wrapper
+  {
+    path: '/login',
+    element: withRouteSuspense(<LoginPage />),
+  },
+  // App routes — wrapped in AppLayout, all protected
+  {
+    path: '/app',
     element: withRouteSuspense(<AppLayout />),
     children: [
-      {
-        path: '',
-        element: <Navigate to="/lab" replace />
-      },
-      {
-        path: 'login',
-        element: withRouteSuspense(<LoginPage />)
-      },
+      { path: '', element: <Navigate to="/app/lab" replace /> },
       {
         path: 'lab',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<FreeLabPage />)}
-          </ProtectedRoute>
-        ),
-        children: []
+        element: <ProtectedRoute>{withRouteSuspense(<FreeLabPage />)}</ProtectedRoute>,
       },
       {
         path: 'adventure',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<AdventurePage />)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withRouteSuspense(<AdventurePage />)}</ProtectedRoute>,
         children: [
-          // 冒险模式子页面
           {
             path: 'level/:levelId',
             element: (
@@ -86,7 +81,7 @@ export const routes = [
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl mb-4">🏆</div>
-                    <h2 className="text-2xl font-bold mb-2">关卡 {window.location.pathname.split('/').pop()}</h2>
+                    <h2 className="text-2xl font-bold mb-2">关卡</h2>
                     <p className="text-slate-600">冒险关卡详情页面</p>
                   </div>
                 </div>
@@ -100,7 +95,7 @@ export const routes = [
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl mb-4">🌍</div>
-                    <h2 className="text-2xl font-bold mb-2">世界 {window.location.pathname.split('/').pop()}</h2>
+                    <h2 className="text-2xl font-bold mb-2">世界</h2>
                     <p className="text-slate-600">世界地图页面</p>
                   </div>
                 </div>
@@ -114,7 +109,7 @@ export const routes = [
                     <div className="h-full flex items-center justify-center">
                       <div className="text-center">
                         <div className="text-6xl mb-4">🎭</div>
-                        <h2 className="text-2xl font-bold mb-2">舞台 {window.location.pathname.split('/').pop()}</h2>
+                        <h2 className="text-2xl font-bold mb-2">舞台</h2>
                         <p className="text-slate-600">三级嵌套页面示例</p>
                       </div>
                     </div>
@@ -127,13 +122,8 @@ export const routes = [
       },
       {
         path: 'stage',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<StagePage />)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withRouteSuspense(<StagePage />)}</ProtectedRoute>,
         children: [
-          // 舞台模式子页面
           {
             path: 'performance/:id',
             element: (
@@ -141,7 +131,7 @@ export const routes = [
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl mb-4">🎪</div>
-                    <h2 className="text-2xl font-bold mb-2">演出 {window.location.pathname.split('/').pop()}</h2>
+                    <h2 className="text-2xl font-bold mb-2">演出</h2>
                     <p className="text-slate-600">演出详情页面</p>
                   </div>
                 </div>
@@ -166,13 +156,8 @@ export const routes = [
       },
       {
         path: 'profile',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<ProfilePage />)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withRouteSuspense(<ProfilePage />)}</ProtectedRoute>,
         children: [
-          // 用户档案子页面
           {
             path: 'settings',
             element: (
@@ -249,49 +234,47 @@ export const routes = [
       },
       {
         path: 'settings',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<SettingsPage />)}
-          </ProtectedRoute>
-        )
+        element: <ProtectedRoute>{withRouteSuspense(<SettingsPage />)}</ProtectedRoute>,
       },
       {
         path: 'settings/account',
-        element: (
-          <ProtectedRoute>
-            {withRouteSuspense(<AccountSettingsPage />)}
-          </ProtectedRoute>
-        )
+        element: <ProtectedRoute>{withRouteSuspense(<AccountSettingsPage />)}</ProtectedRoute>,
       },
       {
         path: '*',
         element: withRouteSuspense(<NotFoundPage />)
       }
     ]
+  },
+  // Global 404
+  {
+    path: '*',
+    element: withRouteSuspense(<NotFoundPage />)
   }
 ];
 
 // 扩展的路径到 ViewMode 映射，支持多层级
 export const pathToViewMode: Record<string, ViewMode> = {
-  '/lab': ViewMode.FREE_LAB,
-  '/adventure': ViewMode.ADVENTURE,
-  '/stage': ViewMode.STAGE,
-  '/profile': ViewMode.USER_PROFILE
+  '/app/lab': ViewMode.FREE_LAB,
+  '/app/adventure': ViewMode.ADVENTURE,
+  '/app/stage': ViewMode.STAGE,
+  '/app/profile': ViewMode.USER_PROFILE
 };
 
 // 根据路径获取主视图模式（忽略子路径）
 export const getViewModeFromPath = (pathname: string): ViewMode => {
   const segments = pathname.split('/').filter(Boolean);
-  const mainPath = segments.length > 0 ? `/${segments[0]}` : '/lab';
+  // segments[0] is 'app', segments[1] is the actual page
+  const mainPath = segments.length >= 2 ? `/${segments[0]}/${segments[1]}` : '/app/lab';
   return pathToViewMode[mainPath] || ViewMode.FREE_LAB;
 };
 
 // ViewMode 到路径的映射
 export const viewModeToPath: Record<ViewMode, string> = {
-  [ViewMode.FREE_LAB]: '/lab',
-  [ViewMode.ADVENTURE]: '/adventure',
-  [ViewMode.STAGE]: '/stage',
-  [ViewMode.USER_PROFILE]: '/profile'
+  [ViewMode.FREE_LAB]: '/app/lab',
+  [ViewMode.ADVENTURE]: '/app/adventure',
+  [ViewMode.STAGE]: '/app/stage',
+  [ViewMode.USER_PROFILE]: '/app/profile'
 };
 
 export const router = createBrowserRouter(routes);

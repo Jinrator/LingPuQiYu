@@ -43,7 +43,7 @@ const Settings: React.FC = () => {
 
         {/* Account Settings entry */}
         <button
-          onClick={() => navigate('/settings/account')}
+          onClick={() => navigate('/app/settings/account')}
           className="w-full bg-white rounded-2xl p-5 sm:p-6 shadow-[0_1px_6px_rgba(0,0,0,0.03)] flex items-center gap-4 transition-all hover:shadow-[0_1px_6px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 text-left"
         >
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: PALETTE.blue.bg }}>
