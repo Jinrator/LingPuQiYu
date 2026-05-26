@@ -12,7 +12,6 @@ import {
   Bot,
   Phone,
   Mail,
-  MapPin,
   Menu,
   X,
 } from 'lucide-react';
@@ -369,7 +368,7 @@ function Landing() {
           </FadeInSection>
 
           <FadeInSection>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
               <div className="flex items-start gap-4">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -394,19 +393,7 @@ function Landing() {
                 <div>
                   <p className="text-gray-400 text-sm mb-1">邮箱</p>
                   <p className="text-white text-sm">jinbeimusicai@gmail.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#F57EB620' }}
-                >
-                  <MapPin size={18} style={{ color: '#F57EB6' }} />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm mb-1">地址</p>
-                  <p className="text-white text-sm">广东横琴深合科创大厦T3栋914</p>
+                  <p className="text-white text-sm">1215578879@qq.com</p>
                 </div>
               </div>
             </div>
