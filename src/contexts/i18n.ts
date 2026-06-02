@@ -434,7 +434,7 @@ const dict: Dict = {
   'landing.nav.contact': { 'zh-CN': '联系我们', 'zh-TW': '聯繫我們', en: 'Contact' },
   'landing.nav.enterApp': { 'zh-CN': '进入应用 →', 'zh-TW': '進入應用 →', en: 'Launch App →' },
   'landing.hero.title': { 'zh-CN': '让每个人都能感受到音乐创造带来的快乐', 'zh-TW': '讓每個人都能感受到音樂創造帶來的快樂', en: 'Let everyone experience the joy of creating music' },
-  'landing.hero.subtitle': { 'zh-CN': '生音科技 · 用AI重新定义音乐教育', 'zh-TW': '生音科技 · 用AI重新定義音樂教育', en: 'SoundBorn Tech · Redefining music education with AI' },
+  'landing.hero.subtitle': { 'zh-CN': '生音科技 · 用AI重新定义音乐教育', 'zh-TW': '生音科技 · 用AI重新定義音樂教育', en: 'Jinrator · Redefining music education with AI' },
   'landing.hero.cta': { 'zh-CN': '立即体验', 'zh-TW': '立即體驗', en: 'Try Now' },
   'landing.ecosystem.title': { 'zh-CN': '三位一体生态系统', 'zh-TW': '三位一體生態系統', en: '3-in-1 Ecosystem' },
   'landing.ecosystem.subtitle': { 'zh-CN': '构建AI音乐「教育+软件+硬件」闭环生态', 'zh-TW': '構建AI音樂「教育+軟件+硬件」閉環生態', en: 'Building a closed-loop AI music ecosystem: Education + Software + Hardware' },
@@ -460,14 +460,14 @@ const dict: Dict = {
   'landing.product.aiDesc': { 'zh-CN': '智能引导教学，个性化学习路径', 'zh-TW': '智能引導教學，個性化學習路徑', en: 'Intelligent guidance with personalized learning paths' },
   'landing.product.cta': { 'zh-CN': '开始创作之旅 →', 'zh-TW': '開始創作之旅 →', en: 'Start Creating →' },
   'landing.contact.title': { 'zh-CN': '联系我们', 'zh-TW': '聯繫我們', en: 'Contact Us' },
-  'landing.contact.company': { 'zh-CN': '生音科技', 'zh-TW': '生音科技', en: 'SoundBorn Tech' },
+  'landing.contact.company': { 'zh-CN': '生音科技', 'zh-TW': '生音科技', en: 'Jinrator' },
   'landing.contact.phone': { 'zh-CN': '电话', 'zh-TW': '電話', en: 'Phone' },
   'landing.contact.email': { 'zh-CN': '邮箱', 'zh-TW': '郵箱', en: 'Email' },
-  'landing.footer.copyright': { 'zh-CN': '© 2025 生音科技. All rights reserved.', 'zh-TW': '© 2025 生音科技. All rights reserved.', en: '© 2025 SoundBorn Tech. All rights reserved.' },
+  'landing.footer.copyright': { 'zh-CN': '© 2025 生音科技. All rights reserved.', 'zh-TW': '© 2025 生音科技. All rights reserved.', en: '© 2025 Jinrator. All rights reserved.' },
   'landing.footer.about': { 'zh-CN': '关于我们', 'zh-TW': '關於我們', en: 'About' },
   'landing.footer.product': { 'zh-CN': '产品', 'zh-TW': '產品', en: 'Products' },
   'landing.footer.contact': { 'zh-CN': '联系我们', 'zh-TW': '聯繫我們', en: 'Contact' },
-  'landing.brand': { 'zh-CN': '生音科技', 'zh-TW': '生音科技', en: 'SoundBorn' },
+  'landing.brand': { 'zh-CN': '生音科技', 'zh-TW': '生音科技', en: 'Jinrator' },
 };
 
 export default dict;
