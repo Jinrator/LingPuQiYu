@@ -13,6 +13,7 @@ interface AuthPageProps {
 type AuthMode = 'login' | 'register';
 type LoginMethod = 'password' | 'sms';
 type CourseType = 'PRODUCER' | 'ARTIST' | 'MAKER';
+const DEFAULT_COURSE: CourseType = 'PRODUCER';
 
 const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
-  const [course, setCourse] = useState<CourseType | null>(null);
+  const [course, setCourse] = useState<CourseType>(DEFAULT_COURSE);
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [account, setAccount] = useState('');
@@ -142,7 +143,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
           setIsAuthorizing(false);
           return;
         }
-        const r = await doRegister({ phone, code: vCode, username, displayName: displayName || undefined, courseType: course || undefined, password: regPassword || undefined });
+        const r = await doRegister({ phone, code: vCode, username, displayName: displayName || undefined, courseType: course, password: regPassword || undefined });
         if (r && !r.success) {
           if (r.code === 'USERNAME_TAKEN') {
             setErrorMsg(t('auth.usernameTaken'));
@@ -200,7 +201,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
     ? loginMethod === 'password'
       ? (isAuthorizing || !account || password.length < 8)
       : (isAuthorizing || phone.length !== 11 || vCode.length < 4)
-    : (isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken');
+    : (isAuthorizing || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken');
 
   const inputCls = `w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl text-sm font-medium outline-none transition-all
     bg-white text-slate-800 placeholder:text-slate-300 shadow-[0_1px_4px_rgba(0,0,0,0.02)]
@@ -410,7 +411,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                   <p className="text-sm font-bold tracking-tight text-slate-700 mb-2">{t('auth.selectDirection')}</p>
                   <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                     {courses.map(c => (
-                      <button key={c.id} onClick={() => setCourse(c.id)}
+                      <button key={c.id} type="button" aria-pressed={course === c.id} onClick={() => setCourse(c.id)}
                         className="flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl text-center transition-all hover:scale-[1.02]"
                         style={course === c.id
                           ? { background: c.color.bg, color: c.color.accent }
@@ -483,7 +484,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ theme }) => {
                   </div>
                 </div>
                 <button onClick={handleAction}
-                  disabled={isAuthorizing || !course || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken'}
+                  disabled={isAuthorizing || !username || username.length < 3 || !displayName || phone.length !== 11 || vCode.length < 4 || usernameStatus === 'taken' || usernameStatus === 'invalid' || phoneStatus === 'taken'}
                   className="w-full py-3 sm:py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                   style={{background: '#1e293b'}}>
                   {isAuthorizing ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle2 size={16} />{t('auth.finishRegister')}</>}
